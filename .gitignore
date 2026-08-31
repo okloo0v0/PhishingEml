@@ -17,6 +17,9 @@ pdf_preview/
 tmp/
 temp/
 
+# Course selection material is kept locally but not maintained in Git
+计算机专业-26秋.pdf
+
 # Local model and dataset artifacts
 models/*.joblib
 data/raw/
