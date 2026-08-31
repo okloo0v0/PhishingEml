@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Local configuration and runtime data
+.env
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Generated previews and temporary files
+pdf_preview/
+tmp/
+temp/
+
+# Local model and dataset artifacts
+models/*.joblib
+data/raw/
+data/processed/
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
