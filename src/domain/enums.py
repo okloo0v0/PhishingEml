@@ -28,3 +28,19 @@ class FeedbackLabel(str, Enum):
     FALSE_POSITIVE = "false_positive"
     UNSURE = "unsure"
 
+
+class BlacklistStatus(str, Enum):
+    ACTIVE = "active"
+    REVIEW = "review"
+    FALSE_POSITIVE = "false_positive"
+
+
+class BlacklistSource(str, Enum):
+    MANUAL = "manual"
+    IMPORT = "import"
+    PHISHTANK = "phishtank"
+
+
+class BlacklistMatchType(str, Enum):
+    EXACT_URL = "exact_url"
+    REGISTRABLE_DOMAIN = "registrable_domain"

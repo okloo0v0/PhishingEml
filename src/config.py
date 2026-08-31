@@ -16,9 +16,17 @@ class Settings:
     max_body_chars: int = 200_000
     log_level: str = "INFO"
     allow_network: bool = False
+    # 基础版不实现沙箱隔离，网络访问能力作为后续隔离沙箱扩展保留。
 
 
 def get_settings() -> Settings:
+    allow_network = os.getenv("ALLOW_NETWORK", "false").lower() == "true"
+    if allow_network:
+        raise ValueError(
+            "ALLOW_NETWORK=true is reserved for a future isolated sandbox "
+            "and is not supported by the basic version"
+        )
+
     return Settings(
         app_env=os.getenv("APP_ENV", "dev"),
         database_url=os.getenv(
@@ -34,6 +42,6 @@ def get_settings() -> Settings:
         ),
         max_body_chars=int(os.getenv("MAX_BODY_CHARS", "200000")),
         log_level=os.getenv("LOG_LEVEL", "INFO"),
-        allow_network=os.getenv("ALLOW_NETWORK", "false").lower() == "true",
+        allow_network=False,
     )
 

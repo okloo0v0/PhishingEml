@@ -1,3 +1,5 @@
+import math
+
 from .enums import ResultLabel, RiskLevel
 
 
@@ -9,6 +11,8 @@ MODEL_PHISHING_THRESHOLD = 0.50
 
 
 def clamp(value: float, minimum: float, maximum: float) -> float:
+    if not math.isfinite(value):
+        raise ValueError("score values must be finite")
     return max(minimum, min(value, maximum))
 
 
@@ -39,4 +43,3 @@ def label_for_probability(model_probability: float) -> ResultLabel:
     if model_probability >= MODEL_PHISHING_THRESHOLD:
         return ResultLabel.PHISHING
     return ResultLabel.LEGITIMATE
-
