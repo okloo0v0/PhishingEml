@@ -6,7 +6,7 @@ class ErrorCode(str, Enum):
     INVALID_FILE_TYPE = "INVALID_FILE_TYPE"
     FILE_TOO_LARGE = "FILE_TOO_LARGE"
     EMPTY_INPUT = "EMPTY_INPUT"
-    # D-001 的严格三选一方案尚未决策，当前仅保留错误码，不启用行为。
+    # D-001 已冻结为严格三选一；多个输入来源同时出现时使用此错误码。
     INPUT_CONFLICT = "INPUT_CONFLICT"
     PARSE_FAILED = "PARSE_FAILED"
     MODEL_NOT_READY = "MODEL_NOT_READY"

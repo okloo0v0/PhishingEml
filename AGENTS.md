@@ -72,6 +72,8 @@ PhishingEml 是一个面向本科课程实践的钓鱼邮件静态分析与检�
 
 阶段 A 的字段、评分、API、数据库和错误码定义以 docs/shared-contract.md 为准；代码实现以 src/domain/ 为准。两者不一致时，暂停跨模块开发，先通过 Pull Request 完成契约修订。
 
+已冻结的分析接口输入语义：`file`、`raw_text`、`sample_id` 必须且只能提供一个；多个输入来源同时出现时返回 `400 INPUT_CONFLICT`，不得按优先级静默选择其中一个。
+
 ### 阶段 2：建立最小工程骨架
 
 先创建可运行的项目结构：

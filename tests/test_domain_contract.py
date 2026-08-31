@@ -11,6 +11,7 @@ from src.domain.enums import (
     Severity,
 )
 from src.domain.rule_contract import MAX_RULE_SCORE, RULE_CATALOG, RuleCode
+from src.domain.errors import ErrorCode, DomainError
 from src.domain.scoring import (
     HIGH_RISK_THRESHOLD,
     LOW_RISK_THRESHOLD,
@@ -20,7 +21,9 @@ from src.domain.scoring import (
 )
 from src.domain.schemas import (
     AttachmentMeta,
+    AnalysisInput,
     DetectionResult,
+    EmailFileInput,
     Explanation,
     Mailbox,
     ParsedEmail,
@@ -29,6 +32,7 @@ from src.domain.schemas import (
     Pagination,
     to_jsonable,
     validate_detection_result,
+    validate_analysis_input,
     validate_model_prediction,
     validate_pagination,
 )
@@ -148,6 +152,46 @@ class DomainContractTests(unittest.TestCase):
                     feature_version="text-v1",
                 )
             )
+
+    def test_analysis_input_is_strictly_one_source(self) -> None:
+        self.assertEqual(
+            validate_analysis_input(
+                AnalysisInput(
+                    file=EmailFileInput(filename="mail.eml", content=b"From: a")
+                )
+            ),
+            "file",
+        )
+        self.assertEqual(
+            validate_analysis_input(AnalysisInput(raw_text="From: a")),
+            "raw_text",
+        )
+        self.assertEqual(
+            validate_analysis_input(AnalysisInput(sample_id="normal-001")),
+            "sample_id",
+        )
+
+        invalid_requests = (
+            (AnalysisInput(), ErrorCode.INPUT_REQUIRED),
+            (
+                AnalysisInput(
+                    file=EmailFileInput(filename="mail.eml", content=b"x"),
+                    raw_text="From: a",
+                ),
+                ErrorCode.INPUT_CONFLICT,
+            ),
+            (
+                AnalysisInput(file=EmailFileInput(filename="mail.eml", content=b"")),
+                ErrorCode.EMPTY_INPUT,
+            ),
+            (AnalysisInput(raw_text="  \n  "), ErrorCode.EMPTY_INPUT),
+            (AnalysisInput(sample_id="  "), ErrorCode.EMPTY_INPUT),
+        )
+        for request, error_code in invalid_requests:
+            with self.subTest(request=request):
+                with self.assertRaises(DomainError) as context:
+                    validate_analysis_input(request)
+                self.assertEqual(context.exception.code, error_code)
         with self.assertRaises(ValueError):
             validate_model_prediction(
                 ModelPrediction(

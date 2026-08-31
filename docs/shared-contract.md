@@ -4,7 +4,7 @@
 
 | 项目 | 值 |
 |---|---|
-| 契约版本 | v1.0 |
+| 契约版本 | v1.1 |
 | 生效阶段 | 阶段 A：冻结共享契约 |
 | 适用范围 | 解析器、规则引擎、模型、后端、数据库、前端和测试 |
 | 变更方式 | 必须经过全组确认，并同步修改代码、文档和测试 |
@@ -304,7 +304,7 @@ final_score 必须限制在 0--100，并保留 1 位小数。模型概率和规�
 
 | 方法 | 路径 | 请求 | 成功结果 |
 |---|---|---|---|
-| POST | /api/emails/analyze | multipart/form-data：file、raw_text、sample_id（互斥语义见 D-001） | DetectionResult |
+| POST | /api/emails/analyze | multipart/form-data：`file`、`raw_text`、`sample_id` 严格三选一 | DetectionResult |
 | GET | /api/detections | page、page_size、risk_level | 分页检测摘要 |
 | GET | /api/detections/{id} | 路径 ID | 完整检测详情 |
 | DELETE | /api/detections/{id} | 路径 ID | 删除结果 |
@@ -318,14 +318,22 @@ final_score 必须限制在 0--100，并保留 1 位小数。模型概率和规�
 
 ### 8.3 分析接口输入规则
 
-本小节存在一个尚未决策的共享语义问题，暂不作为实现依据：当前草案同时出现“至少一个”和“三选一/优先级”两种规则。该问题登记为 `D-001`，在全组评审前，后端不得自行选择一种行为，前端也不得据此隐藏其他输入项。
+#### D-001 决议（已冻结）
 
-候选方案如下：
+`file`、`raw_text`、`sample_id` 是三种互斥输入来源。请求必须且只能提供其中一个；服务端和前端均不得实现隐式优先级或静默忽略任何字段。
 
-1. 严格三选一：必须且只能提供 `file`、`raw_text`、`sample_id` 中的一个；多传返回 `400 INPUT_CONFLICT`。
-2. 允许多传：至少一个即可，按 `file > raw_text > sample_id` 选取输入，并在请求日志中记录被忽略的字段。
+| 请求情况 | 响应 |
+|---|---|
+| 三个字段均未提供 | `400 INPUT_REQUIRED` |
+| 两个或三个字段同时提供，即使其中一个为空 | `400 INPUT_CONFLICT` |
+| 恰好一个字段提供，但文件为 0 字节、`raw_text` 仅含空白或 `sample_id` 为空白 | `400 EMPTY_INPUT` |
+| 恰好提供有效 `file` | 按文件校验和解析流程处理 |
+| 恰好提供有效 `raw_text` | 将其作为完整 RFC 822/MIME 邮件原文解析 |
+| 恰好提供有效 `sample_id` | 仅从配置的演示样本目录读取，不接受路径或 URL |
 
-无论采用哪个方案，以下约束已经冻结：`file` 只接受 `.eml` 或明确声明的邮件原文；文件大小不超过 5 MiB；`raw_text` 不超过 200000 个字符；`sample_id` 只能引用配置目录内的演示样本且必须防止路径穿越；分析过程不允许网络访问、不允许执行或解压附件。
+补充约束：`file` 只接受 `.eml` 或明确声明的邮件原文，文件大小不超过 5 MiB；`raw_text` 不超过 200000 个 Unicode 字符；未知 `sample_id` 返回 `404 RECORD_NOT_FOUND`；分析过程不允许网络访问、不允许执行、解压或渲染附件。该决议关闭 D-001，后续变更须按第 10 节提交契约修订。
+
+代码层使用 `src/domain/schemas.py` 中的 `AnalysisInput` 表示请求来源，使用 `validate_analysis_input()` 执行上述互斥校验；Web 框架的 `UploadFile`、表单字段和 HTTP 响应对象只能在 API 适配层转换，不得把框架对象传入解析器、规则引擎或模型模块。
 
 ### 8.4 HTTP 状态码和错误码
 
@@ -337,7 +345,7 @@ final_score 必须限制在 0--100，并保留 1 位小数。模型概率和规�
 | 413 | FILE_TOO_LARGE | 文件超过 5 MiB |
 | 422 | PARSE_FAILED | 无法完成必要的邮件解析 |
 | 422 | BLACKLIST_INVALID | 黑名单指标格式错误 |
-| 400 | INPUT_CONFLICT | 分析输入字段之间存在冲突（仅在 D-001 选择严格三选一后启用） |
+| 400 | INPUT_CONFLICT | 分析请求同时提供两个或以上输入来源 |
 | 400 | INVALID_PAGINATION | 分页参数越界或组合不合法 |
 | 400 | INVALID_FEEDBACK | 反馈字段缺失、枚举值非法或备注超长 |
 | 400 | INVALID_DATE_RANGE | 统计时间范围格式错误或起止时间倒置 |

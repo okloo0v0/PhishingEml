@@ -13,6 +13,7 @@ from .enums import (
     RiskLevel,
     Severity,
 )
+from .errors import DomainError, ErrorCode
 from .scoring import fuse_scores, label_for_probability, risk_level_for_score
 
 
@@ -54,6 +55,24 @@ class AttachmentMeta:
     sha256: str
     extension: str = ""
     risk_hints: list[str] = field(default_factory=list)
+
+
+@dataclass
+class EmailFileInput:
+    """Framework-independent uploaded email source for analysis."""
+
+    filename: str
+    content: bytes
+    content_type: str = ""
+
+
+@dataclass
+class AnalysisInput:
+    """The mutually exclusive sources accepted by the analysis endpoint."""
+
+    file: EmailFileInput | None = None
+    raw_text: str | None = None
+    sample_id: str | None = None
 
 
 @dataclass
@@ -288,6 +307,38 @@ def validate_detection_result(result: DetectionResult) -> None:
         raise ValueError("risk_level does not match final_score")
     if result.result_label != label_for_probability(result.model_probability):
         raise ValueError("result_label does not match model_probability")
+
+
+def validate_analysis_input(request: AnalysisInput) -> str:
+    """Validate the frozen D-001 strict-one input-source contract."""
+
+    sources = {
+        "file": request.file is not None,
+        "raw_text": request.raw_text is not None,
+        "sample_id": request.sample_id is not None,
+    }
+    source_count = sum(sources.values())
+    if source_count == 0:
+        raise DomainError(
+            ErrorCode.INPUT_REQUIRED,
+            "必须提供 file、raw_text、sample_id 中的一个",
+            400,
+        )
+    if source_count > 1:
+        raise DomainError(
+            ErrorCode.INPUT_CONFLICT,
+            "file、raw_text、sample_id 只能提供其中一个",
+            400,
+        )
+
+    source = next(name for name, present in sources.items() if present)
+    if source == "file" and not request.file.content:
+        raise DomainError(ErrorCode.EMPTY_INPUT, "上传文件为空", 400)
+    if source == "raw_text" and not request.raw_text.strip():
+        raise DomainError(ErrorCode.EMPTY_INPUT, "邮件原文为空", 400)
+    if source == "sample_id" and not request.sample_id.strip():
+        raise DomainError(ErrorCode.EMPTY_INPUT, "演示样本 ID 为空", 400)
+    return source
 
 
 def validate_model_prediction(prediction: ModelPrediction) -> None:
