@@ -70,6 +70,8 @@ PhishingEml 是一个面向本科课程实践的钓鱼邮件静态分析与检�
 
 共享结构统一放在 `src/domain/` 中维护。任何跨模块字段变更必须先通知相关负责人，再修改代码和测试。
 
+阶段 A 的字段、评分、API、数据库和错误码定义以 docs/shared-contract.md 为准；代码实现以 src/domain/ 为准。两者不一致时，暂停跨模块开发，先通过 Pull Request 完成契约修订。
+
 ### 阶段 2：建立最小工程骨架
 
 先创建可运行的项目结构：
@@ -467,4 +469,3 @@ python scripts\train_model.py
 - 原生 HTML/CSS/JavaScript + ECharts 实现页面；
 - 本地运行，`127.0.0.1:8000` 提供演示服务；
 - 先完成单封邮件 MVP，再开发高级功能。
-
