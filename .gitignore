@@ -22,8 +22,10 @@ temp/
 
 # Local model and dataset artifacts
 models/*.joblib
-data/raw/
-data/processed/
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
 
 # IDE and OS files
 .idea/
