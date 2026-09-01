@@ -53,4 +53,6 @@ uv run python scripts\deduplicate_dataset.py `
   --input data\processed\supplemental_cleaned_emails.jsonl `
   --output data\processed\deduplicated_emails_combined.jsonl `
   --report data\manifests\dedup_combined_report.json
+uv run python scripts\split_dataset.py
+uv run python scripts\train_model.py
 ```

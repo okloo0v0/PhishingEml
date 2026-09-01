@@ -15,8 +15,10 @@
 - [x] 步骤3：统一读取邮件容器并生成未清洗 JSONL；
 - [x] 步骤4：构造统一文本和清洗规则；
 - [x] 步骤5：去重和数据泄漏检查；
-- [ ] 步骤6：标签清洗和数据划分；
-- [ ] 步骤7及以后：尚未开始。
+- [x] 步骤6：标签清洗和数据划分；
+- [x] 步骤7：训练 TF-IDF + Logistic Regression 基线；
+- [ ] 步骤8：模型评估与错误分析；
+- [ ] 步骤9及以后：尚未开始。
 
 当前原始候选库存为 Nazario 钓鱼邮件 4382 封、SpamAssassin ham 正常邮件 6951 封。该数量为清洗去重前统计；正式训练仍以清洗去重后 `phishing` 与 `legitimate` 各 4000--5000 封为目标。来源、SHA-256 和下载状态见 `data/manifests/sources.csv`，容器内邮件数量见 `data/manifests/inventory.csv`。
 
@@ -56,6 +58,18 @@
 `data/manifests/dedup_combined_report.json`。`spam_other` 保留为硬负样本，不进入第一版
 二分类训练；Zenodo 整理集的原始来源可能与现有 Nazario/SpamAssassin 重叠，步骤6仍需
 按 `dedup_group` 分层划分并保留来源分布，避免随机切分造成模板泄漏。
+
+步骤6已通过 `scripts\\split_dataset.py` 完成。脚本剔除 1 条空 `model_text`，将 1,611
+条二分类记录作为来源-标签均衡的 `cross_source_test`，其余 14,537 条按标签以 70/15/15
+划分为 train/valid/test；`spam_other` 1,695 条单独输出为硬负样本。主数据集标签为
+`legitimate` 7,414、`phishing` 7,123，所有 split 的 `dedup_group` 均无交叉。结果和
+限制见 `data/manifests/split_summary.json`。
+
+步骤7已通过 `scripts\\train_model.py` 完成。脚本只在 train 集（10,175 条）拟合固定的
+TF-IDF + Logistic Regression Pipeline，并为 valid/test 各 2,181 条记录生成预测。模型
+版本为 `v1.0.0`，特征版本为 `text-v1`，类别顺序校验为 `[legitimate, phishing]`，
+第二列概率定义为 phishing 概率。模型产物位于被 Git 忽略的
+`models/phishing_model.joblib`，训练元数据见 `data/manifests/model_training_summary.json`。
 
 ## 1. 目标与边界
 

@@ -41,6 +41,7 @@ uv run python scripts\inventory_datasets.py
 uv run python scripts\prepare_raw_dataset.py
 uv run python scripts\prepare_clean_dataset.py
 uv run python scripts\deduplicate_dataset.py
+uv run python scripts\split_dataset.py
 ```
 
 脚本只下载固定列表中的文件；已存在且未被删除的文件不会重复下载。
@@ -109,3 +110,29 @@ uv run python scripts\deduplicate_dataset.py `
 补充数据可能包含原始公开语料中的个人信息或历史内容，因此只保留本地原始文件和
 哈希登记，不将 CSV、JSONL 或邮件正文提交 Git。`spam_other` 不进入第一版二分类
 训练，只用于误报/硬负样本评估。
+
+## 步骤6：标签清洗与数据划分
+
+`scripts\split_dataset.py` 校验标签集合 `phishing`、`legitimate`、`spam_other`，
+剔除空 `model_text`，将 `spam_other` 单独写入硬负样本文件。二分类记录先按来源-标签
+抽取 10% 的 `cross_source_test.jsonl`，剩余记录再按标签以 70/15/15 划分到
+`emails.csv` 的 `train`、`valid`、`test`。划分过程中以 `dedup_group` 为组边界，
+并在脚本中检查组不交叉。
+
+本轮输入 17,844 条，剔除 1 条空文本；二分类有效记录 16,148 条，跨来源测试集
+1,611 条，主数据集 14,537 条：train 10,175、valid 2,181、test 2,181。主数据集
+标签计数为 `legitimate` 7,414、`phishing` 7,123；另有 `spam_other` 1,695 条硬负
+样本。统计见 `data/manifests/split_summary.json`，标签剔除见
+`data/manifests/label_drop_report.json`。
+
+## 步骤7：训练基线模型
+
+运行 `uv run python scripts\train_model.py`，脚本只使用 `emails.csv` 的 `train` 划分
+拟合固定的 TF-IDF + Logistic Regression Pipeline，并对 valid/test 输出预测概率。模型
+文件 `models\phishing_model.joblib` 被 Git 忽略，训练配置和版本记录在
+`data/manifests/model_training_summary.json`，预测明细在被忽略的
+`data/processed/model_predictions.csv`。
+
+本次训练使用 10,175 条 train 样本，valid/test 各 2,181 条。分类器类别顺序已校验为
+`[legitimate, phishing]`，`predict_proba[:, 1]` 明确定义为 phishing 概率，阈值为 0.50。
+步骤8将基于这些固定预测生成 Precision、Recall、F1、混淆矩阵和错误样本分析。
