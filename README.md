@@ -55,4 +55,5 @@ uv run python scripts\deduplicate_dataset.py `
   --report data\manifests\dedup_combined_report.json
 uv run python scripts\split_dataset.py
 uv run python scripts\train_model.py
+uv run python scripts\generate_model_metadata.py
 ```

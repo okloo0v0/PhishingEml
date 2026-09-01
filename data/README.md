@@ -148,3 +148,11 @@ uv run python scripts\deduplicate_dataset.py `
 产物包括 `data/manifests/model_evaluation_summary.json`、被 Git 忽略的
 `data/processed/evaluation_predictions.csv` 和 `data/processed/error_samples.csv`，
 其中错误文件只包含 ID、来源、标签、概率和错误类型，不包含邮件正文。
+
+## 步骤9：模型元数据与版本记录
+
+运行 `uv run python scripts\generate_model_metadata.py`，根据训练摘要、评估摘要、
+划分摘要和模型文件生成 `models\model_meta.json`，并在 `docs\experiments.csv` 追加
+实验记录。元数据包含 `model_version`、`feature_version`、`dataset_version`、样本数量、
+依赖版本、模型文件 SHA-256、测试指标、混淆矩阵和阈值语义；`models\phishing_model.joblib`
+仍由 Git 忽略。数据版本由联合去重报告 SHA-256 派生，避免手工覆盖旧实验记录。

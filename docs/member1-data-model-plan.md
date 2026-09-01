@@ -18,8 +18,9 @@
 - [x] 步骤6：标签清洗和数据划分；
 - [x] 步骤7：训练 TF-IDF + Logistic Regression 基线；
 - [x] 步骤8：模型评估与错误分析；
-- [ ] 步骤9：生成模型元数据和版本记录；
-- [ ] 步骤10及以后：尚未开始。
+- [x] 步骤9：生成模型元数据和版本记录；
+- [ ] 步骤10：实现 ModelPredictor 推理接口；
+- [ ] 步骤11及以后：尚未开始。
 
 当前原始候选库存为 Nazario 钓鱼邮件 4382 封、SpamAssassin ham 正常邮件 6951 封。该数量为清洗去重前统计；正式训练仍以清洗去重后 `phishing` 与 `legitimate` 各 4000--5000 封为目标。来源、SHA-256 和下载状态见 `data/manifests/sources.csv`，容器内邮件数量见 `data/manifests/inventory.csv`。
 
@@ -81,6 +82,13 @@ contract F1=0.9841。验证集诊断阈值 0.44 在测试集上的 F1=0.9850，�
 错误样本和分来源指标见 `data/manifests/model_evaluation_summary.json`；
 `spam_other` 硬负样本在 contract 阈值下的 phishing 命中率为 32.27%，提示普通垃圾邮件
 与钓鱼邮件之间仍存在明显混淆风险。
+
+步骤9已通过 `scripts\\generate_model_metadata.py` 完成。生成的
+`models/model_meta.json` 与共享 `ModelMetadata` 字段兼容，并额外记录数据版本、联合
+去重报告 SHA-256、模型文件 SHA-256、依赖版本、训练参数、样本数量、测试/跨来源指标和
+混淆矩阵。实验记录已写入 `docs/experiments.csv`，实验 ID 为
+`v1.0.0-ds-20260901-baf7f3a6`。模型二进制仍不提交 Git，成员3可据此校验模型文件完整性
+并映射 `MODEL_NOT_READY`。
 
 ## 1. 目标与边界
 
