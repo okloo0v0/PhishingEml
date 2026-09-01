@@ -42,6 +42,10 @@ SOURCES = {
         "zenodo_nazario_csv", "Nazario.csv", "1=phishing",
         "CC BY 4.0; Zenodo record 8339691", "https://zenodo.org/api/records/8339691/files/Nazario.csv/content",
     ),
+    "zenodo_ling_csv": SupplementalSpec(
+        "zenodo_ling_csv", "Ling.csv", "0=legitimate;1=spam_other",
+        "CC BY 4.0; Zenodo record 8339691", "https://zenodo.org/api/records/8339691/files/Ling.csv/content",
+    ),
 }
 
 
