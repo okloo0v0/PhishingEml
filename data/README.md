@@ -230,3 +230,18 @@ prediction = predictor.predict(ModelInput(subject=subject, text_body=text_body))
 `DomainError(ErrorCode.MODEL_NOT_READY, ..., 503)`，不临时训练、不访问 URL。输入的
 `feature_version` 必须与元数据一致；空主题/正文允许推理，但是否拒绝由分析服务按输入契约
 决定。完整单元测试见 `tests/test_model_predictor.py`。
+
+## 模型云端交付决策
+
+当前不取消 `.gitignore` 中的 `models/*.joblib` 规则，也不直接把
+`phishing_model.joblib` 推送到 Git 仓库。原因是：
+
+- 项目规范明确将大型模型和本地运行产物排除在 Git 外；
+- 模型二进制由公开邮件语料训练得到，仓库只需保留训练过程、版本元数据和校验哈希即可；
+- 直接提交二进制会增加仓库体积和历史版本维护成本，且不能替代数据来源与许可证记录。
+
+当前云端可追溯内容包括 `models/model_meta.json`、训练/评估摘要、脚本和
+`artifact_sha256`。需要把模型交给部署环境时，优先使用带访问控制的 Release 附件或制品存储，
+并在下载后校验 `model_meta.json` 中的 SHA-256；若暂时没有制品存储，则在目标环境按 README
+重新下载公开数据并运行训练脚本生成同版本模型。只有团队明确决定采用 Git LFS 或独立模型
+仓库后，才应单独评审并修改忽略规则，不能为本次提交临时取消保护。
