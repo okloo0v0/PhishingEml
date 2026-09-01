@@ -1,0 +1,166 @@
+{
+  "sample": "html_link_mismatch.eml",
+  "summary": {
+    "subject": "Urgent account verify now",
+    "sender_domain": "updates.example.invalid",
+    "reply_to_domain": "reply.example.invalid",
+    "url_count": 1,
+    "attachment_count": 0,
+    "parse_warnings": [],
+    "rule_codes": [
+      "R01",
+      "R02",
+      "R04",
+      "R05",
+      "R06",
+      "R10"
+    ],
+    "rule_score": 80.0,
+    "urls": [
+      {
+        "raw_url": "http://192.0.2.50/login?next=%2Fsecure",
+        "normalized_url": "http://192.0.2.50/login?next=%2Fsecure",
+        "display_text": "https://bank.example.invalid/secure",
+        "scheme": "http",
+        "host": "192.0.2.50",
+        "registrable_domain": "",
+        "port": null,
+        "path": "/login",
+        "query": "next=%2Fsecure",
+        "is_https": false,
+        "uses_ip": true,
+        "is_shortener": false,
+        "suspicious_tokens": [
+          "non_https",
+          "ip_host",
+          "encoded_chars",
+          "secure",
+          "login"
+        ]
+      }
+    ],
+    "attachments": []
+  },
+  "parsed_email": {
+    "message_id": "<html-link-mismatch-001@example.invalid>",
+    "subject": "Urgent account verify now",
+    "date": "Tue, 01 Sep 2026 09:00:00 +0000",
+    "sender": {
+      "display_name": "Bank Service",
+      "address": "notice@updates.example.invalid",
+      "domain": "updates.example.invalid",
+      "is_valid": true
+    },
+    "reply_to": {
+      "display_name": "Security Team",
+      "address": "support@reply.example.invalid",
+      "domain": "reply.example.invalid",
+      "is_valid": true
+    },
+    "return_path": null,
+    "recipients": [
+      {
+        "display_name": "User",
+        "address": "user@example.invalid",
+        "domain": "example.invalid",
+        "is_valid": true
+      }
+    ],
+    "cc": [],
+    "text_body": "Urgent: your account will be suspended within 24 hours. Please verify your password here: https://bank.example.invalid/secure",
+    "html_body": "<html>\n  <body>\n    <p>Urgent: your account will be suspended within 24 hours.</p>\n    <p>Please verify your password here:\n      <a href=\"http://192.0.2.50/login?next=%2Fsecure\">https://bank.example.invalid/secure</a>\n    </p>\n  </body>\n</html>",
+    "urls": [
+      {
+        "raw_url": "http://192.0.2.50/login?next=%2Fsecure",
+        "normalized_url": "http://192.0.2.50/login?next=%2Fsecure",
+        "display_text": "https://bank.example.invalid/secure",
+        "scheme": "http",
+        "host": "192.0.2.50",
+        "registrable_domain": "",
+        "port": null,
+        "path": "/login",
+        "query": "next=%2Fsecure",
+        "is_https": false,
+        "uses_ip": true,
+        "is_shortener": false,
+        "suspicious_tokens": [
+          "non_https",
+          "ip_host",
+          "encoded_chars",
+          "secure",
+          "login"
+        ],
+        "blacklist_hit": false,
+        "blacklist_match_type": null,
+        "blacklist_indicator_id": null,
+        "blacklist_source": null,
+        "blacklist_confidence": null
+      }
+    ],
+    "attachments": [],
+    "headers": {
+      "from": "Bank Service <notice@updates.example.invalid>",
+      "reply-to": "Security Team <support@reply.example.invalid>",
+      "to": "User <user@example.invalid>",
+      "subject": "Urgent account verify now",
+      "message-id": "<html-link-mismatch-001@example.invalid>",
+      "date": "Tue, 01 Sep 2026 09:00:00 +0000",
+      "mime-version": "1.0",
+      "content-type": "text/html; charset=\"utf-8\""
+    },
+    "parse_warnings": []
+  },
+  "rule_evaluation": {
+    "rule_score": 80.0,
+    "explanations": [
+      {
+        "code": "R01",
+        "title": "发件人与 Reply-To 域名不一致",
+        "detail": "From and Reply-To domains differ; replies may be routed elsewhere.",
+        "evidence": "from=updates.example.invalid; reply_to=reply.example.invalid",
+        "score": 15.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R02",
+        "title": "链接显示信息与真实目标不一致",
+        "detail": "Visible link text and actual target domain differ.",
+        "evidence": "display=example.invalid; target=192.0.2.50",
+        "score": 20.0,
+        "severity": "critical"
+      },
+      {
+        "code": "R04",
+        "title": "正文包含紧迫性诱导语言",
+        "detail": "Body contains urgency language that may pressure the user.",
+        "evidence": "urgent",
+        "score": 10.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R05",
+        "title": "邮件要求提交账号或敏感信息",
+        "detail": "Body appears to request credentials or other sensitive information.",
+        "evidence": "password",
+        "score": 15.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R06",
+        "title": "URL 存在可疑结构特征",
+        "detail": "URL contains suspicious structural features.",
+        "evidence": "192.0.2.50: non_https, ip_host, encoded_chars, secure, login",
+        "score": 10.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R10",
+        "title": "邮件内容疑似冒充权威品牌",
+        "detail": "Subject or body mentions a known brand, but sender domain does not match.",
+        "evidence": "brand=bank; sender_domain=updates.example.invalid",
+        "score": 10.0,
+        "severity": "warning"
+      }
+    ]
+  }
+}

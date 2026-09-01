@@ -1,0 +1,91 @@
+{
+  "sample": "benign_plain.eml",
+  "summary": {
+    "subject": "Weekly lab reminder",
+    "sender_domain": "example.invalid",
+    "reply_to_domain": null,
+    "url_count": 1,
+    "attachment_count": 0,
+    "parse_warnings": [],
+    "rule_codes": [],
+    "rule_score": 0,
+    "urls": [
+      {
+        "raw_url": "https://course.example.invalid/labs/week1",
+        "normalized_url": "https://course.example.invalid/labs/week1",
+        "display_text": "",
+        "scheme": "https",
+        "host": "course.example.invalid",
+        "registrable_domain": "example.invalid",
+        "port": null,
+        "path": "/labs/week1",
+        "query": "",
+        "is_https": true,
+        "uses_ip": false,
+        "is_shortener": false,
+        "suspicious_tokens": []
+      }
+    ],
+    "attachments": []
+  },
+  "parsed_email": {
+    "message_id": "<benign-plain-001@example.invalid>",
+    "subject": "Weekly lab reminder",
+    "date": "Tue, 01 Sep 2026 08:00:00 +0000",
+    "sender": {
+      "display_name": "Course Notice",
+      "address": "teacher@example.invalid",
+      "domain": "example.invalid",
+      "is_valid": true
+    },
+    "reply_to": null,
+    "return_path": null,
+    "recipients": [
+      {
+        "display_name": "Student",
+        "address": "student@example.invalid",
+        "domain": "example.invalid",
+        "is_valid": true
+      }
+    ],
+    "cc": [],
+    "text_body": "Hello,\n\nThis is a reminder for the weekly lab. Please read the handout before class.\nThe course page is https://course.example.invalid/labs/week1.\n\nThanks.",
+    "html_body": "",
+    "urls": [
+      {
+        "raw_url": "https://course.example.invalid/labs/week1",
+        "normalized_url": "https://course.example.invalid/labs/week1",
+        "display_text": "",
+        "scheme": "https",
+        "host": "course.example.invalid",
+        "registrable_domain": "example.invalid",
+        "port": null,
+        "path": "/labs/week1",
+        "query": "",
+        "is_https": true,
+        "uses_ip": false,
+        "is_shortener": false,
+        "suspicious_tokens": [],
+        "blacklist_hit": false,
+        "blacklist_match_type": null,
+        "blacklist_indicator_id": null,
+        "blacklist_source": null,
+        "blacklist_confidence": null
+      }
+    ],
+    "attachments": [],
+    "headers": {
+      "from": "Course Notice <teacher@example.invalid>",
+      "to": "Student <student@example.invalid>",
+      "subject": "Weekly lab reminder",
+      "message-id": "<benign-plain-001@example.invalid>",
+      "date": "Tue, 01 Sep 2026 08:00:00 +0000",
+      "content-type": "text/plain; charset=\"utf-8\""
+    },
+    "parse_warnings": []
+  },
+  "rule_evaluation": {
+    "rule_score": 0,
+    "explanations": []
+  }
+}

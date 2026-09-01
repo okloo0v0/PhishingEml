@@ -1,0 +1,17 @@
+From: Bank Service <notice@updates.example.invalid>
+Reply-To: Security Team <support@reply.example.invalid>
+To: User <user@example.invalid>
+Subject: Urgent account verify now
+Message-ID: <html-link-mismatch-001@example.invalid>
+Date: Tue, 1 Sep 2026 09:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html>
+  <body>
+    <p>Urgent: your account will be suspended within 24 hours.</p>
+    <p>Please verify your password here:
+      <a href="http://192.0.2.50/login?next=%2Fsecure">https://bank.example.invalid/secure</a>
+    </p>
+  </body>
+</html>

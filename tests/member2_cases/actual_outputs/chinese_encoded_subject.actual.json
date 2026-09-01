@@ -1,0 +1,132 @@
+{
+  "sample": "chinese_encoded_subject.eml",
+  "summary": {
+    "subject": "立即验证您的帐号",
+    "sender_domain": "example.invalid",
+    "reply_to_domain": null,
+    "url_count": 1,
+    "attachment_count": 0,
+    "parse_warnings": [],
+    "rule_codes": [
+      "R04",
+      "R05",
+      "R06"
+    ],
+    "rule_score": 35.0,
+    "urls": [
+      {
+        "raw_url": "www.verify.example.invalid/account/update",
+        "normalized_url": "http://www.verify.example.invalid/account/update",
+        "display_text": "",
+        "scheme": "http",
+        "host": "www.verify.example.invalid",
+        "registrable_domain": "example.invalid",
+        "port": null,
+        "path": "/account/update",
+        "query": "",
+        "is_https": false,
+        "uses_ip": false,
+        "is_shortener": false,
+        "suspicious_tokens": [
+          "missing_scheme",
+          "non_https",
+          "verify",
+          "account",
+          "update"
+        ]
+      }
+    ],
+    "attachments": []
+  },
+  "parsed_email": {
+    "message_id": "<chinese-subject-001@example.invalid>",
+    "subject": "立即验证您的帐号",
+    "date": "Tue, 01 Sep 2026 11:00:00 +0000",
+    "sender": {
+      "display_name": "Notice",
+      "address": "notice@example.invalid",
+      "domain": "example.invalid",
+      "is_valid": true
+    },
+    "reply_to": null,
+    "return_path": null,
+    "recipients": [
+      {
+        "display_name": "User",
+        "address": "user@example.invalid",
+        "domain": "example.invalid",
+        "is_valid": true
+      }
+    ],
+    "cc": [],
+    "text_body": "Your account requires immediate verification.\nVisit www.verify.example.invalid/account/update.",
+    "html_body": "",
+    "urls": [
+      {
+        "raw_url": "www.verify.example.invalid/account/update",
+        "normalized_url": "http://www.verify.example.invalid/account/update",
+        "display_text": "",
+        "scheme": "http",
+        "host": "www.verify.example.invalid",
+        "registrable_domain": "example.invalid",
+        "port": null,
+        "path": "/account/update",
+        "query": "",
+        "is_https": false,
+        "uses_ip": false,
+        "is_shortener": false,
+        "suspicious_tokens": [
+          "missing_scheme",
+          "non_https",
+          "verify",
+          "account",
+          "update"
+        ],
+        "blacklist_hit": false,
+        "blacklist_match_type": null,
+        "blacklist_indicator_id": null,
+        "blacklist_source": null,
+        "blacklist_confidence": null
+      }
+    ],
+    "attachments": [],
+    "headers": {
+      "from": "Notice <notice@example.invalid>",
+      "to": "User <user@example.invalid>",
+      "subject": "立即验证您的帐号",
+      "message-id": "<chinese-subject-001@example.invalid>",
+      "date": "Tue, 01 Sep 2026 11:00:00 +0000",
+      "content-type": "text/plain; charset=\"utf-8\""
+    },
+    "parse_warnings": []
+  },
+  "rule_evaluation": {
+    "rule_score": 35.0,
+    "explanations": [
+      {
+        "code": "R04",
+        "title": "正文包含紧迫性诱导语言",
+        "detail": "Body contains urgency language that may pressure the user.",
+        "evidence": "立即",
+        "score": 10.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R05",
+        "title": "邮件要求提交账号或敏感信息",
+        "detail": "Body appears to request credentials or other sensitive information.",
+        "evidence": "verification",
+        "score": 15.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R06",
+        "title": "URL 存在可疑结构特征",
+        "detail": "URL contains suspicious structural features.",
+        "evidence": "www.verify.example.invalid: missing_scheme, non_https, verify, account, update",
+        "score": 10.0,
+        "severity": "warning"
+      }
+    ]
+  }
+}
