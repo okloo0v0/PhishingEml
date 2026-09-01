@@ -136,3 +136,15 @@ uv run python scripts\deduplicate_dataset.py `
 本次训练使用 10,175 条 train 样本，valid/test 各 2,181 条。分类器类别顺序已校验为
 `[legitimate, phishing]`，`predict_proba[:, 1]` 明确定义为 phishing 概率，阈值为 0.50。
 步骤8将基于这些固定预测生成 Precision、Recall、F1、混淆矩阵和错误样本分析。
+
+## 评估与阈值调参
+
+运行 `uv run python scripts\evaluate_model.py`。脚本只在 valid 集扫描 0.30--0.70
+阈值并以 F1、Recall 和接近 0.50 的顺序选择候选阈值；本次 valid 最优候选为 0.44。
+共享契约的生产 `result_label` 阈值仍固定为 0.50，因此报告同时保留 contract/tuned 两套
+指标，预测文件中的 `predicted_label` 始终是 0.50 契约标签，`predicted_label_tuned` 仅
+用于诊断。测试集在阈值选择后只评估一次。
+
+产物包括 `data/manifests/model_evaluation_summary.json`、被 Git 忽略的
+`data/processed/evaluation_predictions.csv` 和 `data/processed/error_samples.csv`，
+其中错误文件只包含 ID、来源、标签、概率和错误类型，不包含邮件正文。

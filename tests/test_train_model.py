@@ -28,7 +28,7 @@ def test_train_fits_only_train_rows_and_writes_probability_predictions(tmp_path)
     model_path = tmp_path / "model.joblib"
     summary_path = tmp_path / "summary.json"
     predictions_path = tmp_path / "predictions.csv"
-    summary = train(input_path, model_path, summary_path, predictions_path)
+    summary = train(input_path, model_path, summary_path, predictions_path, tmp_path / "training_log.json")
     assert model_path.exists()
     assert summary["label_order"] == EXPECTED_CLASSES
     with predictions_path.open(encoding="utf-8", newline="") as source:

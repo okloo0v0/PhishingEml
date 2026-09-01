@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import sys
 from datetime import datetime, timezone
@@ -19,6 +20,7 @@ DEFAULT_INPUT = ROOT / "data" / "processed" / "emails.csv"
 DEFAULT_MODEL = ROOT / "models" / "phishing_model.joblib"
 DEFAULT_SUMMARY = ROOT / "data" / "manifests" / "model_training_summary.json"
 DEFAULT_PREDICTIONS = ROOT / "data" / "processed" / "model_predictions.csv"
+DEFAULT_LOG = ROOT / "data" / "manifests" / "model_training_log.json"
 MODEL_VERSION = "v1.0.0"
 FEATURE_VERSION = "text-v1"
 RANDOM_STATE = 42
@@ -32,6 +34,14 @@ def _display_path(path: Path) -> str:
         return path.resolve().relative_to(ROOT.resolve()).as_posix()
     except ValueError:
         return str(path.resolve())
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _read_rows(path: Path) -> list[dict[str, str]]:
@@ -113,6 +123,7 @@ def train(
     model_path: Path = DEFAULT_MODEL,
     summary_path: Path = DEFAULT_SUMMARY,
     predictions_path: Path = DEFAULT_PREDICTIONS,
+    log_path: Path = DEFAULT_LOG,
 ) -> dict[str, object]:
     """Fit the pipeline on train only and emit reproducibility metadata."""
 
@@ -142,6 +153,7 @@ def train(
         "label_order": EXPECTED_CLASSES,
         "input_path": _display_path(input_path),
         "artifact_filename": _display_path(model_path),
+        "artifact_sha256": _sha256_file(model_path),
         "predictions_path": _display_path(predictions_path),
         "random_state": RANDOM_STATE,
         "train_count": len(train_rows),
@@ -158,6 +170,28 @@ def train(
         "probability_semantics": "predict_proba[:, 1] is phishing_probability; threshold=0.50",
     }
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.write_text(
+        json.dumps(
+            {
+                "event": "model_trained",
+                "trained_at": summary["trained_at"],
+                "model_version": MODEL_VERSION,
+                "input_path": summary["input_path"],
+                "train_count": len(train_rows),
+                "valid_count": summary["valid_count"],
+                "test_count": summary["test_count"],
+                "label_order": classes,
+                "artifact_filename": summary["artifact_filename"],
+                "artifact_sha256": summary["artifact_sha256"],
+                "predictions_path": summary["predictions_path"],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     return summary
 
 
@@ -167,8 +201,9 @@ def main() -> int:
     parser.add_argument("--model", type=Path, default=DEFAULT_MODEL)
     parser.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--predictions", type=Path, default=DEFAULT_PREDICTIONS)
+    parser.add_argument("--log", type=Path, default=DEFAULT_LOG)
     args = parser.parse_args()
-    print(json.dumps(train(args.input, args.model, args.summary, args.predictions), ensure_ascii=False, indent=2))
+    print(json.dumps(train(args.input, args.model, args.summary, args.predictions, args.log), ensure_ascii=False, indent=2))
     return 0
 
 

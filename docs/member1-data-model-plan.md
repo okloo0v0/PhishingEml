@@ -17,8 +17,9 @@
 - [x] 步骤5：去重和数据泄漏检查；
 - [x] 步骤6：标签清洗和数据划分；
 - [x] 步骤7：训练 TF-IDF + Logistic Regression 基线；
-- [ ] 步骤8：模型评估与错误分析；
-- [ ] 步骤9及以后：尚未开始。
+- [x] 步骤8：模型评估与错误分析；
+- [ ] 步骤9：生成模型元数据和版本记录；
+- [ ] 步骤10及以后：尚未开始。
 
 当前原始候选库存为 Nazario 钓鱼邮件 4382 封、SpamAssassin ham 正常邮件 6951 封。该数量为清洗去重前统计；正式训练仍以清洗去重后 `phishing` 与 `legitimate` 各 4000--5000 封为目标。来源、SHA-256 和下载状态见 `data/manifests/sources.csv`，容器内邮件数量见 `data/manifests/inventory.csv`。
 
@@ -70,6 +71,16 @@ TF-IDF + Logistic Regression Pipeline，并为 valid/test 各 2,181 条记录生
 版本为 `v1.0.0`，特征版本为 `text-v1`，类别顺序校验为 `[legitimate, phishing]`，
 第二列概率定义为 phishing 概率。模型产物位于被 Git 忽略的
 `models/phishing_model.joblib`，训练元数据见 `data/manifests/model_training_summary.json`。
+
+步骤8已通过 `scripts\\evaluate_model.py` 完成。valid 集在 0.30--0.70 范围内以 0.01
+步长调参，得到诊断阈值 0.44；由于共享契约固定 `result_label` 阈值为 0.50，生产结果
+仍使用 0.50，本轮报告同时输出 contract/tuned 两套指标。测试集（2,181 条）在阈值选择
+后一次性评估，contract 指标为 Precision=0.9924、Recall=0.9766、F1=0.9844、
+Accuracy=0.9849，混淆矩阵为 `[[1104,8],[25,1044]]`。跨来源测试集（1,611 条）
+contract F1=0.9841。验证集诊断阈值 0.44 在测试集上的 F1=0.9850，但未改变生产契约阈值。
+错误样本和分来源指标见 `data/manifests/model_evaluation_summary.json`；
+`spam_other` 硬负样本在 contract 阈值下的 phishing 命中率为 32.27%，提示普通垃圾邮件
+与钓鱼邮件之间仍存在明显混淆风险。
 
 ## 1. 目标与边界
 
