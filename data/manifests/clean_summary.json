@@ -1,0 +1,21 @@
+{
+  "input_path": "data/processed/raw_emails.jsonl",
+  "output_path": "data/processed/cleaned_emails.jsonl",
+  "feature_version": "text-v1",
+  "max_text_chars": 20000,
+  "total_records": 11333,
+  "counts_by_label": {
+    "legitimate": 6951,
+    "phishing": 4382
+  },
+  "replacement_counts": {
+    "emails": 12734,
+    "numbers": 4018,
+    "urls": 28105
+  },
+  "warning_counts": {
+    "empty_subject": 38,
+    "empty_text_body": 64,
+    "model_text_truncated": 44
+  }
+}

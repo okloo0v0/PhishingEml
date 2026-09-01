@@ -39,6 +39,8 @@ uv run python scripts\download_datasets.py --list
 uv run python scripts\download_datasets.py
 uv run python scripts\inventory_datasets.py
 uv run python scripts\prepare_raw_dataset.py
+uv run python scripts\prepare_clean_dataset.py
+uv run python scripts\deduplicate_dataset.py
 ```
 
 脚本只下载固定列表中的文件；已存在且未被删除的文件不会重复下载。
@@ -57,3 +59,53 @@ Git 忽略；可提交的 `data/manifests/raw_parse_summary.json` 记录解析�
 本次运行的统计为：11,333 条中间记录，包含 4,382 条 `phishing` 和 6,951 条
 `legitimate`。读取过程只在内存中读取 tar 成员，不会将邮件附件写出、解压或执行，
 也不会访问邮件中的 URL。
+
+## 步骤4：统一文本清洗
+
+`scripts\prepare_clean_dataset.py` 调用 `src\detection\text_features.py` 中的
+`clean_email_text()`，为训练和推理生成相同的 `text-v1` 输入：主题、换行、正文，
+最长 20,000 个字符。清洗会统一 Unicode/空白，移除控制字符，并将邮箱、URL 和长
+数字替换为 `<EMAIL>`、`<URL>`、`<NUMBER>` 占位符；不会访问 URL，也不会读取附件内容。
+
+清洗结果写入被 Git 忽略的 `data/processed/cleaned_emails.jsonl`，非敏感统计写入
+`data/manifests/clean_summary.json`。2026-09-01 本次运行处理 11,333 条记录，替换
+邮箱 12,734 次、URL 28,105 次、长数字 4,018 次；44 条记录因超过长度上限被截断。
+
+## 步骤5：去重与泄漏审计
+
+`scripts\deduplicate_dataset.py` 先按原始 `source_hash` 删除字节完全相同的记录，再按
+`text-v1` 的完整 `model_text` SHA-256 指纹去重。每个保留记录都包含相同值的
+`content_fingerprint` 和 `dedup_group`，步骤6必须以 `dedup_group` 为不可跨集合的边界。
+
+本次去重从 11,333 条保留 7,257 条：删除 181 条原始哈希重复和 3,895 条规范文本重复。
+`data/manifests/dedup_report.json` 还记录了 3,847 对 SimHash 近重复候选（1,397 条记录）；
+它们只用于审计，不自动删除，以免误删有效的钓鱼变体。当前中间数据没有可靠的
+发件人和线程元数据，因此线程/发件人聚类留待与成员2生产解析器对齐后补做。
+
+## 补充语料轮次
+
+补充语料统一登记在 `data/manifests/sources.csv`，原始 CSV 保存在被 Git 忽略的
+`data/raw/supplemental_zenodo/`。下载和重建命令为：
+
+```powershell
+uv run python scripts\download_supplemental.py --list
+uv run python scripts\download_supplemental.py
+uv run python scripts\prepare_supplemental_dataset.py
+uv run python scripts\deduplicate_dataset.py `
+  --input data\processed\cleaned_emails.jsonl `
+  --input data\processed\supplemental_cleaned_emails.jsonl `
+  --output data\processed\deduplicated_emails_combined.jsonl `
+  --report data\manifests\dedup_combined_report.json
+```
+
+本轮采用 Zenodo 8339691 的公开整理 CSV（CC BY 4.0）：`Nigerian_5.csv` 的
+`0/1` 映射为 `legitimate/phishing`，`SpamAssasin.csv` 的 `0/1` 映射为
+`legitimate/spam_other`，并另外登记了 `Nigerian_Fraud.csv` 和 `Nazario.csv` 的
+明确 phishing 标签。补充文件共解析 17,037 条，联合旧数据后输入 28,370 条，
+精确去重后保留 17,844 条：二分类样本 16,149 条（`phishing` 7,913 条、
+`legitimate` 8,236 条），另保留 1,695 条 `spam_other` 硬负样本。完整统计见
+`data/manifests/supplemental_summary.json` 和 `data/manifests/dedup_combined_report.json`。
+
+补充数据可能包含原始公开语料中的个人信息或历史内容，因此只保留本地原始文件和
+哈希登记，不将 CSV、JSONL 或邮件正文提交 Git。`spam_other` 不进入第一版二分类
+训练，只用于误报/硬负样本评估。

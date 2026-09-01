@@ -13,8 +13,10 @@
 - [x] 步骤1：确认环境、契约和任务边界；
 - [x] 步骤2：建立数据目录、来源登记机制并收集第一批原始邮件；
 - [x] 步骤3：统一读取邮件容器并生成未清洗 JSONL；
-- [ ] 步骤4：构造统一文本和清洗规则；
-- [ ] 步骤5及以后：尚未开始。
+- [x] 步骤4：构造统一文本和清洗规则；
+- [x] 步骤5：去重和数据泄漏检查；
+- [ ] 步骤6：标签清洗和数据划分；
+- [ ] 步骤7及以后：尚未开始。
 
 当前原始候选库存为 Nazario 钓鱼邮件 4382 封、SpamAssassin ham 正常邮件 6951 封。该数量为清洗去重前统计；正式训练仍以清洗去重后 `phishing` 与 `legitimate` 各 4000--5000 封为目标。来源、SHA-256 和下载状态见 `data/manifests/sources.csv`，容器内邮件数量见 `data/manifests/inventory.csv`。
 
@@ -22,6 +24,38 @@
 `phishing` 为 4,382 条、`legitimate` 为 6,951 条。统计结果见
 `data/manifests/raw_parse_summary.json`：25 条记录同时缺少主题和正文，21 次文本部分
 解码使用未知字符集的 UTF-8 安全回退。异常均以告警保留，不中断数据集处理。
+
+步骤4已通过 `scripts\prepare_clean_dataset.py` 完成。所有记录均生成
+`feature_version=text-v1` 的 `model_text`，统一上限为 20,000 字符；邮箱、URL、长数字
+分别替换为 `<EMAIL>`、`<URL>`、`<NUMBER>`。清洗统计见
+`data/manifests/clean_summary.json`，并已验证无超长文本、重复 ID 或未替换的邮箱/URL。
+
+步骤5已通过 `scripts\deduplicate_dataset.py` 完成。11,333 条清洗记录中保留 7,257 条，
+其中 `phishing` 为 3,121 条、`legitimate` 为 4,136 条；181 条原始哈希重复和 3,895 条
+规范文本重复已删除。每条保留记录均写入 `dedup_group`，步骤6不得将同一组拆分到不同
+数据集。详见 `data/manifests/dedup_report.json`。SimHash 审计得到 3,847 对近重复候选，
+仅作风险记录而不自动删除；此外有 1 条空 `model_text` 留待步骤6按可训练性规则剔除。
+
+去重后的钓鱼样本为 3,121 条，低于正式第一版每类 4,000--5,000 条的目标。不能通过
+保留重复样本凑数；后续应补充独立公开钓鱼语料，并在实验报告中记录当前样本量限制。
+
+## 补充语料轮次记录（2026-09-01）
+
+为解决上述 phishing 样本不足，本轮从 Zenodo 8339691 下载并登记了四份公开 CSV：
+`Nigerian_5.csv`、`Nigerian_Fraud.csv`、`Nazario.csv` 和 `SpamAssasin.csv`。标签映射、
+下载地址、SHA-256 和本地路径见 `data/manifests/sources.csv`；原始文件位于
+`data/raw/supplemental_zenodo/`，不提交 Git。
+
+补充文件经 `scripts\\prepare_supplemental_dataset.py` 生成 17,037 条 `text-v1` 记录，
+其中 `phishing` 8,229 条、`legitimate` 7,090 条、`spam_other` 1,718 条。与旧数据
+联合执行 `scripts\\deduplicate_dataset.py` 后保留 17,844 条：`phishing` 7,913 条、
+`legitimate` 8,236 条、`spam_other` 1,695 条；二分类合计 16,149 条，已达到万级目标。
+（其中部分补充记录与旧语料重复，最终以联合去重报告为准。）
+
+补充语料的完整处理统计见 `data/manifests/supplemental_summary.json` 和
+`data/manifests/dedup_combined_report.json`。`spam_other` 保留为硬负样本，不进入第一版
+二分类训练；Zenodo 整理集的原始来源可能与现有 Nazario/SpamAssassin 重叠，步骤6仍需
+按 `dedup_group` 分层划分并保留来源分布，避免随机切分造成模板泄漏。
 
 ## 1. 目标与边界
 

@@ -1,0 +1,24 @@
+{
+  "input_records": 28370,
+  "retained_records": 17844,
+  "removed_records": 10526,
+  "raw_hash_duplicate_groups": 4111,
+  "raw_hash_removed": 4113,
+  "content_duplicate_groups": 4193,
+  "content_duplicate_removed": 6413,
+  "label_conflict_groups_dropped": 0,
+  "label_conflict_records_dropped": 0,
+  "counts_by_source_label": {
+    "nazario:phishing": 3085,
+    "spamassassin_ham:legitimate": 4136,
+    "zenodo_nazario_csv:phishing": 1539,
+    "zenodo_nigerian_5:legitimate": 2588,
+    "zenodo_nigerian_5:phishing": 3289,
+    "zenodo_spamassassin_csv:legitimate": 1512,
+    "zenodo_spamassassin_csv:spam_other": 1695
+  },
+  "leakage_group": "dedup_group is the SHA-256 of canonical text-v1 model_text",
+  "near_duplicate_candidate_pairs": 11553,
+  "near_duplicate_candidate_records": 6244,
+  "near_duplicate_policy": "SimHash candidates are audit-only and are not deleted. Semantic near-duplicate and thread grouping require sender/thread metadata from the production parser."
+}
