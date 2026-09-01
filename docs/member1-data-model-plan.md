@@ -19,7 +19,7 @@
 - [x] 步骤7：训练 TF-IDF + Logistic Regression 基线；
 - [x] 步骤8：模型评估与错误分析；
 - [x] 步骤9：生成模型元数据和版本记录；
-- [ ] 步骤10：实现 ModelPredictor 推理接口；
+- [x] 步骤10：实现 ModelPredictor 推理接口；
 - [ ] 步骤11及以后：尚未开始。
 
 当前原始候选库存为 Nazario 钓鱼邮件 4382 封、SpamAssassin ham 正常邮件 6951 封。该数量为清洗去重前统计；正式训练仍以清洗去重后 `phishing` 与 `legitimate` 各 4000--5000 封为目标。来源、SHA-256 和下载状态见 `data/manifests/sources.csv`，容器内邮件数量见 `data/manifests/inventory.csv`。
@@ -613,8 +613,16 @@ class ModelPredictor:
 ### 产物
 
 - `src/detection/model_predictor.py`；
-- 推理单元测试；
+- `tests/test_model_predictor.py`；
 - 与成员3的接入说明。
+
+步骤10已完成。`ModelPredictor` 默认加载 `models/phishing_model.joblib` 和
+`models/model_meta.json`，启动时校验元数据完整性、`text-v1` 特征版本、
+`[legitimate, phishing]` 标签顺序、artifact SHA-256 和 Pipeline 的 `classes_`。
+推理时优先从 `subject` 与 `text_body` 重建标准 `model_text`；当两者均为空时允许使用
+调用方提供的预构造 `model_text`。模型缺失、损坏、哈希不一致或结构不兼容统一抛出
+`DomainError(ErrorCode.MODEL_NOT_READY, ..., 503)`，绝不在运行期临时训练或访问网络。
+输入特征版本不匹配会明确拒绝，输出通过 `validate_model_prediction()` 校验。
 
 ### 验收条件
 
@@ -691,7 +699,7 @@ python scripts\train_model.py
 - [ ] Pipeline 和元数据可以重新加载；
 - [ ] 标签顺序是 `[legitimate, phishing]`；
 - [ ] 概率范围和阈值符合契约；
-- [ ] `feature_version` 为 `text-v1`；
+- [x] `feature_version` 为 `text-v1`；
 - [ ] 推理不访问 URL、不执行或解压附件；
 - [ ] 成员2、成员3已确认字段映射；
 - [ ] 模型版本和数据版本已固定。

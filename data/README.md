@@ -211,3 +211,22 @@ Ling.csv 保持标签 `0=legitimate`、`1=spam_other`，不将普通 spam 转成
 
 在上述独立评估和硬负样本分析完成前，`v1.0.0` 应定位为可解释的课程基线，不应作为唯一
 自动拦截依据，界面和报告统一使用“疑似”“风险提示”等表述。
+
+## 步骤10：ModelPredictor 推理接口
+
+成员3接入模型时使用 `src/detection/model_predictor.py`，不要在路由或业务服务中直接
+调用 joblib。默认初始化方式：
+
+```python
+from src.detection.model_predictor import ModelPredictor
+from src.domain.schemas import ModelInput
+
+predictor = ModelPredictor()
+prediction = predictor.predict(ModelInput(subject=subject, text_body=text_body))
+```
+
+接口启动时校验模型元数据、`text-v1` 特征版本、标签顺序、artifact SHA-256 和 Pipeline
+类别；推理时复用 `clean_email_text()`。模型缺失、损坏或不兼容时抛出
+`DomainError(ErrorCode.MODEL_NOT_READY, ..., 503)`，不临时训练、不访问 URL。输入的
+`feature_version` 必须与元数据一致；空主题/正文允许推理，但是否拒绝由分析服务按输入契约
+决定。完整单元测试见 `tests/test_model_predictor.py`。
