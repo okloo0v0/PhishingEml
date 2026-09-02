@@ -1,0 +1,103 @@
+{
+  "model_name": "tfidf_logistic_regression",
+  "model_version": "v1.0.0",
+  "feature_version": "text-v1",
+  "trained_at": "2026-09-01T10:36:04.467587Z",
+  "label_order": [
+    "legitimate",
+    "phishing"
+  ],
+  "metrics": {
+    "test_precision": 0.9923954372623575,
+    "test_recall": 0.9766136576239476,
+    "test_f1": 0.9844413012729845,
+    "test_accuracy": 0.984869325997249,
+    "cross_source_precision": 0.9884910485933504,
+    "cross_source_recall": 0.9797211660329531,
+    "cross_source_f1": 0.9840865690642903,
+    "cross_source_accuracy": 0.9844816883923029
+  },
+  "artifact_filename": "phishing_model.joblib",
+  "metadata_filename": "model_meta.json",
+  "artifact_sha256": "4c975f113d388548f9516ab0ea207f4a3488d0e3b2a9115c0171f8913f8a8a79",
+  "artifact_path": "models/phishing_model.joblib",
+  "dataset_version": "ds-20260901-baf7f3a6",
+  "dataset_manifest_sha256": "baf7f3a60e8d895a5f14dd5b2b2549f494da7f430d103f7045750fa699b7d01b",
+  "random_state": 42,
+  "train_count": 10175,
+  "valid_count": 2181,
+  "test_count": 2181,
+  "max_text_chars": 20000,
+  "features": [
+    "subject",
+    "text_body",
+    "tfidf_word_ngram_1_2"
+  ],
+  "tfidf": {
+    "lowercase": true,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "max_features": 50000,
+    "sublinear_tf": true
+  },
+  "classifier": {
+    "max_iter": 1000,
+    "class_weight": "balanced"
+  },
+  "probability_threshold": 0.5,
+  "tuned_threshold_diagnostic": 0.44,
+  "test_confusion_matrix": [
+    [
+      1104,
+      8
+    ],
+    [
+      25,
+      1044
+    ]
+  ],
+  "cross_source_confusion_matrix": [
+    [
+      813,
+      9
+    ],
+    [
+      16,
+      773
+    ]
+  ],
+  "dependencies": {
+    "python": "3.11",
+    "scikit-learn": "1.9.0",
+    "joblib": "1.6.0",
+    "numpy": "2.4.6",
+    "pandas": "3.0.5"
+  },
+  "source_counts": {
+    "train": {
+      "nazario": 1930,
+      "spamassassin_ham": 2623,
+      "zenodo_nazario_csv": 999,
+      "zenodo_nigerian_5": 3669,
+      "zenodo_spamassassin_csv": 954
+    },
+    "valid": {
+      "nazario": 415,
+      "spamassassin_ham": 551,
+      "zenodo_nazario_csv": 197,
+      "zenodo_nigerian_5": 809,
+      "zenodo_spamassassin_csv": 209
+    },
+    "test": {
+      "nazario": 431,
+      "spamassassin_ham": 549,
+      "zenodo_nazario_csv": 190,
+      "zenodo_nigerian_5": 813,
+      "zenodo_spamassassin_csv": 198
+    }
+  },
+  "hard_negative_count": 1695
+}

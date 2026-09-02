@@ -1,0 +1,13 @@
+{
+  "input_dir": "data/raw",
+  "output_path": "data/processed/raw_emails.jsonl",
+  "total_records": 11333,
+  "empty_records": 25,
+  "counts_by_source_label": {
+    "nazario:phishing": 4382,
+    "spamassassin_ham:legitimate": 6951
+  },
+  "warning_counts": {
+    "unknown_charset_fallback": 21
+  }
+}

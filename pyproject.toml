@@ -1,0 +1,26 @@
+[project]
+name = "phishing-eml"
+version = "0.1.0"
+description = "Static phishing email analysis and detection course project"
+readme = "README.md"
+authors = []
+requires-python = "==3.11.*"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "joblib>=1.6.0",
+    "numpy>=2.4.6",
+    "pandas>=3.0.5",
+    "scikit-learn>=1.9.0",
+]
+
+[project.scripts]
+phishing-eml = "phishing_eml:main"
+
+[build-system]
+requires = ["uv_build>=0.12.8,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

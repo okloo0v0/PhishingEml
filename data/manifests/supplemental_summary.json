@@ -1,0 +1,21 @@
+{
+  "input_files": [
+    "data/raw/supplemental_zenodo/Nigerian_5.csv",
+    "data/raw/supplemental_zenodo/SpamAssasin.csv",
+    "data/raw/supplemental_zenodo/Nigerian_Fraud.csv",
+    "data/raw/supplemental_zenodo/Nazario.csv"
+  ],
+  "output_path": "data/processed/supplemental_cleaned_emails.jsonl",
+  "feature_version": "text-v1",
+  "total_records": 17037,
+  "counts_by_label": {
+    "legitimate": 7090,
+    "phishing": 8229,
+    "spam_other": 1718
+  },
+  "warning_counts": {
+    "empty_subject": 165,
+    "empty_text_body": 6,
+    "model_text_truncated": 101
+  }
+}
