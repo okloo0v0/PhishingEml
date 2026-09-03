@@ -8,7 +8,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.api import (
@@ -19,6 +20,7 @@ from src.api import (
     routes_statistics,
 )
 from src.api.responses import error_body, ok
+from src.config import PROJECT_ROOT
 from src.db.database import init_db
 from src.domain.errors import DomainError, ErrorCode
 
@@ -86,6 +88,16 @@ app.include_router(routes_history.router, prefix="/api")
 app.include_router(routes_blacklist.router, prefix="/api")
 app.include_router(routes_statistics.router, prefix="/api")
 app.include_router(routes_knowledge.router, prefix="/api")
+
+WEB_DIR = PROJECT_ROOT / "src" / "web"
+app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def web_app():
+    """Serve the local single-page interface for the course demo."""
+
+    return FileResponse(WEB_DIR / "index.html")
 
 
 @app.get("/health")

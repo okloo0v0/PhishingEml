@@ -31,6 +31,13 @@ DOCUMENT_EXTENSIONS = {".doc", ".docm", ".xls", ".xlsm", ".ppt", ".pptm", ".pdf"
 ARCHIVE_EXTENSIONS = {".7z", ".rar", ".zip"}
 
 
+class EmailParser:
+    """Small framework-independent adapter used by the analysis service."""
+
+    def parse(self, raw: bytes | str) -> ParsedEmail:
+        return parse_email(raw)
+
+
 def parse_email(raw: bytes | str) -> ParsedEmail:
     warnings: list[str] = []
     try:

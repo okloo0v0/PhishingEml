@@ -97,6 +97,9 @@ class DetectionRepository:
                             "is_shortener": url.is_shortener,
                             "suspicious_tokens": url.suspicious_tokens,
                             "blacklist_indicator_id": url.blacklist_indicator_id,
+                            "blacklist_match_type": url.blacklist_match_type,
+                            "blacklist_source": url.blacklist_source,
+                            "blacklist_confidence": url.blacklist_confidence,
                         }
                     ),
                     blacklist_hit=url.blacklist_hit,
@@ -296,6 +299,23 @@ class BlacklistRepository:
             r.indicator for r in rows if r.indicator_type == IndicatorType.DOMAIN.value
         }
         return urls, domains
+
+    def active_metadata(self) -> dict[tuple[str, str], dict[str, Any]]:
+        """Return active blacklist metadata keyed by type and indicator."""
+
+        rows = self.session.scalars(
+            select(BlacklistIndicator).where(
+                BlacklistIndicator.status == BlacklistStatus.ACTIVE.value
+            )
+        ).all()
+        return {
+            (row.indicator_type, row.indicator): {
+                "id": row.id,
+                "source": row.source,
+                "confidence": row.confidence,
+            }
+            for row in rows
+        }
 
 
 class StatisticsRepository:

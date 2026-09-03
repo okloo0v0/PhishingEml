@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#121c1a">
+  <link rel="icon" href="data:,">
+  <title>PhishingEml - 邮件风险分析</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="/static/vendor/echarts.min.js"></script>
+  <script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="主导航">
+      <a class="brand" href="#analyze" aria-label="PhishingEml 首页"><span class="brand-mark" aria-hidden="true">P</span><span><strong>PhishingEml</strong><small>STATIC ANALYSIS</small></span></a>
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="analyze"><span aria-hidden="true">⌁</span>邮件检测</button>
+        <button class="nav-item" data-view="history"><span aria-hidden="true">◷</span>检测历史</button>
+        <button class="nav-item" data-view="blacklist"><span aria-hidden="true">⊘</span>黑名单</button>
+        <button class="nav-item" data-view="dashboard"><span aria-hidden="true">▥</span>统计看板</button>
+        <button class="nav-item" data-view="knowledge"><span aria-hidden="true">◫</span>防范知识</button>
+      </nav>
+      <div class="sidebar-foot"><span class="live-dot" aria-hidden="true"></span><span id="service-status">正在检查本地服务</span></div>
+    </aside>
+    <main class="main-content">
+      <header class="page-header"><div><p class="eyebrow" id="page-eyebrow">静态邮件检测</p><h1 id="page-title">识别风险，从一封邮件开始。</h1></div><div class="safety-note"><span aria-hidden="true">✓</span> 不访问链接，不执行附件</div></header>
+
+      <section class="view active" id="view-analyze">
+        <div class="analysis-layout">
+          <section class="panel input-panel"><div class="panel-heading"><div><p class="panel-kicker">INPUT</p><h2>选择邮件来源</h2></div><span class="step-badge">01</span></div>
+            <div class="source-switch" role="tablist" aria-label="邮件输入来源"><button class="source-option active" role="tab" aria-selected="true" data-source="file">上传 .eml</button><button class="source-option" role="tab" aria-selected="false" data-source="text">粘贴原文</button><button class="source-option" role="tab" aria-selected="false" data-source="sample">演示样本</button></div>
+            <form id="analysis-form" novalidate>
+              <div class="source-pane active" data-source-pane="file"><label class="drop-zone" id="drop-zone" for="email-file"><input id="email-file" type="file" accept=".eml,message/rfc822" hidden><span class="drop-icon" aria-hidden="true">⇧</span><strong id="file-label">拖入 .eml 邮件文件</strong><span>或点击此处选择文件，最大 5 MB</span></label></div>
+              <div class="source-pane" data-source-pane="text"><label class="field-label" for="raw-email">完整 MIME 邮件原文</label><textarea id="raw-email" maxlength="200000" placeholder="From: sender@example.invalid&#10;Subject: ...&#10;&#10;邮件正文"></textarea><p class="field-hint"><span id="text-count">0</span> / 200,000 字符</p></div>
+              <div class="source-pane" data-source-pane="sample"><label class="field-label" for="sample-id">演示样本 ID</label><input id="sample-id" maxlength="120" placeholder="例如: phishing_demo"><p class="field-hint">仅读取配置目录中的脱敏 `.eml` 样本，不接受路径或 URL。</p></div>
+              <button class="primary-button analyze-button" type="submit"><span aria-hidden="true">⌁</span>开始静态分析</button>
+            </form><p class="security-copy">邮件内容仅用于本地静态解析。HTML 会作为文本安全展示；链接不会生成真实跳转。</p>
+          </section>
+          <aside class="panel workflow-panel"><div class="panel-heading"><div><p class="panel-kicker">WORKFLOW</p><h2>分析过程</h2></div><span class="step-badge">02</span></div><ol class="workflow-list"><li><span>01</span><div><b>MIME 结构解析</b><small>提取主题、发件人、正文和附件元数据</small></div></li><li><span>02</span><div><b>静态特征检查</b><small>规范化 URL，检查发件人关系和规则信号</small></div></li><li><span>03</span><div><b>融合风险结果</b><small>结合模型概率和规则得分，提供原因说明</small></div></li></ol><div class="model-note"><span aria-hidden="true">◇</span><div><b>结果是风险提示</b><small>请结合业务上下文进行人工判断。</small></div></div></aside>
+        </div>
+        <section class="result-area" id="result-area" aria-live="polite"><div class="empty-state" id="result-empty"><span class="empty-symbol" aria-hidden="true">⌁</span><h2>等待一封邮件</h2><p>提交邮件后，这里会展示风险等级、规则证据、URL 与附件的静态信息。</p></div><div class="loading-state hidden" id="analysis-loading"><span class="scanner" aria-hidden="true"></span><h2>正在进行静态分析</h2><p>正在解析邮件结构和本地风险特征。</p></div><div class="result-content hidden" id="result-content"></div></section>
+      </section>
+
+      <section class="view" id="view-history"><div class="toolbar"><div class="filter-group" role="group" aria-label="按风险等级筛选"><button class="filter-button active" data-history-risk="">全部</button><button class="filter-button" data-history-risk="high">高风险</button><button class="filter-button" data-history-risk="medium">中风险</button><button class="filter-button" data-history-risk="low">低风险</button></div><button class="icon-button" id="refresh-history" title="刷新历史" aria-label="刷新历史">↻</button></div><div class="panel table-panel"><div id="history-content" class="data-area"></div></div></section>
+      <section class="view" id="view-blacklist"><div class="blacklist-layout"><section class="panel form-panel"><div class="panel-heading"><div><p class="panel-kicker">OFFLINE INDICATOR</p><h2>新增黑名单条目</h2></div></div><form id="blacklist-form"><label class="field-label" for="indicator">域名或完整 URL</label><input id="indicator" required maxlength="2048" placeholder="bad.example.invalid"><div class="field-row"><label><span class="field-label">类型</span><select id="indicator-type"><option value="domain">域名</option><option value="url">完整 URL</option></select></label><label><span class="field-label">来源</span><select id="indicator-source"><option value="manual">手工录入</option><option value="import">离线导入</option><option value="phishtank">PhishTank</option></select></label></div><label class="field-label" for="indicator-note">备注（可选）</label><textarea id="indicator-note" maxlength="500" placeholder="仅保存离线匹配说明"></textarea><button class="primary-button" type="submit">加入黑名单</button></form></section><section class="panel list-panel"><div class="toolbar compact"><label class="search-field"><span aria-hidden="true">⌕</span><input id="blacklist-search" placeholder="搜索指标"></label><select id="blacklist-status"><option value="">全部状态</option><option value="active">启用</option><option value="review">待复核</option><option value="false_positive">误报</option></select></div><div id="blacklist-content" class="data-area"></div></section></div></section>
+      <section class="view" id="view-dashboard"><div class="metric-grid" id="metric-grid"></div><div class="chart-grid"><section class="panel chart-panel"><div class="chart-title"><h2>风险等级分布</h2><span>检测记录</span></div><div id="risk-chart" class="chart" aria-label="风险等级分布图"></div></section><section class="panel chart-panel"><div class="chart-title"><h2>近期待检测趋势</h2><span>按 UTC 日期聚合</span></div><div id="trend-chart" class="chart" aria-label="检测趋势图"></div></section></div><div class="chart-grid"><section class="panel chart-panel"><div class="chart-title"><h2>规则命中情况</h2><span>最常触发的静态信号</span></div><div id="rule-chart" class="chart" aria-label="规则命中图"></div></section><section class="panel model-panel" id="model-metrics"></section></div></section>
+      <section class="view" id="view-knowledge"><div class="knowledge-toolbar"><div id="knowledge-categories" class="filter-group"></div><label class="search-field"><span aria-hidden="true">⌕</span><input id="knowledge-search" placeholder="搜索防范知识"></label></div><div id="knowledge-content" class="knowledge-grid"></div></section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div><dialog id="detail-dialog" class="detail-dialog"><div class="dialog-head"><h2 id="dialog-title">检测详情</h2><div class="dialog-actions"><button class="danger-button" id="delete-detail" type="button">删除记录</button><button class="icon-button" id="close-dialog" aria-label="关闭详情">×</button></div></div><div id="dialog-content"></div></dialog>
+</body>
+</html>

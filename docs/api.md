@@ -375,7 +375,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 ## 6. 当前实现状态提示
 
-- 解析器与规则引擎目前为**占位实现**：`rule_score` 恒为 0、`explanations`/`urls`/`attachments` 为空，补充上后才有真实值。
-- `model_probability`、`final_score`、`result_label` 来自模型（ `models/phishing_model.joblib` ）。
+- 解析器与 R01--R10 规则已接入分析服务：URL、附件、规则解释和离线黑名单命中会随 `DetectionResult` 返回；没有命中的字段仍为空数组。
+- `model_probability`、`final_score`、`result_label` 来自模型（ `models/phishing_model.joblib` ），`final_score` 同时融合规则分数。
 
 
