@@ -1,0 +1,9 @@
+From: Notice <notice@example.invalid>
+To: User <user@example.invalid>
+Subject: =?UTF-8?B?56uL5Y2z6aqM6K+B5oKo55qE5biQ5Y+3?=
+Message-ID: <chinese-subject-001@example.invalid>
+Date: Tue, 1 Sep 2026 11:00:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Your account requires immediate verification.
+Visit www.verify.example.invalid/account/update.

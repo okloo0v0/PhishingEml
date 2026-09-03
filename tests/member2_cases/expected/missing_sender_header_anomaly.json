@@ -1,0 +1,31 @@
+{
+  "subject": "Missing sender sample",
+  "sender_domain": "",
+  "reply_to_domain": null,
+  "url_count": 1,
+  "attachment_count": 0,
+  "parse_warnings_contains": [
+    "missing_from",
+    "missing_message_id",
+    "missing_date"
+  ],
+  "rule_codes": [
+    "R05",
+    "R06",
+    "R08",
+    "R09"
+  ],
+  "urls": [
+    {
+      "host": "example.invalid",
+      "registrable_domain": "example.invalid",
+      "is_https": false,
+      "uses_ip": false,
+      "suspicious_tokens_contains": [
+        "non_https",
+        "login"
+      ]
+    }
+  ],
+  "attachments": []
+}

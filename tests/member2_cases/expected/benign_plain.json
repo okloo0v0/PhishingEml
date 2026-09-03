@@ -1,0 +1,19 @@
+{
+  "subject": "Weekly lab reminder",
+  "sender_domain": "example.invalid",
+  "reply_to_domain": null,
+  "url_count": 1,
+  "attachment_count": 0,
+  "parse_warnings_contains": [],
+  "rule_codes": [],
+  "urls": [
+    {
+      "host": "course.example.invalid",
+      "registrable_domain": "example.invalid",
+      "is_https": true,
+      "uses_ip": false,
+      "suspicious_tokens_contains": []
+    }
+  ],
+  "attachments": []
+}

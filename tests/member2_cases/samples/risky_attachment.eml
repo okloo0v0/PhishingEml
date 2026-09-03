@@ -1,0 +1,19 @@
+From: HR <hr@example.invalid>
+To: Employee <employee@example.invalid>
+Subject: Payroll document
+Message-ID: <risky-attachment-001@example.invalid>
+Date: Tue, 1 Sep 2026 10:00:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=case-boundary
+
+--case-boundary
+Content-Type: text/plain; charset=utf-8
+
+Please review the attached payroll notice.
+
+--case-boundary
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="payroll.pdf.exe"
+
+fake-binary
+--case-boundary--

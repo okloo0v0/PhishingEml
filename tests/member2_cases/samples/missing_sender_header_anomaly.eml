@@ -1,0 +1,6 @@
+To: User <user@example.invalid>
+Subject: Missing sender sample
+Content-Type: text/plain; charset=utf-8
+
+This sample intentionally has no From, Date, or Message-ID header.
+Please login at http://example.invalid/login.

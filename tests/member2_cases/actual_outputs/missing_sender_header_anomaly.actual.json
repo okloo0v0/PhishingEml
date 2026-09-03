@@ -1,0 +1,140 @@
+{
+  "sample": "missing_sender_header_anomaly.eml",
+  "summary": {
+    "subject": "Missing sender sample",
+    "sender_domain": "",
+    "reply_to_domain": null,
+    "url_count": 1,
+    "attachment_count": 0,
+    "parse_warnings": [
+      "missing_from",
+      "missing_message_id",
+      "missing_date"
+    ],
+    "rule_codes": [
+      "R05",
+      "R06",
+      "R08",
+      "R09"
+    ],
+    "rule_score": 40.0,
+    "urls": [
+      {
+        "raw_url": "http://example.invalid/login",
+        "normalized_url": "http://example.invalid/login",
+        "display_text": "",
+        "scheme": "http",
+        "host": "example.invalid",
+        "registrable_domain": "example.invalid",
+        "port": null,
+        "path": "/login",
+        "query": "",
+        "is_https": false,
+        "uses_ip": false,
+        "is_shortener": false,
+        "suspicious_tokens": [
+          "non_https",
+          "login"
+        ]
+      }
+    ],
+    "attachments": []
+  },
+  "parsed_email": {
+    "message_id": "",
+    "subject": "Missing sender sample",
+    "date": "",
+    "sender": {
+      "display_name": "",
+      "address": "",
+      "domain": "",
+      "is_valid": false
+    },
+    "reply_to": null,
+    "return_path": null,
+    "recipients": [
+      {
+        "display_name": "User",
+        "address": "user@example.invalid",
+        "domain": "example.invalid",
+        "is_valid": true
+      }
+    ],
+    "cc": [],
+    "text_body": "This sample intentionally has no From, Date, or Message-ID header.\nPlease login at http://example.invalid/login.",
+    "html_body": "",
+    "urls": [
+      {
+        "raw_url": "http://example.invalid/login",
+        "normalized_url": "http://example.invalid/login",
+        "display_text": "",
+        "scheme": "http",
+        "host": "example.invalid",
+        "registrable_domain": "example.invalid",
+        "port": null,
+        "path": "/login",
+        "query": "",
+        "is_https": false,
+        "uses_ip": false,
+        "is_shortener": false,
+        "suspicious_tokens": [
+          "non_https",
+          "login"
+        ],
+        "blacklist_hit": false,
+        "blacklist_match_type": null,
+        "blacklist_indicator_id": null,
+        "blacklist_source": null,
+        "blacklist_confidence": null
+      }
+    ],
+    "attachments": [],
+    "headers": {
+      "to": "User <user@example.invalid>",
+      "subject": "Missing sender sample",
+      "content-type": "text/plain; charset=\"utf-8\""
+    },
+    "parse_warnings": [
+      "missing_from",
+      "missing_message_id",
+      "missing_date"
+    ]
+  },
+  "rule_evaluation": {
+    "rule_score": 40.0,
+    "explanations": [
+      {
+        "code": "R05",
+        "title": "邮件要求提交账号或敏感信息",
+        "detail": "Body appears to request credentials or other sensitive information.",
+        "evidence": "login",
+        "score": 15.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R06",
+        "title": "URL 存在可疑结构特征",
+        "detail": "URL contains suspicious structural features.",
+        "evidence": "example.invalid: non_https, login",
+        "score": 10.0,
+        "severity": "warning"
+      },
+      {
+        "code": "R08",
+        "title": "发件人字段缺失或格式异常",
+        "detail": "Sender is missing or has an invalid email format.",
+        "evidence": "missing_from",
+        "score": 5.0,
+        "severity": "info"
+      },
+      {
+        "code": "R09",
+        "title": "邮件头存在异常或不完整信息",
+        "detail": "Headers or MIME content contain incomplete or abnormal information.",
+        "evidence": "missing_from, missing_message_id, missing_date",
+        "score": 10.0,
+        "severity": "warning"
+      }
+    ]
+  }
+}

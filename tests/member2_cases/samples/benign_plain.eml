@@ -1,0 +1,13 @@
+From: Course Notice <teacher@example.invalid>
+To: Student <student@example.invalid>
+Subject: Weekly lab reminder
+Message-ID: <benign-plain-001@example.invalid>
+Date: Tue, 1 Sep 2026 08:00:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+
+This is a reminder for the weekly lab. Please read the handout before class.
+The course page is https://course.example.invalid/labs/week1.
+
+Thanks.

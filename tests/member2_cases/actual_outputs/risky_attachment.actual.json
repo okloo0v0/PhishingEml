@@ -1,0 +1,92 @@
+{
+  "sample": "risky_attachment.eml",
+  "summary": {
+    "subject": "Payroll document",
+    "sender_domain": "example.invalid",
+    "reply_to_domain": null,
+    "url_count": 0,
+    "attachment_count": 1,
+    "parse_warnings": [],
+    "rule_codes": [
+      "R07"
+    ],
+    "rule_score": 20.0,
+    "urls": [],
+    "attachments": [
+      {
+        "filename": "payroll.pdf.exe",
+        "mime_type": "application/octet-stream",
+        "size": 11,
+        "sha256": "d551e7e4f06f7d6bc7f9ad6828eb6e00e780dbe60a8adda40186c432495d0b24",
+        "extension": ".exe",
+        "risk_hints": [
+          "risky_extension",
+          "double_extension",
+          "executable_like_content_type"
+        ]
+      }
+    ]
+  },
+  "parsed_email": {
+    "message_id": "<risky-attachment-001@example.invalid>",
+    "subject": "Payroll document",
+    "date": "Tue, 01 Sep 2026 10:00:00 +0000",
+    "sender": {
+      "display_name": "HR",
+      "address": "hr@example.invalid",
+      "domain": "example.invalid",
+      "is_valid": true
+    },
+    "reply_to": null,
+    "return_path": null,
+    "recipients": [
+      {
+        "display_name": "Employee",
+        "address": "employee@example.invalid",
+        "domain": "example.invalid",
+        "is_valid": true
+      }
+    ],
+    "cc": [],
+    "text_body": "Please review the attached payroll notice.",
+    "html_body": "",
+    "urls": [],
+    "attachments": [
+      {
+        "filename": "payroll.pdf.exe",
+        "mime_type": "application/octet-stream",
+        "size": 11,
+        "sha256": "d551e7e4f06f7d6bc7f9ad6828eb6e00e780dbe60a8adda40186c432495d0b24",
+        "extension": ".exe",
+        "risk_hints": [
+          "risky_extension",
+          "double_extension",
+          "executable_like_content_type"
+        ]
+      }
+    ],
+    "headers": {
+      "from": "HR <hr@example.invalid>",
+      "to": "Employee <employee@example.invalid>",
+      "subject": "Payroll document",
+      "message-id": "<risky-attachment-001@example.invalid>",
+      "date": "Tue, 01 Sep 2026 10:00:00 +0000",
+      "mime-version": "1.0",
+      "content-type": "multipart/mixed; boundary=\"case-boundary\""
+    },
+    "parse_warnings": []
+  },
+  "rule_evaluation": {
+    "rule_score": 20.0,
+    "explanations": [
+      {
+        "code": "R07",
+        "title": "附件类型或文件名存在风险提示",
+        "detail": "Attachment filename or extension has risk hints; only metadata is recorded.",
+        "evidence": "payroll.pdf.exe: risky_extension, double_extension, executable_like_content_type",
+        "score": 20.0,
+        "severity": "critical"
+      }
+    ]
+  }
+}
