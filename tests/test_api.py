@@ -130,3 +130,45 @@ def test_history_list_empty(client):
     body = resp.json()
     assert body["data"]["pagination"]["total"] == 0
     assert body["data"]["items"] == []
+
+
+def test_analysis_integrates_member2_rules_and_blacklist_metadata(client):
+    blacklist = client.post(
+        "/api/blacklist",
+        json={
+            "indicator": "bad.example.invalid",
+            "indicator_type": "domain",
+            "source": "manual",
+            "confidence": 0.95,
+        },
+    )
+    assert blacklist.status_code == 200
+    indicator_id = blacklist.json()["data"]["id"]
+
+    raw = (
+        b"From: notice@example.invalid\r\n"
+        b"Subject: Verify account\r\n"
+        b"Reply-To: support@other.invalid\r\n"
+        b"Message-ID: <integration@example.invalid>\r\n"
+        b"Date: Tue, 1 Sep 2026 10:00:00 +0000\r\n"
+        b"\r\n"
+        b"Urgent: verify your password at http://bad.example.invalid/login"
+    )
+    response = client.post(
+        "/api/emails/analyze",
+        files={"file": ("integration.eml", raw, "message/rfc822")},
+    )
+    assert response.status_code == 200
+    result = response.json()["data"]
+    assert result["rule_score"] >= 40.0
+    assert "R01" in {item["code"] for item in result["explanations"]}
+    assert "R03" in {item["code"] for item in result["explanations"]}
+    assert result["urls"][0]["blacklist_hit"] is True
+    assert result["urls"][0]["blacklist_match_type"] == "registrable_domain"
+    assert result["urls"][0]["blacklist_indicator_id"] == indicator_id
+    assert result["urls"][0]["blacklist_source"] == "manual"
+    assert result["urls"][0]["blacklist_confidence"] == 0.95
+
+    detail = client.get(f"/api/detections/{result['detection_id']}")
+    assert detail.status_code == 200
+    assert detail.json()["data"]["urls"][0]["blacklist_indicator_id"] == indicator_id

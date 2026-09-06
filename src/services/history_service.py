@@ -6,7 +6,7 @@ from typing import Any
 
 from src.db.models import iso_z
 from src.db.repositories import DetectionRepository, loads
-from src.domain.enums import ResultLabel, RiskLevel
+from src.domain.enums import BlacklistMatchType, BlacklistSource, ResultLabel, RiskLevel
 from src.domain.schemas import (
     AttachmentMeta,
     HistoryResponse,
@@ -31,6 +31,17 @@ def _url_from_row(row) -> ParsedUrl:
         suspicious_tokens=list(features.get("suspicious_tokens", [])),
         blacklist_hit=bool(row.blacklist_hit),
         blacklist_indicator_id=features.get("blacklist_indicator_id"),
+        blacklist_match_type=(
+            BlacklistMatchType(features["blacklist_match_type"])
+            if features.get("blacklist_match_type")
+            else None
+        ),
+        blacklist_source=(
+            BlacklistSource(features["blacklist_source"])
+            if features.get("blacklist_source")
+            else None
+        ),
+        blacklist_confidence=features.get("blacklist_confidence"),
     )
 
 

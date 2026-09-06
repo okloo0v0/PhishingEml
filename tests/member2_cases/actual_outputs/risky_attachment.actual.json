@@ -30,7 +30,7 @@
   "parsed_email": {
     "message_id": "<risky-attachment-001@example.invalid>",
     "subject": "Payroll document",
-    "date": "Tue, 01 Sep 2026 10:00:00 +0000",
+    "date": "Tue, 1 Sep 2026 10:00:00 +0000",
     "sender": {
       "display_name": "HR",
       "address": "hr@example.invalid",
@@ -70,9 +70,9 @@
       "to": "Employee <employee@example.invalid>",
       "subject": "Payroll document",
       "message-id": "<risky-attachment-001@example.invalid>",
-      "date": "Tue, 01 Sep 2026 10:00:00 +0000",
+      "date": "Tue, 1 Sep 2026 10:00:00 +0000",
       "mime-version": "1.0",
-      "content-type": "multipart/mixed; boundary=\"case-boundary\""
+      "content-type": "multipart/mixed; boundary=case-boundary"
     },
     "parse_warnings": []
   },

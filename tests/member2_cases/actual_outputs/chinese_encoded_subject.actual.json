@@ -41,7 +41,7 @@
   "parsed_email": {
     "message_id": "<chinese-subject-001@example.invalid>",
     "subject": "立即验证您的帐号",
-    "date": "Tue, 01 Sep 2026 11:00:00 +0000",
+    "date": "Tue, 1 Sep 2026 11:00:00 +0000",
     "sender": {
       "display_name": "Notice",
       "address": "notice@example.invalid",
@@ -59,7 +59,7 @@
       }
     ],
     "cc": [],
-    "text_body": "Your account requires immediate verification.\nVisit www.verify.example.invalid/account/update.",
+    "text_body": "Your account requires immediate verification.\r\nVisit www.verify.example.invalid/account/update.",
     "html_body": "",
     "urls": [
       {
@@ -93,10 +93,10 @@
     "headers": {
       "from": "Notice <notice@example.invalid>",
       "to": "User <user@example.invalid>",
-      "subject": "立即验证您的帐号",
+      "subject": "=?UTF-8?B?56uL5Y2z6aqM6K+B5oKo55qE5biQ5Y+3?=",
       "message-id": "<chinese-subject-001@example.invalid>",
-      "date": "Tue, 01 Sep 2026 11:00:00 +0000",
-      "content-type": "text/plain; charset=\"utf-8\""
+      "date": "Tue, 1 Sep 2026 11:00:00 +0000",
+      "content-type": "text/plain; charset=utf-8"
     },
     "parse_warnings": []
   },

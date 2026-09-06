@@ -53,8 +53,9 @@ class AnalysisService:
         parsed = self.parser.parse(content)
 
         url_blacklist, domain_blacklist = self.blacklist_repo.active_sets()
+        blacklist_metadata = self.blacklist_repo.active_metadata()
         rule_score, explanations = self.rule_engine.evaluate(
-            parsed, url_blacklist, domain_blacklist
+            parsed, url_blacklist, domain_blacklist, blacklist_metadata
         )
 
         prediction = self.predictor.predict(

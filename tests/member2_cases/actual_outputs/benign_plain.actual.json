@@ -31,7 +31,7 @@
   "parsed_email": {
     "message_id": "<benign-plain-001@example.invalid>",
     "subject": "Weekly lab reminder",
-    "date": "Tue, 01 Sep 2026 08:00:00 +0000",
+    "date": "Tue, 1 Sep 2026 08:00:00 +0000",
     "sender": {
       "display_name": "Course Notice",
       "address": "teacher@example.invalid",
@@ -49,7 +49,7 @@
       }
     ],
     "cc": [],
-    "text_body": "Hello,\n\nThis is a reminder for the weekly lab. Please read the handout before class.\nThe course page is https://course.example.invalid/labs/week1.\n\nThanks.",
+    "text_body": "Hello,\r\n\r\nThis is a reminder for the weekly lab. Please read the handout before class.\r\nThe course page is https://course.example.invalid/labs/week1.\r\n\r\nThanks.",
     "html_body": "",
     "urls": [
       {
@@ -79,8 +79,8 @@
       "to": "Student <student@example.invalid>",
       "subject": "Weekly lab reminder",
       "message-id": "<benign-plain-001@example.invalid>",
-      "date": "Tue, 01 Sep 2026 08:00:00 +0000",
-      "content-type": "text/plain; charset=\"utf-8\""
+      "date": "Tue, 1 Sep 2026 08:00:00 +0000",
+      "content-type": "text/plain; charset=utf-8"
     },
     "parse_warnings": []
   },

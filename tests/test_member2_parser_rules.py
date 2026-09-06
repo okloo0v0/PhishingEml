@@ -86,6 +86,21 @@ class Member2ParserRuleTests(unittest.TestCase):
         self.assertEqual(len(codes), len(set(codes)))
         self.assertLessEqual(result.rule_score, 100.0)
 
+    def test_parser_tolerates_malformed_message_id_header(self) -> None:
+        parsed = parse_email(
+            "From: Legacy Sender <sender@example.invalid>\n"
+            "To: user@example.invalid\n"
+            "Subject: Historical message\n"
+            "Message-ID: <@earthlink.net>\n"
+            "Content-Type: text/plain; charset=utf-8\n"
+            "\n"
+            "This message has a malformed Message-ID but remains analyzable.\n"
+        )
+
+        self.assertEqual(parsed.subject, "Historical message")
+        self.assertEqual(parsed.message_id, "<@earthlink.net>")
+        self.assertEqual(parsed.text_body, "This message has a malformed Message-ID but remains analyzable.")
+
 
 if __name__ == "__main__":
     unittest.main()

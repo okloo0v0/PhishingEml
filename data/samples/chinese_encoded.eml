@@ -1,0 +1,13 @@
+From: =?UTF-8?B?5L2g5aW977yM5a6J5YWo?= <notice@example.invalid>
+To: =?UTF-8?B?5rWL6K+V?= <user@example.invalid>
+Subject: =?UTF-8?B?5oql5Lqk5ZGK5a6J5YWo5oi35o6l?=
+Date: Fri, 04 Sep 2026 16:45:00 +0800
+Message-ID: <chinese-001@example.invalid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+您好，
+
+这是用于端到端测试的中文邮件样本。请在系统中查看主题、发件人和正文是否正确解码。
+
+谢谢。

@@ -1,0 +1,25 @@
+From: Events Team <events@calendar.example.invalid>
+To: Demo User <user@example.invalid>
+Subject: Invitation: project review meeting
+Date: Wed, 02 Sep 2026 14:00:00 +0800
+Message-ID: <multipart-001@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="boundary-001"
+
+--boundary-001
+Content-Type: text/plain; charset="utf-8"
+
+Hello,
+
+You are invited to the project review meeting on Friday at 10:00.
+Meeting details: https://calendar.example.invalid/meet/project-review
+
+--boundary-001
+Content-Type: text/html; charset="utf-8"
+
+<html><body>
+<h2>Project review meeting</h2>
+<p>Friday at 10:00. <a href="https://calendar.example.invalid/meet/project-review">Open calendar details</a></p>
+</body></html>
+
+--boundary-001--

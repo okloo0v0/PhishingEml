@@ -61,7 +61,7 @@
       }
     ],
     "cc": [],
-    "text_body": "This sample intentionally has no From, Date, or Message-ID header.\nPlease login at http://example.invalid/login.",
+    "text_body": "This sample intentionally has no From, Date, or Message-ID header.\r\nPlease login at http://example.invalid/login.",
     "html_body": "",
     "urls": [
       {
@@ -92,7 +92,7 @@
     "headers": {
       "to": "User <user@example.invalid>",
       "subject": "Missing sender sample",
-      "content-type": "text/plain; charset=\"utf-8\""
+      "content-type": "text/plain; charset=utf-8"
     },
     "parse_warnings": [
       "missing_from",
