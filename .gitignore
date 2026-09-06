@@ -19,6 +19,8 @@ env/
 pdf_preview/
 tmp/
 temp/
+.playwright-cli/
+output/playwright/
 
 # Course selection material is kept locally but not maintained in Git
 计算机专业-26秋.pdf
