@@ -48,14 +48,14 @@ def parse_email(raw: bytes | str) -> ParsedEmail:
 
     parsed = ParsedEmail(parse_warnings=warnings)
     parsed.headers = _headers_to_dict(message)
-    parsed.message_id = _decode_header_value(message.get("message-id", ""))
-    parsed.subject = _decode_header_value(message.get("subject", ""))
-    parsed.date = _decode_header_value(message.get("date", ""))
-    parsed.sender = parse_mailbox(str(message.get("from", "")))
-    parsed.reply_to = _optional_mailbox(str(message.get("reply-to", "")))
-    parsed.return_path = _optional_mailbox(str(message.get("return-path", "")))
-    parsed.recipients = parse_mailboxes(str(message.get("to", "")))
-    parsed.cc = parse_mailboxes(str(message.get("cc", "")))
+    parsed.message_id = _decode_header_value(_raw_header(message, "message-id"))
+    parsed.subject = _decode_header_value(_raw_header(message, "subject"))
+    parsed.date = _decode_header_value(_raw_header(message, "date"))
+    parsed.sender = parse_mailbox(_raw_header(message, "from"))
+    parsed.reply_to = _optional_mailbox(_raw_header(message, "reply-to"))
+    parsed.return_path = _optional_mailbox(_raw_header(message, "return-path"))
+    parsed.recipients = parse_mailboxes(_raw_header(message, "to"))
+    parsed.cc = parse_mailboxes(_raw_header(message, "cc"))
 
     if not parsed.sender.address:
         parsed.parse_warnings.append("missing_from")
@@ -142,9 +142,19 @@ def _parse_message(raw: bytes | str) -> EmailMessage | Message:
 
 def _headers_to_dict(message: EmailMessage | Message) -> dict[str, str]:
     headers: dict[str, list[str]] = {}
-    for name, value in message.items():
+    # ``items()`` invokes the strict header registry. Public corpora contain
+    # malformed Message-ID values that can raise while being decoded; raw_items
+    # keeps header inventory available so the rest of static analysis can run.
+    for name, value in message.raw_items():
         headers.setdefault(name.lower(), []).append(str(value))
     return {name: "\n".join(values) for name, values in headers.items()}
+
+
+def _raw_header(message: EmailMessage | Message, name: str) -> str:
+    """Return a header without invoking strict policy header parsing."""
+
+    values = [value for key, value in message.raw_items() if key.lower() == name.lower()]
+    return "\n".join(str(value) for value in values)
 
 
 def _optional_mailbox(value: str) -> Mailbox | None:

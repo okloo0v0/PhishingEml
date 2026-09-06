@@ -1,0 +1,24 @@
+From: Invoice Desk <billing@vendor.example.invalid>
+To: Accounts <accounts@example.invalid>
+Subject: Invoice document requires review
+Date: Thu, 03 Sep 2026 11:20:00 +0800
+Message-ID: <attachment-001@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="boundary-002"
+
+--boundary-002
+Content-Type: text/plain; charset="utf-8"
+
+Hello Accounts,
+
+Please review the attached invoice and confirm the purchase order number.
+This message is a static test fixture; do not open the attachment.
+
+--boundary-002
+Content-Type: application/octet-stream; name="invoice.docm.js"
+Content-Disposition: attachment; filename="invoice.docm.js"
+Content-Transfer-Encoding: base64
+
+VGhpcyBpcyBhIGZpeHR1cmUgdGVzdCBwYXlsb2FkLg==
+
+--boundary-002--

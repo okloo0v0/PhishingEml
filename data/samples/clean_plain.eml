@@ -1,0 +1,15 @@
+From: Alice Chen <alice@example.invalid>
+To: Bob Li <bob@example.invalid>
+Subject: Weekly project update
+Date: Tue, 01 Sep 2026 09:30:00 +0800
+Message-ID: <clean-001@example.invalid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Hi Bob,
+
+The weekly project update is attached to the team workspace. We will review
+the open items during Thursday's meeting.
+
+Best,
+Alice
