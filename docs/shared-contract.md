@@ -363,7 +363,7 @@ final_score 必须限制在 0--100，并保留 1 位小数。模型概率和规�
 - `GET /api/blacklist` 返回 `BlacklistItem[]` 和同样的 `Pagination`；`hit_count` 是历史检测中命中该条目的次数，不因停用而清零。
 - `GET /api/statistics/overview` 返回 `StatisticsOverview`：风险等级计数、模型标签计数、规则命中计数、附件类型计数和按 UTC 日期聚合的检测数量。无数据时各计数返回空对象或 0，不返回 null。
 - `GET /api/model/metrics` 返回 `ModelMetrics`，包括模型/特征版本、训练时间、样本数量、指标和二维混淆矩阵；它是离线评估结果，不代表当前邮件的预测结果。
-- `GET /api/knowledge` 返回 `KnowledgeArticle[]`，内容为防范教育材料，不包含可访问的钓鱼链接。
+- `GET /api/knowledge` 返回 `KnowledgeArticle[]`，内容为防范教育材料，不包含可访问的钓鱼链接。除标题、摘要和正文外，文章可以包含 `topic_type`、`reading_time`、`featured`、`key_points`、`steps` 和 `comparison` 等展示字段；这些字段只用于组织防御性知识，不改变检测接口语义。
 - `POST /api/feedback` 接受 `FeedbackRequest`，`detection_id` 必须存在，`label` 必须为 `confirmed_phishing`、`false_positive` 或 `unsure`，`note` 可空且限制长度；返回 `FeedbackResponse`。反馈只记录人工意见，第一版不自动改写模型。
 
 ## 9. 数据库契约

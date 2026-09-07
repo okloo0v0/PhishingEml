@@ -172,3 +172,34 @@ def test_analysis_integrates_member2_rules_and_blacklist_metadata(client):
     detail = client.get(f"/api/detections/{result['detection_id']}")
     assert detail.status_code == 200
     assert detail.json()["data"]["urls"][0]["blacklist_indicator_id"] == indicator_id
+
+
+def test_knowledge_library_exposes_complete_structured_topics(client):
+    response = client.get("/api/knowledge")
+
+    assert response.status_code == 200
+    articles = response.json()["data"]
+    assert len(articles) == 27
+    assert {article["category"] for article in articles} == {
+        "识别风险",
+        "链接与附件",
+        "账号保护",
+        "处理与应急",
+        "上报协作",
+        "典型案例",
+    }
+    assert all(article["topic_type"] for article in articles)
+    assert all(article["reading_time"] for article in articles)
+    assert any(article["steps"] for article in articles)
+    assert any(article["comparison"] for article in articles)
+
+
+def test_knowledge_search_covers_body_steps_and_category(client):
+    content_match = client.get("/api/knowledge", params={"keyword": "隔离设备"})
+    category_match = client.get("/api/knowledge", params={"category": "链接与附件"})
+
+    assert content_match.status_code == 200
+    assert [article["id"] for article in content_match.json()["data"]] == [18]
+    assert category_match.status_code == 200
+    assert len(category_match.json()["data"]) == 6
+    assert {article["category"] for article in category_match.json()["data"]} == {"链接与附件"}

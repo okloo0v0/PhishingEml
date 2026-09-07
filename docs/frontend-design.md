@@ -15,7 +15,7 @@
 | 检测历史 | 按风险等级筛选、查看单条检测详情 | `GET /api/detections`、`GET /api/detections/{id}` |
 | 黑名单 | 新增离线指标、搜索、按状态查看和标记待复核 | `GET/POST/PATCH /api/blacklist` |
 | 统计看板 | 查看风险分布、趋势、规则命中和模型离线指标 | `GET /api/statistics/overview`、`GET /api/model/metrics` |
-| 防范知识 | 按类别和关键字阅读本地教育材料 | `GET /api/knowledge` |
+| 防范知识 | 浏览 6 个安全专题、快速处置流程、案例对比、核验清单和结构化详情 | `GET /api/knowledge` |
 
 ## 交互原则
 

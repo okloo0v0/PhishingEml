@@ -24,6 +24,11 @@ def test_frontend_entry_and_static_assets_are_served():
     assert api_js.status_code == 200
     assert "textContent" in js.text
     assert "innerHTML" not in js.text
+    assert "可疑邮件快速处置流程" in page.text
+    assert "knowledge-feature" in page.text
+    assert "典型案例" in js.text
+    assert "处理与应急" in js.text
+    assert "knowledge-comparison" in js.text
 
 
 def test_frontend_api_module_covers_contract_endpoints():

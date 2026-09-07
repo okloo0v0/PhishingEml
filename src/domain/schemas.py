@@ -218,6 +218,12 @@ class KnowledgeArticle:
     summary: str
     content: str
     sort_order: int = 0
+    topic_type: str = "指南"
+    reading_time: str = "3 分钟"
+    featured: bool = False
+    key_points: list[str] = field(default_factory=list)
+    steps: list[str] = field(default_factory=list)
+    comparison: dict[str, list[str]] = field(default_factory=dict)
 
 
 @dataclass

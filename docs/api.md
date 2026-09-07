@@ -335,8 +335,8 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 | 参数       | 类型     | 说明             |
 | -------- | ------ | -------------- |
-| keyword  | string | 匹配标题/摘要        |
-| category | string | 可选，如 `识别`/`应对` |
+| keyword  | string | 匹配标题、摘要、正文、关键要点、操作步骤和案例对比 |
+| category | string | 可选：`识别风险`、`链接与附件`、`账号保护`、`处理与应急`、`上报协作`、`典型案例` |
 
 响应 `data`（数组）：
 
@@ -344,14 +344,22 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 [
   {
     "id": 1,
-    "category": "识别",
-    "title": "如何识别钓鱼邮件",
-    "summary": "关注发件人、链接和紧迫性语言",
-    "content": "检查发件人域名是否与声称机构一致...",
-    "sort_order": 1
+    "category": "识别风险",
+    "title": "30 秒完成邮件初筛",
+    "summary": "先判断这封邮件是否值得继续相信",
+    "content": "钓鱼邮件常利用熟悉的身份、紧迫的语气和异常操作请求缩短判断时间...",
+    "sort_order": 1,
+    "topic_type": "核验清单",
+    "reading_time": "2 分钟",
+    "featured": true,
+    "key_points": ["完整地址是否与声称机构一致"],
+    "steps": ["先不点击链接和附件", "展开查看完整发件人地址"],
+    "comparison": {}
   }
 ]
 ```
+
+当前知识库包含 6 个专题、27 篇文章。`keyword` 会检索标题、摘要、正文、关键要点、操作步骤和案例对比内容；所有示例均为防御性文本，不返回可点击的真实恶意链接。
 
 ### 5.9 用户反馈
 

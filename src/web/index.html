@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#121c1a">
   <link rel="icon" href="data:,">
   <title>PhishingEml - 邮件风险分析</title>
-  <link rel="stylesheet" href="/static/css/app.css?v=20260906-observatory-3">
+  <link rel="stylesheet" href="/static/css/app.css?v=20260907-knowledge-3">
   <script defer src="/static/vendor/echarts.min.js"></script>
-  <script type="module" src="/static/js/app.js?v=20260906-observatory-3"></script>
+  <script type="module" src="/static/js/app.js?v=20260907-knowledge-3"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -54,9 +54,20 @@
       <section class="view" id="view-history"><div class="history-toolbar"><div class="filter-group" role="group" aria-label="按风险等级筛选"><button class="filter-button active" data-history-risk="">全部</button><button class="filter-button" data-history-risk="high">高风险</button><button class="filter-button" data-history-risk="medium">中风险</button><button class="filter-button" data-history-risk="low">低风险</button></div><div class="history-controls"><label>每页 <select id="history-page-size" aria-label="每页显示数量"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select> 条</label><button class="icon-button" id="refresh-history" title="刷新历史" aria-label="刷新历史">↻</button></div></div><div class="panel table-panel"><div id="history-content" class="data-area"></div><div class="history-pagination" id="history-pagination"></div></div></section>
       <section class="view" id="view-blacklist"><div class="blacklist-layout"><section class="panel form-panel"><div class="panel-heading"><div><p class="panel-kicker">OFFLINE INDICATOR</p><h2>新增黑名单条目</h2></div></div><form id="blacklist-form"><label class="field-label" for="indicator">域名或完整 URL</label><input id="indicator" required maxlength="2048" placeholder="bad.example.invalid"><div class="field-row"><label><span class="field-label">类型</span><select id="indicator-type"><option value="domain">域名</option><option value="url">完整 URL</option></select></label><label><span class="field-label">来源</span><select id="indicator-source"><option value="manual">手工录入</option><option value="import">离线导入</option><option value="phishtank">PhishTank</option></select></label></div><label class="field-label" for="indicator-note">备注（可选）</label><textarea id="indicator-note" maxlength="500" placeholder="仅保存离线匹配说明"></textarea><button class="primary-button" type="submit">加入黑名单</button></form></section><section class="panel list-panel"><div class="toolbar compact"><label class="search-field"><span aria-hidden="true">⌕</span><input id="blacklist-search" placeholder="搜索指标"></label><select id="blacklist-status"><option value="">全部状态</option><option value="active">启用</option><option value="review">待复核</option><option value="false_positive">误报</option></select></div><div id="blacklist-content" class="data-area"></div></section></div></section>
       <section class="view" id="view-dashboard"><div class="metric-grid" id="metric-grid"></div><div class="chart-grid"><section class="panel chart-panel"><div class="chart-title"><h2>风险等级分布</h2><span>检测记录</span></div><div id="risk-chart" class="chart" aria-label="风险等级分布图"></div></section><section class="panel chart-panel"><div class="chart-title"><h2>近期待检测趋势</h2><span>按 UTC 日期聚合</span></div><div id="trend-chart" class="chart" aria-label="检测趋势图"></div></section></div><div class="chart-grid"><section class="panel chart-panel"><div class="chart-title"><h2>规则命中情况</h2><span>最常触发的静态信号</span></div><div id="rule-chart" class="chart" aria-label="规则命中图"></div></section><section class="panel model-panel" id="model-metrics"></section></div></section>
-      <section class="view" id="view-knowledge"><div class="knowledge-hero"><div><p class="hero-kicker">SECURITY FIELD GUIDE</p><h2>先识别，<em>再行动。</em></h2></div><p>钓鱼邮件往往不靠复杂技术，而是借助熟悉的语气、紧迫的节奏和看似可信的链接。用几个简单的问题，重新夺回判断权。</p></div><div class="knowledge-toolbar"><div id="knowledge-categories" class="filter-group"></div><label class="search-field"><span aria-hidden="true">⌕</span><input id="knowledge-search" placeholder="搜索防范知识"></label></div><div id="knowledge-content" class="knowledge-grid"></div></section>
+      <section class="view" id="view-knowledge">
+        <section class="knowledge-protocol" aria-label="可疑邮件快速处置流程">
+          <div><span>01</span><b>停止操作</b><small>不点击、不回复、不打开附件</small></div>
+          <div><span>02</span><b>核验身份</b><small>检查地址、域名与业务上下文</small></div>
+          <div><span>03</span><b>保存证据</b><small>保留原始邮件、时间和检测编号</small></div>
+          <div><span>04</span><b>上报处置</b><small>通过组织规定的渠道请求协助</small></div>
+        </section>
+        <div class="knowledge-toolbar"><div id="knowledge-categories" class="filter-group knowledge-category-list"></div><label class="search-field"><span aria-hidden="true">⌕</span><input id="knowledge-search" placeholder="搜索主题、正文、步骤或风险信号"></label></div>
+        <div class="knowledge-results-head"><div><span id="knowledge-section-kicker">ALL TOPICS</span><h3 id="knowledge-section-title">完整防范知识库</h3></div><p id="knowledge-result-count">正在读取内容</p></div>
+        <section id="knowledge-feature" class="knowledge-feature"></section>
+        <div id="knowledge-content" class="knowledge-grid"></div>
+      </section>
     </main>
   </div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div><dialog id="detail-dialog" class="detail-dialog"><div class="dialog-head"><h2 id="dialog-title">检测详情</h2><div class="dialog-actions"><button class="danger-button" id="delete-detail" type="button">删除记录</button><button class="icon-button" id="close-dialog" aria-label="关闭详情">×</button></div></div><div id="dialog-content"></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div><dialog id="detail-dialog" class="detail-dialog"><div class="dialog-head"><h2 id="dialog-title">检测详情</h2><div class="dialog-actions"><button class="danger-button" id="delete-detail" type="button">删除记录</button><button class="icon-button" id="close-dialog" aria-label="关闭详情">×</button></div></div><div id="dialog-content"></div></dialog><dialog id="knowledge-dialog" class="knowledge-dialog"><div class="knowledge-dialog-head"><div><span id="knowledge-dialog-category" class="knowledge-dialog-kicker">FIELD GUIDE</span><h2 id="knowledge-dialog-title">知识详情</h2><div id="knowledge-dialog-meta" class="knowledge-dialog-meta"></div></div><button class="icon-button" id="close-knowledge-dialog" type="button" aria-label="关闭知识详情">×</button></div><p id="knowledge-dialog-summary" class="knowledge-dialog-summary"></p><div id="knowledge-dialog-body" class="knowledge-dialog-body"></div></dialog>
 </body>
 </html>

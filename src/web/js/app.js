@@ -2,7 +2,16 @@ import * as api from './api.js';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const state = { source: 'file', result: null, historyRisk: '', historyPage: 1, historyPageSize: 20, blacklistKeyword: '', blacklistStatus: '', knowledgeCategory: '', knowledgeKeyword: '', knowledgeCategories: [], knowledgeOpenId: null };
+const knowledgeCategoryOptions = [
+  { value: '', label: '全部', code: 'ALL TOPICS', title: '完整防范知识库', count: 27 },
+  { value: '识别风险', label: '识别风险', code: 'IDENTIFY', title: '识别身份、语气与业务伪装', count: 6 },
+  { value: '链接与附件', label: '链接与附件', code: 'LINKS & FILES', title: '核验链接目标与文件风险', count: 6 },
+  { value: '账号保护', label: '账号保护', code: 'ACCOUNT', title: '降低账号被接管后的影响', count: 3 },
+  { value: '处理与应急', label: '处理与应急', code: 'RESPONSE', title: '把判断转成处置动作', count: 6 },
+  { value: '上报协作', label: '上报协作', code: 'REPORT', title: '让证据进入正确的处置流程', count: 3 },
+  { value: '典型案例', label: '典型案例', code: 'CASES', title: '通过对比建立判断经验', count: 3 },
+];
+const state = { source: 'file', result: null, historyRisk: '', historyPage: 1, historyPageSize: 20, blacklistKeyword: '', blacklistStatus: '', knowledgeCategory: '', knowledgeKeyword: '', knowledgeCategories: knowledgeCategoryOptions };
 const labels = { low: '低风险', medium: '中风险', high: '高风险', legitimate: '模型倾向正常', phishing: '模型倾向钓鱼', active: '启用', review: '待复核', false_positive: '误报' };
 const ruleDescriptions = { R01: '发件人与 Reply-To 域名不一致', R02: '链接显示信息与真实目标不一致', R03: 'URL 或注册域名命中黑名单', R04: '正文包含紧迫性诱导语言', R05: '要求提交账号或敏感信息', R06: 'URL 存在可疑结构特征', R07: '附件类型或文件名存在风险提示', R08: '发件人字段缺失或格式异常', R09: '邮件头存在异常或不完整信息', R10: '邮件内容包含其他可疑信号' };
 const analysisStages = ['正在接收邮件内容', '正在解析 MIME 结构', '正在提取 URL 与附件', '正在执行规则检测', '正在运行模型推理', '正在融合风险结果', '正在整理证据'];
@@ -115,10 +124,125 @@ function renderCharts(data) {
 }
 function renderModel(metrics) { const host=$('#model-metrics');host.replaceChildren();host.append(el('p','panel-kicker','MODEL HEALTH'),el('h2','',metrics?.model_name||'模型指标未就绪'));if(!metrics)return host.append(el('p','', '本地模型元数据暂不可用，检测接口会明确返回未就绪状态。'));host.append(el('p','model-version',`${metrics.model_version} · ${metrics.feature_version}`));const grid=el('div','model-stat-grid');[['Precision',metrics.metrics?.test_precision],['Recall',metrics.metrics?.test_recall],['F1',metrics.metrics?.test_f1],['Accuracy',metrics.metrics?.test_accuracy]].forEach(([name,value])=>{const stat=el('div','model-stat');stat.append(el('b','',value==null?'-':`${(value*100).toFixed(1)}%`),el('span','',name));grid.append(stat);});host.append(grid); }
 
-async function loadKnowledge() { const host = $('#knowledge-content'); host.replaceChildren(el('div', 'loading-state', '正在读取知识库…')); try { if (!state.knowledgeCategories.length) { const all = await api.knowledge({}); state.knowledgeCategories = ['', ...new Set(all.map(item => item.category).filter(Boolean))]; renderKnowledgeCategories(); } const items = await api.knowledge({ keyword: state.knowledgeKeyword, category: state.knowledgeCategory }); host.replaceChildren(); if (!items.length) return host.append(el('div', 'empty-table', '暂无匹配内容')); items.forEach((item, index) => { const id = String(item.id ?? item.slug ?? `${item.category}-${item.title}-${index}`); const card = el('article', `panel knowledge-card${index === 0 ? ' knowledge-card-featured' : ''}`); card.append(el('span', 'knowledge-index', `${String(index + 1).padStart(2, '0')} · ${item.category || 'GUIDE'}`), el('h2', '', text(item.title)), el('p', '', text(item.summary))); const toggle = el('button', 'knowledge-toggle', state.knowledgeOpenId === id ? '收起内容' : '展开阅读'); toggle.type = 'button'; toggle.setAttribute('aria-expanded', state.knowledgeOpenId === id ? 'true' : 'false'); const details = el('div', `knowledge-details${state.knowledgeOpenId === id ? ' open' : ''}`); details.append(el('p', '', text(item.content))); toggle.addEventListener('click', () => { state.knowledgeOpenId = state.knowledgeOpenId === id ? null : id; loadKnowledge(); }); card.append(toggle, details); host.append(card); }); } catch (error) { host.replaceChildren(el('div', 'empty-table', error.message)); handleError(error); } }
-function renderKnowledgeCategories() { const host = $('#knowledge-categories'); host.replaceChildren(); state.knowledgeCategories.forEach(category => { const button = el('button', `filter-button ${state.knowledgeCategory === category ? 'active' : ''}`, category || '全部'); button.addEventListener('click', () => { state.knowledgeCategory = category; state.knowledgeOpenId = null; loadKnowledge(); }); host.append(button); }); }
+async function loadKnowledge() {
+  const host = $('#knowledge-content');
+  const featureHost = $('#knowledge-feature');
+  host.replaceChildren(el('div', 'loading-state', '正在读取知识库…'));
+  featureHost.replaceChildren();
+  try {
+    const items = await api.knowledge({ keyword: state.knowledgeKeyword, category: state.knowledgeCategory });
+    const category = state.knowledgeCategories.find(item => item.value === state.knowledgeCategory) || state.knowledgeCategories[0];
+    $('#knowledge-section-kicker').textContent = category.code;
+    $('#knowledge-section-title').textContent = category.title;
+    $('#knowledge-result-count').textContent = state.knowledgeKeyword ? `找到 ${items.length} 篇相关内容` : `${items.length} 篇内容`;
+    host.replaceChildren();
+    if (!items.length) {
+      featureHost.classList.add('hidden');
+      return host.append(el('div', 'empty-table knowledge-empty', '没有找到匹配内容，请尝试更换关键词或专题。'));
+    }
+    featureHost.classList.remove('hidden');
+    const featured = items.find(item => item.featured) || items[0];
+    renderKnowledgeFeature(featured, featureHost);
+    items.filter(item => item.id !== featured.id).forEach((item, index) => host.append(renderKnowledgeCard(item, index)));
+  } catch (error) {
+    featureHost.classList.add('hidden');
+    host.replaceChildren(el('div', 'empty-table', error.message));
+    handleError(error);
+  }
+}
+function renderKnowledgeFeature(item, host) {
+  const copy = el('div', 'knowledge-feature-copy');
+  const meta = el('div', 'knowledge-meta');
+  meta.append(el('span', 'knowledge-type', text(item.topic_type, '专题')), el('span', 'knowledge-time', text(item.reading_time, '3 分钟')));
+  copy.append(meta, el('span', 'knowledge-feature-kicker', `${item.category} / EDITOR'S NOTE`), el('h3', '', text(item.title)), el('p', '', text(item.summary)));
+  const button = el('button', 'knowledge-feature-action', '进入专题');
+  button.type = 'button';
+  button.addEventListener('click', () => openKnowledgeDialog(item));
+  copy.append(button);
+  const notes = el('div', 'knowledge-feature-notes');
+  notes.append(el('span', '', '本篇你将掌握'));
+  const list = el('ul');
+  (item.key_points?.length ? item.key_points : item.steps || []).slice(0, 4).forEach(point => list.append(el('li', '', point)));
+  if (!list.children.length) list.append(el('li', '', '识别风险并选择更稳妥的处理方式'));
+  notes.append(list);
+  host.replaceChildren(copy, notes);
+}
+function renderKnowledgeCard(item, index) {
+  const card = el('article', 'panel knowledge-card');
+  const meta = el('div', 'knowledge-meta');
+  meta.append(el('span', 'knowledge-type', text(item.topic_type, '指南')), el('span', 'knowledge-time', text(item.reading_time, '3 分钟')));
+  card.append(meta, el('span', 'knowledge-index', `${String(index + 1).padStart(2, '0')} · ${item.category}`), el('h2', '', text(item.title)), el('p', '', text(item.summary)));
+  const points = (item.key_points || []).slice(0, 2);
+  if (points.length) {
+    const preview = el('ul', 'knowledge-card-points');
+    points.forEach(point => preview.append(el('li', '', point)));
+    card.append(preview);
+  }
+  const button = el('button', 'knowledge-toggle', '阅读详情');
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.addEventListener('click', () => openKnowledgeDialog(item));
+  card.append(button);
+  return card;
+}
+function renderKnowledgeCategories() {
+  const host = $('#knowledge-categories');
+  host.replaceChildren();
+  state.knowledgeCategories.forEach(category => {
+    const button = el('button', `filter-button ${state.knowledgeCategory === category.value ? 'active' : ''}`);
+    button.type = 'button';
+    button.setAttribute('aria-pressed', state.knowledgeCategory === category.value ? 'true' : 'false');
+    button.append(el('span', '', category.label), el('small', '', category.count));
+    button.addEventListener('click', () => {
+      if (state.knowledgeCategory === category.value) return;
+      state.knowledgeCategory = category.value;
+      renderKnowledgeCategories();
+      loadKnowledge();
+    });
+    host.append(button);
+  });
+}
+function appendKnowledgeList(root, title, items, ordered = false) {
+  if (!items?.length) return;
+  const section = el('section', 'knowledge-dialog-section');
+  section.append(el('h3', '', title));
+  const list = el(ordered ? 'ol' : 'ul', ordered ? 'knowledge-step-list' : 'knowledge-point-list');
+  items.forEach(item => list.append(el('li', '', item)));
+  section.append(list);
+  root.append(section);
+}
+function openKnowledgeDialog(item) {
+  $('#knowledge-dialog-category').textContent = `${item.category || 'FIELD GUIDE'} / ${text(item.topic_type, '指南')}`;
+  $('#knowledge-dialog-title').textContent = text(item.title);
+  $('#knowledge-dialog-summary').textContent = text(item.summary);
+  const meta = $('#knowledge-dialog-meta');
+  meta.replaceChildren(el('span', 'knowledge-type', text(item.topic_type, '指南')), el('span', 'knowledge-time', text(item.reading_time, '3 分钟')));
+  const body = $('#knowledge-dialog-body');
+  body.replaceChildren(el('p', 'knowledge-dialog-lede', text(item.content)));
+  appendKnowledgeList(body, '关键要点', item.key_points || []);
+  if (item.comparison && Object.keys(item.comparison).length) {
+    const section = el('section', 'knowledge-dialog-section');
+    section.append(el('h3', '', '对比观察'));
+    const grid = el('div', 'knowledge-comparison');
+    Object.entries(item.comparison).forEach(([title, values], index) => {
+      const column = el('div', `knowledge-comparison-column ${index === 0 ? 'baseline' : 'risk'}`);
+      column.append(el('b', '', title));
+      const list = el('ul');
+      (values || []).forEach(value => list.append(el('li', '', value)));
+      column.append(list);
+      grid.append(column);
+    });
+    section.append(grid);
+    body.append(section);
+  }
+  appendKnowledgeList(body, '建议步骤', item.steps || [], true);
+  const reminder = el('div', 'knowledge-dialog-reminder');
+  reminder.append(el('span', '', 'STATIC FIRST'), el('p', '', '核验过程中不要访问可疑链接，不要打开未知附件；需要确认时，使用已知的官方渠道。'));
+  body.append(reminder);
+  $('#knowledge-dialog').showModal();
+}
 
-function setupNavigation() { $$('.nav-item').forEach(button=>button.addEventListener('click',()=>switchView(button.dataset.view))); $('#brand-home').addEventListener('click',event=>{event.preventDefault();switchView('welcome');}); $('#start-analysis').addEventListener('click',()=>switchView('analyze')); $('#refresh-history').addEventListener('click',loadHistory); $('#history-page-size').addEventListener('change',event=>{state.historyPageSize=Number(event.target.value)||20;state.historyPage=1;loadHistory();}); $$('.filter-button[data-history-risk]').forEach(button=>button.addEventListener('click',()=>{state.historyRisk=button.dataset.historyRisk;state.historyPage=1;$$('.filter-button[data-history-risk]').forEach(item=>item.classList.toggle('active',item===button));loadHistory();})); $('#blacklist-search').addEventListener('input',debounce(event=>{state.blacklistKeyword=event.target.value;loadBlacklist();},350)); $('#blacklist-status').addEventListener('change',event=>{state.blacklistStatus=event.target.value;loadBlacklist();}); $('#knowledge-search').addEventListener('input',debounce(event=>{state.knowledgeKeyword=event.target.value;loadKnowledge();},350)); $('#blacklist-form').addEventListener('submit',async event=>{event.preventDefault();try{await api.createBlacklist({indicator:$('#indicator').value.trim(),indicator_type:$('#indicator-type').value,source:$('#indicator-source').value,note:$('#indicator-note').value.trim()||'',confidence:null});event.target.reset();showToast('黑名单条目已新增');loadBlacklist();}catch(error){handleError(error);}}); $('#close-dialog').addEventListener('click',()=>$('#detail-dialog').close()); $('#delete-detail').addEventListener('click',async event=>{const id=event.currentTarget.dataset.detectionId;if(!id)return;if(!window.confirm('确定删除这条检测记录吗？'))return;try{await api.deleteDetection(id);$('#detail-dialog').close();showToast('检测记录已删除');loadHistory();}catch(error){handleError(error);}}); }
+function setupNavigation() { $$('.nav-item').forEach(button=>button.addEventListener('click',()=>switchView(button.dataset.view))); $('#brand-home').addEventListener('click',event=>{event.preventDefault();switchView('welcome');}); $('#start-analysis').addEventListener('click',()=>switchView('analyze')); $('#refresh-history').addEventListener('click',loadHistory); $('#history-page-size').addEventListener('change',event=>{state.historyPageSize=Number(event.target.value)||20;state.historyPage=1;loadHistory();}); $$('.filter-button[data-history-risk]').forEach(button=>button.addEventListener('click',()=>{state.historyRisk=button.dataset.historyRisk;state.historyPage=1;$$('.filter-button[data-history-risk]').forEach(item=>item.classList.toggle('active',item===button));loadHistory();})); $('#blacklist-search').addEventListener('input',debounce(event=>{state.blacklistKeyword=event.target.value;loadBlacklist();},350)); $('#blacklist-status').addEventListener('change',event=>{state.blacklistStatus=event.target.value;loadBlacklist();}); $('#knowledge-search').addEventListener('input',debounce(event=>{state.knowledgeKeyword=event.target.value;loadKnowledge();},350)); $('#blacklist-form').addEventListener('submit',async event=>{event.preventDefault();try{await api.createBlacklist({indicator:$('#indicator').value.trim(),indicator_type:$('#indicator-type').value,source:$('#indicator-source').value,note:$('#indicator-note').value.trim()||'',confidence:null});event.target.reset();showToast('黑名单条目已新增');loadBlacklist();}catch(error){handleError(error);}}); $('#close-dialog').addEventListener('click',()=>$('#detail-dialog').close()); $('#close-knowledge-dialog').addEventListener('click',()=>$('#knowledge-dialog').close()); $('#delete-detail').addEventListener('click',async event=>{const id=event.currentTarget.dataset.detectionId;if(!id)return;if(!window.confirm('确定删除这条检测记录吗？'))return;try{await api.deleteDetection(id);$('#detail-dialog').close();showToast('检测记录已删除');loadHistory();}catch(error){handleError(error);}}); renderKnowledgeCategories(); }
 function debounce(fn, wait){let timer;return(...args)=>{clearTimeout(timer);timer=setTimeout(()=>fn(...args),wait);};}
 
 setupInput(); setupNavigation();
