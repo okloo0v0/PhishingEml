@@ -16,7 +16,7 @@ export function health() { return request('/health'); }
 export function analyzeFile(file) { const data = new FormData(); data.append('file', file); return request('/api/emails/analyze', { method: 'POST', body: data }); }
 export function analyzeText(rawText) { const data = new FormData(); data.append('raw_text', rawText); return request('/api/emails/analyze', { method: 'POST', body: data }); }
 export function analyzeSample(sampleId) { const data = new FormData(); data.append('sample_id', sampleId); return request('/api/emails/analyze', { method: 'POST', body: data }); }
-export function listDetections(riskLevel = '') { const query = new URLSearchParams({ page: '1', page_size: '50' }); if (riskLevel) query.set('risk_level', riskLevel); return request(`/api/detections?${query}`); }
+export function listDetections({ page = 1, pageSize = 20, riskLevel = '' } = {}) { const query = new URLSearchParams({ page: String(page), page_size: String(pageSize) }); if (riskLevel) query.set('risk_level', riskLevel); return request(`/api/detections?${query}`); }
 export function detectionDetail(id) { return request(`/api/detections/${encodeURIComponent(id)}`); }
 export function deleteDetection(id) { return request(`/api/detections/${encodeURIComponent(id)}`, { method: 'DELETE' }); }
 export function listBlacklist(keyword = '', status = '') { const query = new URLSearchParams({ page: '1', page_size: '100' }); if (keyword) query.set('keyword', keyword); if (status) query.set('status', status); return request(`/api/blacklist?${query}`); }
