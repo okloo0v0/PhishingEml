@@ -69,28 +69,3 @@ uv run python scripts\export_test_emails.py
 ```
 
 邮件会输出到被 Git 忽略的 `tmp/testset_eml/`。该命令只恢复 Nazario 和 SpamAssassin ham 中能通过 `source_hash` 校验的邮件；批量平台联调结果见 `docs/test-report.md`。
-
-成员1的数据收集命令：
-
-```powershell
-uv run python scripts\download_datasets.py --list
-uv run python scripts\download_datasets.py
-uv run python scripts\inventory_datasets.py
-```
-
-公开原始邮件保存在 `data/raw/` 且不提交 Git；来源、许可证、哈希和样本库存记录在 `data/manifests/`。
-
-补充语料（原始 CSV 同样不提交 Git）：
-
-```powershell
-uv run python scripts\download_supplemental.py
-uv run python scripts\prepare_supplemental_dataset.py
-uv run python scripts\deduplicate_dataset.py `
-  --input data\processed\cleaned_emails.jsonl `
-  --input data\processed\supplemental_cleaned_emails.jsonl `
-  --output data\processed\deduplicated_emails_combined.jsonl `
-  --report data\manifests\dedup_combined_report.json
-uv run python scripts\split_dataset.py
-uv run python scripts\train_model.py
-uv run python scripts\generate_model_metadata.py
-```
