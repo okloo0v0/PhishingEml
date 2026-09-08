@@ -21,6 +21,13 @@ README/LICENSE 审计文件。明细见 `manifests/source_audit.csv`。LLMGen �
 下一步应优先验证能提供 2022--2026 实际邮件时间覆盖的公开来源，再从中清洗、去重并抽取约
 20K--30K 条补充样本；`license_status=review_required` 的资源不得直接进入训练。
 
+## Sting9 快速核验结论
+
+Sting9 页面描述了邮件正文、脱敏 raw headers、语言、攻击类型、原始时间戳和附件元数据，理论上
+适合 V1.2 的轻量多视图数据补充。但截至 2026-09-08，研究入口将数据下载标为 `Coming Soon`，
+API 需要研究者注册和 JWT，公开页面给出的 GitHub dump 也未能形成可重复下载入口。因此当前将
+`sting9_email` 标记为 `failed`，不下载、不纳入训练；待公开转储或 API 访问重新可复现后再恢复审计。
+
 ```powershell
 uv run python scripts\download_v1_2_sources.py --list
 uv run python scripts\download_v1_2_sources.py
