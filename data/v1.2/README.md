@@ -28,6 +28,11 @@ Sting9 页面描述了邮件正文、脱敏 raw headers、语言、攻击类型�
 API 需要研究者注册和 JWT，公开页面给出的 GitHub dump 也未能形成可重复下载入口。因此当前将
 `sting9_email` 标记为 `failed`，不下载、不纳入训练；待公开转储或 API 访问重新可复现后再恢复审计。
 
+中文公开训练集路线已在 2026-09-08 关闭。检索报告见
+`docs/v1.2-data-source-and-paper-review-2026-09.md`：当前未找到同时满足真实中文邮件、公开可下载、
+许可证可审计、非纯生成和近年时效性的来源。中文能力改由独立人工回归集、成对意图样本和字符级
+多视图特征验证。
+
 ```powershell
 uv run python scripts\download_v1_2_sources.py --list
 uv run python scripts\download_v1_2_sources.py
