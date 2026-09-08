@@ -1,0 +1,29 @@
+{
+  "subject": "\u7acb\u5373\u9a8c\u8bc1\u60a8\u7684\u5e10\u53f7",
+  "sender_domain": "example.invalid",
+  "reply_to_domain": null,
+  "url_count": 1,
+  "attachment_count": 0,
+  "parse_warnings_contains": [],
+  "rule_codes": [
+    "R04",
+    "R05",
+    "R06"
+  ],
+  "urls": [
+    {
+      "host": "www.verify.example.invalid",
+      "registrable_domain": "example.invalid",
+      "is_https": false,
+      "uses_ip": false,
+      "suspicious_tokens_contains": [
+        "missing_scheme",
+        "non_https",
+        "verify",
+        "account",
+        "update"
+      ]
+    }
+  ],
+  "attachments": []
+}

@@ -1,0 +1,32 @@
+{
+  "subject": "Urgent account verify now",
+  "sender_domain": "updates.example.invalid",
+  "reply_to_domain": "reply.example.invalid",
+  "url_count": 1,
+  "attachment_count": 0,
+  "parse_warnings_contains": [],
+  "rule_codes": [
+    "R01",
+    "R02",
+    "R04",
+    "R05",
+    "R06",
+    "R10"
+  ],
+  "urls": [
+    {
+      "host": "192.0.2.50",
+      "registrable_domain": "",
+      "display_text": "https://bank.example.invalid/secure",
+      "is_https": false,
+      "uses_ip": true,
+      "suspicious_tokens_contains": [
+        "ip_host",
+        "non_https",
+        "encoded_chars",
+        "login"
+      ]
+    }
+  ],
+  "attachments": []
+}

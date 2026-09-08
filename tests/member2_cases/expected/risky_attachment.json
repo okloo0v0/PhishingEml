@@ -1,0 +1,23 @@
+{
+  "subject": "Payroll document",
+  "sender_domain": "example.invalid",
+  "reply_to_domain": null,
+  "url_count": 0,
+  "attachment_count": 1,
+  "parse_warnings_contains": [],
+  "rule_codes": [
+    "R07"
+  ],
+  "urls": [],
+  "attachments": [
+    {
+      "filename": "payroll.pdf.exe",
+      "extension": ".exe",
+      "risk_hints_contains": [
+        "risky_extension",
+        "double_extension",
+        "executable_like_content_type"
+      ]
+    }
+  ]
+}

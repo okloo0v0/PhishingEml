@@ -1,0 +1,249 @@
+import * as api from './api.js';
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const knowledgeCategoryOptions = [
+  { value: '', label: '全部', code: 'ALL TOPICS', title: '完整防范知识库', count: 27 },
+  { value: '识别风险', label: '识别风险', code: 'IDENTIFY', title: '识别身份、语气与业务伪装', count: 6 },
+  { value: '链接与附件', label: '链接与附件', code: 'LINKS & FILES', title: '核验链接目标与文件风险', count: 6 },
+  { value: '账号保护', label: '账号保护', code: 'ACCOUNT', title: '降低账号被接管后的影响', count: 3 },
+  { value: '处理与应急', label: '处理与应急', code: 'RESPONSE', title: '把判断转成处置动作', count: 6 },
+  { value: '上报协作', label: '上报协作', code: 'REPORT', title: '让证据进入正确的处置流程', count: 3 },
+  { value: '典型案例', label: '典型案例', code: 'CASES', title: '通过对比建立判断经验', count: 3 },
+];
+const state = { source: 'file', result: null, historyRisk: '', historyPage: 1, historyPageSize: 20, blacklistKeyword: '', blacklistStatus: '', knowledgeCategory: '', knowledgeKeyword: '', knowledgeCategories: knowledgeCategoryOptions };
+const labels = { low: '低风险', medium: '中风险', high: '高风险', legitimate: '模型倾向正常', phishing: '模型倾向钓鱼', active: '启用', review: '待复核', false_positive: '误报' };
+const ruleDescriptions = { R01: '发件人与 Reply-To 域名不一致', R02: '链接显示信息与真实目标不一致', R03: 'URL 或注册域名命中黑名单', R04: '正文包含紧迫性诱导语言', R05: '要求提交账号或敏感信息', R06: 'URL 存在可疑结构特征', R07: '附件类型或文件名存在风险提示', R08: '发件人字段缺失或格式异常', R09: '邮件头存在异常或不完整信息', R10: '邮件内容包含其他可疑信号' };
+const analysisStages = ['正在接收邮件内容', '正在解析 MIME 结构', '正在提取 URL 与附件', '正在执行规则检测', '正在运行模型推理', '正在融合风险结果', '正在整理证据'];
+let analysisTimer = null;
+let analysisAnimationPromise = null;
+
+function text(value, fallback = '-') { return value === null || value === undefined || value === '' ? fallback : String(value); }
+function el(tag, className, content) { const node = document.createElement(tag); if (className) node.className = className; if (content !== undefined) node.textContent = content; return node; }
+function showToast(message, error = false) { const toast = $('#toast'); toast.textContent = message; toast.classList.toggle('error', error); toast.classList.add('show'); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove('show'), 3000); }
+function handleError(error) { showToast(`${error.message}${error.code ? ` · ${error.code}` : ''}`, true); }
+function setLoading(isLoading) {
+  const submit = $('#analysis-form button[type="submit"]');
+  if (submit) submit.disabled = isLoading;
+  $('#result-empty').classList.toggle('hidden', isLoading || Boolean(state.result));
+  $('#analysis-loading').classList.toggle('hidden', !isLoading);
+  $('#result-content').classList.toggle('hidden', isLoading || !state.result);
+  clearInterval(analysisTimer);
+  if (!isLoading) {
+    analysisAnimationPromise = null;
+    return;
+  }
+  const steps = $$('#analysis-steps li');
+  steps.forEach(step => { step.classList.remove('active', 'done'); step.querySelector('b').textContent = '等待'; });
+  let current = 0;
+  const update = () => {
+    steps.forEach((step, index) => { step.classList.toggle('active', index === current); step.classList.toggle('done', index < current); if (index < current) step.querySelector('b').textContent = '完成'; else if (index === current) step.querySelector('b').textContent = '进行中'; else step.querySelector('b').textContent = '等待'; });
+    $('#analysis-stage-copy').textContent = analysisStages[current] || analysisStages[analysisStages.length - 1];
+    $('#analysis-progress-bar').style.width = `${Math.min(96, ((current + 1) / steps.length) * 100)}%`;
+    current = Math.min(current + 1, steps.length - 1);
+  };
+  update();
+  analysisTimer = setInterval(update, 520);
+  analysisAnimationPromise = new Promise(resolve => setTimeout(resolve, steps.length * 520 + 260));
+}
+
+function switchView(name) {
+  $$('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.view === name));
+  $$('.view').forEach(view => view.classList.toggle('active', view.id === `view-${name}`));
+  const copy = { welcome: ['Signal Observatory', '把可疑，变成看得懂的证据。', 'ORIENTATION / OBSERVATORY'], analyze: ['静态邮件检测', '识别风险，从一封邮件开始。', 'ANALYZE / STATIC SIGNALS'], history: ['检测历史', '回看每一次风险判断。', 'ARCHIVE / DECISIONS'], blacklist: ['离线黑名单', '管理用于静态匹配的指标。', 'CONTROL / INDICATORS'], dashboard: ['统计看板', '把检测记录变成可读的趋势。', 'OBSERVE / METRICS'], knowledge: ['防范知识', '把一次检测变成长期判断力。', 'FIELD GUIDE / AWARENESS'] }[name];
+  if (copy) { $('#page-eyebrow').textContent = copy[0]; $('#page-title').textContent = copy[1]; $('#page-context').textContent = copy[2]; }
+  if (name === 'history') loadHistory(); if (name === 'blacklist') loadBlacklist(); if (name === 'dashboard') loadDashboard(); if (name === 'knowledge') loadKnowledge();
+}
+
+function setupInput() {
+  $$('.source-option').forEach(button => button.addEventListener('click', () => { state.source = button.dataset.source; $$('.source-option').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-selected', item === button ? 'true' : 'false'); }); $$('.source-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.sourcePane === state.source)); }));
+  const fileInput = $('#email-file'); const drop = $('#drop-zone');
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) $('#file-label').textContent = fileInput.files[0].name; });
+  ['dragenter', 'dragover'].forEach(type => drop.addEventListener(type, event => { event.preventDefault(); drop.classList.add('drag'); })); ['dragleave', 'drop'].forEach(type => drop.addEventListener(type, event => { event.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', event => { const file = event.dataTransfer.files[0]; if (file) { fileInput.files = event.dataTransfer.files; $('#file-label').textContent = file.name; } });
+  $('#raw-email').addEventListener('input', event => { $('#text-count').textContent = event.target.value.length.toLocaleString('en-US'); });
+  $('#analysis-form').addEventListener('submit', async event => { event.preventDefault(); const file = fileInput.files[0]; const raw = $('#raw-email').value; const sampleId = $('#sample-id').value.trim(); if (state.source === 'file' && !file) return showToast('请先选择一个 .eml 文件', true); if (state.source === 'text' && !raw.trim()) return showToast('请粘贴完整邮件原文', true); if (state.source === 'sample' && !sampleId) return showToast('请输入演示样本 ID', true); setLoading(true); try { const request = state.source === 'file' ? api.analyzeFile(file) : state.source === 'text' ? api.analyzeText(raw) : api.analyzeSample(sampleId); const [result] = await Promise.all([request, analysisAnimationPromise]); state.result = result; renderResult(state.result); showToast('静态分析完成'); } catch (error) { state.result = null; setLoading(false); handleError(error); } });
+}
+
+function renderResult(result) {
+  setLoading(false); const root = $('#result-content'); root.replaceChildren();
+  const summary = el('div', 'result-summary'); const risk = el('div', `risk-card ${result.risk_level}`); risk.append(el('div', 'risk-kicker', 'FUSED RISK SCORE')); const score = el('div', 'risk-score'); score.append(el('strong', '', Math.round(result.final_score)), el('span', '', '/ 100')); risk.append(score, el('p', 'risk-level', `${labels[result.risk_level] || result.risk_level} · ${labels[result.result_label] || result.result_label}`));
+  const meta = el('div', 'panel result-meta'); [['模型概率', `${Math.round(result.model_probability * 100)}%`, 'phishing probability'], ['规则得分', `${Math.round(result.rule_score)} / 100`, 'deduplicated rule score'], ['模型版本', text(result.model_version), 'local pipeline']].forEach(([name, value, hint]) => { const block = el('div'); block.append(el('span', '', name), el('b', '', value), el('small', '', hint)); meta.append(block); }); summary.append(risk, meta); root.append(summary);
+  const grid = el('div', 'detail-grid'); const evidence = el('section', 'panel detail-section'); evidence.append(el('h2', '', '风险证据')); const list = el('div', 'explanation-list evidence-scroll'); (result.explanations || []).forEach(item => { const card = el('article', `explanation ${item.severity || 'warning'}`); card.append(el('b', '', `${item.code} · ${text(item.title)}`), el('p', '', text(item.detail))); if (item.evidence) card.append(el('span', 'evidence-text', item.evidence)); list.append(card); }); if (!list.children.length) list.append(el('p', 'muted-copy', '暂未发现规则命中，仍请结合模型概率和上下文判断。')); evidence.append(list);
+  const advice = el('section', 'panel detail-section'); advice.append(el('h2', '', '处理建议')); const adviceList = el('ul', 'advice-list'); (result.advice || ['不要点击邮件中的链接或打开附件。']).forEach(item => adviceList.append(el('li', '', item))); advice.append(adviceList); if ((result.parse_warnings || []).length) { const warning = el('div', 'warning-box', `解析提醒：${result.parse_warnings.join('；')}`); advice.append(warning); } grid.append(evidence, advice); root.append(grid);
+  const assets = el('div', 'detail-grid'); assets.append(renderUrls(result.urls || []), renderAttachments(result.attachments || [])); root.append(assets);
+  const feedbackPanel = el('section', 'panel detail-section feedback-panel'); feedbackPanel.append(el('h2', '', '人工反馈')); const feedbackRow = el('div', 'feedback-row'); feedbackRow.append(el('span', '', '这个判断对你有帮助吗？')); ['confirmed_phishing', 'false_positive', 'unsure'].forEach(label => { const button = el('button', 'filter-button', { confirmed_phishing: '确认钓鱼', false_positive: '认为误报', unsure: '暂不确定' }[label]); button.addEventListener('click', async () => { try { await api.feedback({ detection_id: result.detection_id, label, note: '' }); feedbackRow.querySelectorAll('button').forEach(item => item.classList.remove('active')); button.classList.add('active'); showToast('反馈已记录'); } catch (error) { handleError(error); } }); feedbackRow.append(button); }); feedbackPanel.append(feedbackRow); root.append(feedbackPanel);
+}
+
+function renderUrls(urls) { const section = el('section', 'panel detail-section'); section.append(el('h2', '', `URL 静态信息 · ${urls.length}`)); const list = el('div', 'compact-list'); urls.forEach(url => { const row = el('div', 'data-row'); row.append(el('b', '', text(url.display_text || url.raw_url))); row.append(el('small', '', `${text(url.host)} · ${url.is_https ? 'HTTPS' : '非 HTTPS'}${url.blacklist_hit ? ' · 命中离线黑名单' : ''}`)); if (url.suspicious_tokens?.length) { const tags = el('div'); url.suspicious_tokens.forEach(token => tags.append(el('span', 'tag', token))); row.append(tags); } list.append(row); }); if (!urls.length) list.append(el('p', 'muted-copy', '未提取到 URL')); section.append(list); return section; }
+function renderAttachments(items) { const section = el('section', 'panel detail-section'); section.append(el('h2', '', `附件元数据 · ${items.length}`)); const list = el('div', 'compact-list'); items.forEach(item => { const row = el('div', 'data-row'); row.append(el('b', '', text(item.filename))); row.append(el('small', '', `${text(item.mime_type)} · ${Number(item.size || 0).toLocaleString('en-US')} bytes`)); (item.risk_hints || []).forEach(hint => row.append(el('span', 'tag', hint))); list.append(row); }); if (!items.length) list.append(el('p', 'muted-copy', '未发现附件')); section.append(list); return section; }
+
+async function loadHistory() {
+  const host = $('#history-content');
+  host.replaceChildren(el('div', 'loading-state', '正在读取历史记录…'));
+  try {
+    const data = await api.listDetections({ page: state.historyPage, pageSize: state.historyPageSize, riskLevel: state.historyRisk });
+    host.replaceChildren();
+    if (!data.items?.length) { host.append(el('div', 'empty-table', '还没有检测记录')); renderHistoryPagination(data.pagination); return; }
+    const table = el('table', 'data-table'); const head = el('thead'); const tr = el('tr');
+    ['主题', '风险', '分数', '资源', '时间', ''].forEach(name => tr.append(el('th', '', name))); head.append(tr);
+    const body = el('tbody');
+    data.items.forEach(item => { const row = el('tr'); const subject = el('td', 'subject-cell', text(item.subject, '无主题')); const risk = el('td'); risk.append(el('span', `risk-pill ${item.risk_level}`, labels[item.risk_level] || item.risk_level)); row.append(subject, risk, el('td', '', Math.round(item.final_score)), el('td', '', `${item.url_count || 0} URL · ${item.attachment_count || 0} 附件`), el('td', '', formatDate(item.created_at))); const action = el('td'); const button = el('button', 'table-action', '查看'); button.addEventListener('click', () => openDetail(item.detection_id, item.subject)); action.append(button); row.append(action); body.append(row); });
+    table.append(head, body); host.append(table); renderHistoryPagination(data.pagination);
+  } catch (error) { host.replaceChildren(el('div', 'empty-table', error.message)); renderHistoryPagination(null); handleError(error); }
+}
+function renderHistoryPagination(pagination) {
+  const host = $('#history-pagination'); if (!host) return; host.replaceChildren();
+  const total = pagination?.total || 0; const totalPages = pagination?.total_pages || 0; const page = pagination?.page || state.historyPage;
+  const summary = el('span', 'pagination-summary', total ? `共 ${total} 条 · 第 ${page} / ${totalPages} 页` : '暂无记录');
+  const controls = el('div', 'pagination-controls');
+  const prev = el('button', 'pagination-button', '上一页'); prev.type = 'button'; prev.disabled = page <= 1; prev.addEventListener('click', () => { state.historyPage = Math.max(1, page - 1); loadHistory(); });
+  const next = el('button', 'pagination-button', '下一页'); next.type = 'button'; next.disabled = !totalPages || page >= totalPages; next.addEventListener('click', () => { state.historyPage = Math.min(totalPages, page + 1); loadHistory(); });
+  controls.append(prev, next); host.append(summary, controls);
+}
+function formatDate(value) { if (!value) return '-'; const date = new Date(value); return Number.isNaN(date.getTime()) ? value : date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+async function openDetail(id, subject) { try { const detail = await api.detectionDetail(id); $('#dialog-title').textContent = subject || '检测详情'; $('#delete-detail').dataset.detectionId = id; const content = $('#dialog-content'); content.replaceChildren(); const result = { ...detail, ...(detail.email ? { urls: detail.urls || [], attachments: detail.attachments || [] } : {}) }; const wrapper = el('div'); wrapper.append(renderResultFragment(result)); content.append(wrapper); $('#detail-dialog').showModal(); } catch (error) { handleError(error); } }
+function renderResultFragment(result) { const fragment = document.createDocumentFragment(); const grid = el('div', 'detail-grid'); const e = el('section', 'detail-section'); e.append(el('h2', '', '风险证据')); (result.explanations || []).forEach(item => { const card = el('article', `explanation ${item.severity || 'warning'}`); card.append(el('b', '', `${item.code} · ${text(item.title)}`), el('p', '', text(item.detail))); if (item.evidence) card.append(el('span', 'evidence-text', item.evidence)); e.append(card); }); const a = el('section', 'detail-section'); a.append(el('h2', '', '邮件信息')); const email = result.email || {}; [['主题', email.subject], ['发件人', email.sender?.address], ['回复至', email.reply_to?.address], ['文件名', email.filename]].forEach(([k,v]) => { const row=el('div','data-row'); row.append(el('small','',k),el('b','',text(v))); a.append(row); }); if (email.text_body) { const body = el('div', 'mail-body-safe'); body.append(el('small', '', '纯文本正文')); body.append(el('p', '', email.text_body)); a.append(body); } if ((email.parse_warnings || []).length) a.append(el('div', 'warning-box', `解析提醒：${email.parse_warnings.join('；')}`)); grid.append(e,a); fragment.append(grid, renderUrls(result.urls || []), renderAttachments(result.attachments || [])); return fragment; }
+
+async function loadBlacklist() { const host = $('#blacklist-content'); host.replaceChildren(el('div', 'loading-state', '正在读取黑名单…')); try { const data = await api.listBlacklist(state.blacklistKeyword, state.blacklistStatus); host.replaceChildren(); if (!data.items?.length) return host.append(el('div', 'empty-table', '暂无黑名单指标')); const table=el('table','data-table'), head=el('thead'), tr=el('tr'); ['指标','类型','来源','状态','命中',''].forEach(name=>tr.append(el('th','',name))); head.append(tr); const body=el('tbody'); data.items.forEach(item=>{ const row=el('tr'); row.append(el('td','subject-cell',text(item.indicator)),el('td','',item.indicator_type),el('td','',item.source)); const status=el('td'); status.append(el('span',`status-pill ${item.status}`,labels[item.status]||item.status)); row.append(status,el('td','',item.hit_count||0)); const action=el('td'); if(item.status==='active'){ const btn=el('button','table-action','停用'); btn.addEventListener('click',async()=>{try{await api.updateBlacklist(item.id,{status:'review'});showToast('已标记为待复核');loadBlacklist();}catch(error){handleError(error);}});action.append(btn);} row.append(action);body.append(row);});table.append(head,body);host.append(table);}catch(error){host.replaceChildren(el('div','empty-table',error.message));handleError(error);} }
+
+async function loadDashboard() { try { const [data, metrics] = await Promise.all([api.overview(), api.modelMetrics().catch(() => null)]); renderMetrics(data); renderCharts(data); renderModel(metrics); } catch(error) { handleError(error); } }
+function renderMetrics(data) { const host=$('#metric-grid');host.replaceChildren(); [['检测总数',data.total_detections||0,'all time'],['高风险',data.risk_counts?.high||0,'risk_level = high'],['模型倾向钓鱼',data.result_counts?.phishing||0,'result_label = phishing'],['规则命中',Object.values(data.rule_hit_counts||{}).reduce((sum,n)=>sum+n,0),'deduplicated hits']].forEach(([name,value,hint])=>{const card=el('div','panel metric-card');card.append(el('span','',name),el('b','',value),el('small','',hint));host.append(card);}); }
+function renderCharts(data) {
+  if (!window.echarts) return;
+  const common = { backgroundColor: 'transparent', textStyle: { color: '#9cb0a6', fontFamily: 'Segoe UI' }, animationDuration: 450 };
+  const risk = echarts.init($('#risk-chart'));
+  risk.setOption({ ...common, tooltip: { trigger: 'item' }, series: [{ type: 'pie', radius: ['52%', '74%'], itemStyle: { borderColor: '#17231e', borderWidth: 4 }, label: { color: '#eaf4ed' }, data: [{ value: data.risk_counts?.high || 0, name: '高风险', itemStyle: { color: '#ff7a67' } }, { value: data.risk_counts?.medium || 0, name: '中风险', itemStyle: { color: '#f6c85f' } }, { value: data.risk_counts?.low || 0, name: '低风险', itemStyle: { color: '#72d19b' } }] }] });
+  const dates = Object.keys(data.daily_counts || {}).sort();
+  const trend = echarts.init($('#trend-chart'));
+  trend.setOption({ ...common, tooltip: { trigger: 'axis', axisPointer: { type: 'line' }, formatter: params => { const point = params?.[0]; return point ? `${point.axisValue}<br><b>检测次数：${point.value}</b>` : ''; } }, grid: { left: 35, right: 15, top: 15, bottom: 28 }, xAxis: { type: 'category', data: dates.map(d => d.slice(5)), axisLine: { lineStyle: { color: '#2b4036' } }, axisLabel: { color: '#71867b' } }, yAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#203229' } }, axisLabel: { color: '#71867b' } }, series: [{ type: 'line', smooth: true, symbol: 'circle', symbolSize: 7, data: dates.map(d => data.daily_counts[d]), lineStyle: { color: '#d1f266', width: 3 }, itemStyle: { color: '#d1f266' }, emphasis: { itemStyle: { color: '#fff59a', borderColor: '#d1f266', borderWidth: 2 }, symbolSize: 10 } }] });
+  const rules = Object.entries(data.rule_hit_counts || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const rule = echarts.init($('#rule-chart'));
+  rule.setOption({ ...common, tooltip: { trigger: 'item', formatter: params => { const code = params?.name || ''; return `<b>${code}</b><br>${ruleDescriptions[code] || '暂无规则说明'}<br>命中次数：${params.value}`; } }, grid: { left: 35, right: 15, top: 15, bottom: 28 }, xAxis: { type: 'category', data: rules.map(([name]) => name), axisLine: { lineStyle: { color: '#2b4036' } }, axisLabel: { color: '#71867b' } }, yAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#203229' } }, axisLabel: { color: '#71867b' } }, series: [{ type: 'bar', barWidth: '45%', data: rules.map(([, value]) => value), itemStyle: { color: '#d1f266', borderRadius: [3, 3, 0, 0] }, emphasis: { itemStyle: { color: '#f4ff9a', shadowBlur: 12, shadowColor: '#d1f266' } } }] });
+  window.addEventListener('resize', () => [risk, trend, rule].forEach(chart => chart.resize()), { once: true });
+}
+function renderModel(metrics) { const host=$('#model-metrics');host.replaceChildren();host.append(el('p','panel-kicker','MODEL HEALTH'),el('h2','',metrics?.model_name||'模型指标未就绪'));if(!metrics)return host.append(el('p','', '本地模型元数据暂不可用，检测接口会明确返回未就绪状态。'));host.append(el('p','model-version',`${metrics.model_version} · ${metrics.feature_version}`));const grid=el('div','model-stat-grid');[['Precision',metrics.metrics?.test_precision],['Recall',metrics.metrics?.test_recall],['F1',metrics.metrics?.test_f1],['Accuracy',metrics.metrics?.test_accuracy]].forEach(([name,value])=>{const stat=el('div','model-stat');stat.append(el('b','',value==null?'-':`${(value*100).toFixed(1)}%`),el('span','',name));grid.append(stat);});host.append(grid); }
+
+async function loadKnowledge() {
+  const host = $('#knowledge-content');
+  const featureHost = $('#knowledge-feature');
+  host.replaceChildren(el('div', 'loading-state', '正在读取知识库…'));
+  featureHost.replaceChildren();
+  try {
+    const items = await api.knowledge({ keyword: state.knowledgeKeyword, category: state.knowledgeCategory });
+    const category = state.knowledgeCategories.find(item => item.value === state.knowledgeCategory) || state.knowledgeCategories[0];
+    $('#knowledge-section-kicker').textContent = category.code;
+    $('#knowledge-section-title').textContent = category.title;
+    $('#knowledge-result-count').textContent = state.knowledgeKeyword ? `找到 ${items.length} 篇相关内容` : `${items.length} 篇内容`;
+    host.replaceChildren();
+    if (!items.length) {
+      featureHost.classList.add('hidden');
+      return host.append(el('div', 'empty-table knowledge-empty', '没有找到匹配内容，请尝试更换关键词或专题。'));
+    }
+    featureHost.classList.remove('hidden');
+    const featured = items.find(item => item.featured) || items[0];
+    renderKnowledgeFeature(featured, featureHost);
+    items.filter(item => item.id !== featured.id).forEach((item, index) => host.append(renderKnowledgeCard(item, index)));
+  } catch (error) {
+    featureHost.classList.add('hidden');
+    host.replaceChildren(el('div', 'empty-table', error.message));
+    handleError(error);
+  }
+}
+function renderKnowledgeFeature(item, host) {
+  const copy = el('div', 'knowledge-feature-copy');
+  const meta = el('div', 'knowledge-meta');
+  meta.append(el('span', 'knowledge-type', text(item.topic_type, '专题')), el('span', 'knowledge-time', text(item.reading_time, '3 分钟')));
+  copy.append(meta, el('span', 'knowledge-feature-kicker', `${item.category} / EDITOR'S NOTE`), el('h3', '', text(item.title)), el('p', '', text(item.summary)));
+  const button = el('button', 'knowledge-feature-action', '进入专题');
+  button.type = 'button';
+  button.addEventListener('click', () => openKnowledgeDialog(item));
+  copy.append(button);
+  const notes = el('div', 'knowledge-feature-notes');
+  notes.append(el('span', '', '本篇你将掌握'));
+  const list = el('ul');
+  (item.key_points?.length ? item.key_points : item.steps || []).slice(0, 4).forEach(point => list.append(el('li', '', point)));
+  if (!list.children.length) list.append(el('li', '', '识别风险并选择更稳妥的处理方式'));
+  notes.append(list);
+  host.replaceChildren(copy, notes);
+}
+function renderKnowledgeCard(item, index) {
+  const card = el('article', 'panel knowledge-card');
+  const meta = el('div', 'knowledge-meta');
+  meta.append(el('span', 'knowledge-type', text(item.topic_type, '指南')), el('span', 'knowledge-time', text(item.reading_time, '3 分钟')));
+  card.append(meta, el('span', 'knowledge-index', `${String(index + 1).padStart(2, '0')} · ${item.category}`), el('h2', '', text(item.title)), el('p', '', text(item.summary)));
+  const points = (item.key_points || []).slice(0, 2);
+  if (points.length) {
+    const preview = el('ul', 'knowledge-card-points');
+    points.forEach(point => preview.append(el('li', '', point)));
+    card.append(preview);
+  }
+  const button = el('button', 'knowledge-toggle', '阅读详情');
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.addEventListener('click', () => openKnowledgeDialog(item));
+  card.append(button);
+  return card;
+}
+function renderKnowledgeCategories() {
+  const host = $('#knowledge-categories');
+  host.replaceChildren();
+  state.knowledgeCategories.forEach(category => {
+    const button = el('button', `filter-button ${state.knowledgeCategory === category.value ? 'active' : ''}`);
+    button.type = 'button';
+    button.setAttribute('aria-pressed', state.knowledgeCategory === category.value ? 'true' : 'false');
+    button.append(el('span', '', category.label), el('small', '', category.count));
+    button.addEventListener('click', () => {
+      if (state.knowledgeCategory === category.value) return;
+      state.knowledgeCategory = category.value;
+      renderKnowledgeCategories();
+      loadKnowledge();
+    });
+    host.append(button);
+  });
+}
+function appendKnowledgeList(root, title, items, ordered = false) {
+  if (!items?.length) return;
+  const section = el('section', 'knowledge-dialog-section');
+  section.append(el('h3', '', title));
+  const list = el(ordered ? 'ol' : 'ul', ordered ? 'knowledge-step-list' : 'knowledge-point-list');
+  items.forEach(item => list.append(el('li', '', item)));
+  section.append(list);
+  root.append(section);
+}
+function openKnowledgeDialog(item) {
+  $('#knowledge-dialog-category').textContent = `${item.category || 'FIELD GUIDE'} / ${text(item.topic_type, '指南')}`;
+  $('#knowledge-dialog-title').textContent = text(item.title);
+  $('#knowledge-dialog-summary').textContent = text(item.summary);
+  const meta = $('#knowledge-dialog-meta');
+  meta.replaceChildren(el('span', 'knowledge-type', text(item.topic_type, '指南')), el('span', 'knowledge-time', text(item.reading_time, '3 分钟')));
+  const body = $('#knowledge-dialog-body');
+  body.replaceChildren(el('p', 'knowledge-dialog-lede', text(item.content)));
+  appendKnowledgeList(body, '关键要点', item.key_points || []);
+  if (item.comparison && Object.keys(item.comparison).length) {
+    const section = el('section', 'knowledge-dialog-section');
+    section.append(el('h3', '', '对比观察'));
+    const grid = el('div', 'knowledge-comparison');
+    Object.entries(item.comparison).forEach(([title, values], index) => {
+      const column = el('div', `knowledge-comparison-column ${index === 0 ? 'baseline' : 'risk'}`);
+      column.append(el('b', '', title));
+      const list = el('ul');
+      (values || []).forEach(value => list.append(el('li', '', value)));
+      column.append(list);
+      grid.append(column);
+    });
+    section.append(grid);
+    body.append(section);
+  }
+  appendKnowledgeList(body, '建议步骤', item.steps || [], true);
+  const reminder = el('div', 'knowledge-dialog-reminder');
+  reminder.append(el('span', '', 'STATIC FIRST'), el('p', '', '核验过程中不要访问可疑链接，不要打开未知附件；需要确认时，使用已知的官方渠道。'));
+  body.append(reminder);
+  $('#knowledge-dialog').showModal();
+}
+
+function setupNavigation() { $$('.nav-item').forEach(button=>button.addEventListener('click',()=>switchView(button.dataset.view))); $('#brand-home').addEventListener('click',event=>{event.preventDefault();switchView('welcome');}); $('#start-analysis').addEventListener('click',()=>switchView('analyze')); $('#refresh-history').addEventListener('click',loadHistory); $('#history-page-size').addEventListener('change',event=>{state.historyPageSize=Number(event.target.value)||20;state.historyPage=1;loadHistory();}); $$('.filter-button[data-history-risk]').forEach(button=>button.addEventListener('click',()=>{state.historyRisk=button.dataset.historyRisk;state.historyPage=1;$$('.filter-button[data-history-risk]').forEach(item=>item.classList.toggle('active',item===button));loadHistory();})); $('#blacklist-search').addEventListener('input',debounce(event=>{state.blacklistKeyword=event.target.value;loadBlacklist();},350)); $('#blacklist-status').addEventListener('change',event=>{state.blacklistStatus=event.target.value;loadBlacklist();}); $('#knowledge-search').addEventListener('input',debounce(event=>{state.knowledgeKeyword=event.target.value;loadKnowledge();},350)); $('#blacklist-form').addEventListener('submit',async event=>{event.preventDefault();try{await api.createBlacklist({indicator:$('#indicator').value.trim(),indicator_type:$('#indicator-type').value,source:$('#indicator-source').value,note:$('#indicator-note').value.trim()||'',confidence:null});event.target.reset();showToast('黑名单条目已新增');loadBlacklist();}catch(error){handleError(error);}}); $('#close-dialog').addEventListener('click',()=>$('#detail-dialog').close()); $('#close-knowledge-dialog').addEventListener('click',()=>$('#knowledge-dialog').close()); $('#delete-detail').addEventListener('click',async event=>{const id=event.currentTarget.dataset.detectionId;if(!id)return;if(!window.confirm('确定删除这条检测记录吗？'))return;try{await api.deleteDetection(id);$('#detail-dialog').close();showToast('检测记录已删除');loadHistory();}catch(error){handleError(error);}}); renderKnowledgeCategories(); }
+function debounce(fn, wait){let timer;return(...args)=>{clearTimeout(timer);timer=setTimeout(()=>fn(...args),wait);};}
+
+setupInput(); setupNavigation();
+api.health().then(() => { $('#service-status').textContent = '本地服务已连接'; }).catch(() => { $('#service-status').textContent = '本地服务未连接'; $('.sidebar-foot').classList.add('offline'); });
