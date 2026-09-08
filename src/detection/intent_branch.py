@@ -23,6 +23,7 @@ INTENT_ONTOLOGY: dict[str, tuple[str, ...]] = {
 }
 
 _ACTION_INTENTS = {"credential_request", "oauth_authorization", "payment_change", "external_document_action", "reply_or_data_request"}
+_NEGATION_MARKERS = ("no action is required", "not required", "never ask", "will never ask", "do not request", "has not changed", "no change", "usual company portal", "normal support channel", "无需操作", "不会索取", "不会要求", "不要求回复", "没有变更", "正常渠道")
 
 
 def infer_intent_labels(subject: str, body: str) -> tuple[list[str], str]:
@@ -33,6 +34,10 @@ def infer_intent_labels(subject: str, body: str) -> tuple[list[str], str]:
     for name, patterns in INTENT_ONTOLOGY.items():
         if any(pattern.casefold() in text for pattern in patterns):
             labels.append(name)
+    if any(marker in text for marker in _NEGATION_MARKERS):
+        labels = [name for name in labels if name not in _ACTION_INTENTS]
+        if not labels:
+            labels.append("benign_notice")
     # A benign disclaimer wins only when no action request is present.
     if "benign_notice" in labels and _ACTION_INTENTS.intersection(labels):
         labels.remove("benign_notice")
@@ -90,4 +95,15 @@ class IntentBranch:
                 columns.append(np.full(len(texts), self.constants_[name], dtype=np.float64))
             else:
                 columns.append(estimator.predict_proba(matrix)[:, 1])
-        return np.column_stack(columns) if columns else np.empty((len(texts), 0), dtype=np.float64)
+        probabilities = np.column_stack(columns) if columns else np.empty((len(texts), 0), dtype=np.float64)
+        for index, text in enumerate(texts):
+            labels, _ = infer_intent_labels("", text)
+            if labels == ["benign_notice"]:
+                probabilities[index, : len(self.classes_) - 1] = np.minimum(probabilities[index, : len(self.classes_) - 1], 0.2)
+                benign_index = self.classes_.index("benign_notice")
+                probabilities[index, benign_index] = max(probabilities[index, benign_index], 0.8)
+            for label in labels:
+                if label in self.classes_:
+                    intent_index = self.classes_.index(label)
+                    probabilities[index, intent_index] = max(probabilities[index, intent_index], 0.8)
+        return probabilities

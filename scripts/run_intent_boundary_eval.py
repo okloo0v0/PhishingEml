@@ -14,13 +14,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 CASES = [
-    ("benign_mfa_notice", "MFA notice", "We will never ask for your verification code by email. No action is required.", []),
+    ("benign_mfa_notice", "MFA notice", "We will never ask for your verification code by email. No action is required.", ["benign_notice"]),
     ("credential_request", "MFA verification", "Reply with your verification code to complete the account review.", ["credential_request"]),
-    ("benign_payment_notice", "Payment completed", "Your payment was received. The beneficiary account has not changed.", []),
+    ("benign_payment_notice", "Payment completed", "Your payment was received. The beneficiary account has not changed.", ["benign_notice"]),
     ("payment_change", "Updated payment details", "Please change the beneficiary bank account before sending payment.", ["payment_change"]),
-    ("benign_document_notice", "Document shared", "A document was shared with you. Review it through your usual company portal.", []),
+    ("benign_document_notice", "Document shared", "A document was shared with you. Review it through your usual company portal.", ["benign_notice"]),
     ("external_document_action", "Document download", "Download the shared document from https://docs.example.invalid/file.", ["external_document_action"]),
-    ("benign_login_notice", "Sign-in notice", "A sign-in was completed. If this was not you, use the normal support channel.", []),
+    ("benign_login_notice", "Sign-in notice", "A sign-in was completed. If this was not you, use the normal support channel.", ["benign_notice"]),
     ("oauth_authorization", "Approve sign-in", "Approve sign-in using the device code 123456.", ["oauth_authorization"]),
 ]
 

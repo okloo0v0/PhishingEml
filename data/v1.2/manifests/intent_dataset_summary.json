@@ -7,12 +7,12 @@
     "phishing": 7123
   },
   "intent_counts": {
-    "benign_notice": 5,
-    "credential_request": 934,
-    "external_document_action": 861,
-    "oauth_authorization": 602,
-    "payment_change": 2533,
-    "reply_or_data_request": 3585,
+    "benign_notice": 106,
+    "credential_request": 801,
+    "external_document_action": 854,
+    "oauth_authorization": 563,
+    "payment_change": 2491,
+    "reply_or_data_request": 3467,
     "social_pressure": 3208
   },
   "intent_label_provenance": "weak_pattern_v1",

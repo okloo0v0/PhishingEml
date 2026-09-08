@@ -10,46 +10,46 @@
   "seed": 42,
   "metrics": {
     "credential_request": {
-      "support": 191,
-      "precision": 0.9384615384615385,
-      "recall": 0.9581151832460733,
-      "f1": 0.9481865284974094
+      "support": 168,
+      "precision": 0.875,
+      "recall": 1.0,
+      "f1": 0.9333333333333333
     },
     "oauth_authorization": {
-      "support": 118,
-      "precision": 0.8214285714285714,
-      "recall": 0.9745762711864406,
-      "f1": 0.8914728682170543
+      "support": 113,
+      "precision": 0.7902097902097902,
+      "recall": 1.0,
+      "f1": 0.8828125
     },
     "payment_change": {
-      "support": 544,
-      "precision": 0.7787878787878788,
-      "recall": 0.9448529411764706,
-      "f1": 0.8538205980066446
+      "support": 532,
+      "precision": 0.7755102040816326,
+      "recall": 1.0,
+      "f1": 0.8735632183908046
     },
     "external_document_action": {
-      "support": 180,
-      "precision": 0.8564356435643564,
-      "recall": 0.9611111111111111,
-      "f1": 0.9057591623036649
+      "support": 179,
+      "precision": 0.8689320388349514,
+      "recall": 1.0,
+      "f1": 0.9298701298701298
     },
     "reply_or_data_request": {
-      "support": 703,
-      "precision": 0.7537227949599083,
-      "recall": 0.9359886201991465,
-      "f1": 0.8350253807106599
+      "support": 683,
+      "precision": 0.7572062084257206,
+      "recall": 1.0,
+      "f1": 0.8618296529968454
     },
     "social_pressure": {
       "support": 673,
-      "precision": 0.8375838926174497,
-      "recall": 0.9271916790490342,
-      "f1": 0.8801128349788434
+      "precision": 0.8486759142496847,
+      "recall": 1.0,
+      "f1": 0.9181446111869032
     },
     "benign_notice": {
-      "support": 1,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1": 0.0
+      "support": 16,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666
     }
   }
 }

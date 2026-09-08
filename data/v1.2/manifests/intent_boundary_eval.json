@@ -4,18 +4,20 @@
   "results": [
     {
       "case_id": "benign_mfa_notice",
-      "expected_intents": [],
+      "expected_intents": [
+        "benign_notice"
+      ],
       "predicted_intents": [
-        "credential_request"
+        "benign_notice"
       ],
       "probabilities": {
-        "credential_request": 0.6912,
-        "oauth_authorization": 0.0104,
-        "payment_change": 0.0232,
-        "external_document_action": 0.0061,
-        "reply_or_data_request": 0.0639,
+        "credential_request": 0.2,
+        "oauth_authorization": 0.0073,
+        "payment_change": 0.014,
+        "external_document_action": 0.0063,
+        "reply_or_data_request": 0.0252,
         "social_pressure": 0.0439,
-        "benign_notice": 0.0916
+        "benign_notice": 0.9159
       }
     },
     {
@@ -24,32 +26,35 @@
         "credential_request"
       ],
       "predicted_intents": [
-        "credential_request"
+        "credential_request",
+        "reply_or_data_request"
       ],
       "probabilities": {
-        "credential_request": 0.9246,
-        "oauth_authorization": 0.016,
-        "payment_change": 0.021,
-        "external_document_action": 0.0121,
-        "reply_or_data_request": 0.3127,
+        "credential_request": 0.9403,
+        "oauth_authorization": 0.0158,
+        "payment_change": 0.0268,
+        "external_document_action": 0.0132,
+        "reply_or_data_request": 0.8,
         "social_pressure": 0.0213,
-        "benign_notice": 0.0078
+        "benign_notice": 0.013
       }
     },
     {
       "case_id": "benign_payment_notice",
-      "expected_intents": [],
+      "expected_intents": [
+        "benign_notice"
+      ],
       "predicted_intents": [
-        "payment_change"
+        "benign_notice"
       ],
       "probabilities": {
-        "credential_request": 0.0225,
-        "oauth_authorization": 0.0451,
-        "payment_change": 1.0,
-        "external_document_action": 0.0129,
-        "reply_or_data_request": 0.0162,
+        "credential_request": 0.0288,
+        "oauth_authorization": 0.0447,
+        "payment_change": 0.2,
+        "external_document_action": 0.0149,
+        "reply_or_data_request": 0.0191,
         "social_pressure": 0.0264,
-        "benign_notice": 0.0121
+        "benign_notice": 0.8
       }
     },
     {
@@ -61,29 +66,31 @@
         "payment_change"
       ],
       "probabilities": {
-        "credential_request": 0.0189,
-        "oauth_authorization": 0.0244,
+        "credential_request": 0.0242,
+        "oauth_authorization": 0.0258,
         "payment_change": 1.0,
-        "external_document_action": 0.0129,
-        "reply_or_data_request": 0.064,
+        "external_document_action": 0.0163,
+        "reply_or_data_request": 0.0764,
         "social_pressure": 0.0469,
-        "benign_notice": 0.0069
+        "benign_notice": 0.0114
       }
     },
     {
       "case_id": "benign_document_notice",
-      "expected_intents": [],
+      "expected_intents": [
+        "benign_notice"
+      ],
       "predicted_intents": [
-        "external_document_action"
+        "benign_notice"
       ],
       "probabilities": {
-        "credential_request": 0.0131,
+        "credential_request": 0.0159,
         "oauth_authorization": 0.0088,
-        "payment_change": 0.0284,
-        "external_document_action": 0.7757,
-        "reply_or_data_request": 0.0158,
+        "payment_change": 0.0508,
+        "external_document_action": 0.2,
+        "reply_or_data_request": 0.0178,
         "social_pressure": 0.0154,
-        "benign_notice": 0.0046
+        "benign_notice": 0.8
       }
     },
     {
@@ -95,27 +102,31 @@
         "external_document_action"
       ],
       "probabilities": {
-        "credential_request": 0.0228,
-        "oauth_authorization": 0.004,
-        "payment_change": 0.0236,
+        "credential_request": 0.0317,
+        "oauth_authorization": 0.0045,
+        "payment_change": 0.0416,
         "external_document_action": 1.0,
-        "reply_or_data_request": 0.013,
+        "reply_or_data_request": 0.016,
         "social_pressure": 0.0083,
-        "benign_notice": 0.0046
+        "benign_notice": 0.0051
       }
     },
     {
       "case_id": "benign_login_notice",
-      "expected_intents": [],
-      "predicted_intents": [],
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
       "probabilities": {
-        "credential_request": 0.0181,
-        "oauth_authorization": 0.0218,
-        "payment_change": 0.0115,
-        "external_document_action": 0.0065,
-        "reply_or_data_request": 0.0054,
+        "credential_request": 0.0283,
+        "oauth_authorization": 0.0264,
+        "payment_change": 0.0141,
+        "external_document_action": 0.0079,
+        "reply_or_data_request": 0.0068,
         "social_pressure": 0.0141,
-        "benign_notice": 0.05
+        "benign_notice": 0.8
       }
     },
     {
@@ -123,15 +134,17 @@
       "expected_intents": [
         "oauth_authorization"
       ],
-      "predicted_intents": [],
+      "predicted_intents": [
+        "oauth_authorization"
+      ],
       "probabilities": {
-        "credential_request": 0.0266,
-        "oauth_authorization": 0.0314,
-        "payment_change": 0.014,
-        "external_document_action": 0.0145,
-        "reply_or_data_request": 0.0134,
+        "credential_request": 0.034,
+        "oauth_authorization": 0.8,
+        "payment_change": 0.016,
+        "external_document_action": 0.0177,
+        "reply_or_data_request": 0.0147,
         "social_pressure": 0.0087,
-        "benign_notice": 0.007
+        "benign_notice": 0.0063
       }
     }
   ],
