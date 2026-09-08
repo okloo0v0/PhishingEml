@@ -19,13 +19,6 @@ CATALOG = ROOT / "data" / "v1.2" / "manifests" / "source_catalog.csv"
 RAW_ROOT = ROOT / "data" / "v1.2" / "raw_refs"
 
 SOURCES = {
-    "figshare_seven_ling": ("figshare_2024", "Ling.csv", "en", "spam_phishing_text", "https://ndownloader.figshare.com/files/45117802", "CC BY 4.0", "2024-03-18"),
-    "figshare_seven_enron": ("figshare_2024", "Enron.csv", "en", "legitimate_text", "https://ndownloader.figshare.com/files/45117805", "CC BY 4.0", "2024-03-18"),
-    "figshare_seven_trec06": ("figshare_2024", "TREC-06.csv", "en", "spam_text", "https://ndownloader.figshare.com/files/45117808", "CC BY 4.0", "2024-03-18"),
-    "figshare_seven_ceas08": ("figshare_2024", "CEAS-08.csv", "en", "spam_text", "https://ndownloader.figshare.com/files/45117811", "CC BY 4.0", "2024-03-18"),
-    "figshare_seven_trec07": ("figshare_2024", "TREC-07.csv", "en", "spam_text", "https://ndownloader.figshare.com/files/45117814", "CC BY 4.0", "2024-03-18"),
-    "figshare_seven_trec05": ("figshare_2024", "TREC-05.csv", "en", "spam_text", "https://ndownloader.figshare.com/files/45117817", "CC BY 4.0", "2024-03-18"),
-    "figshare_seven_assassin": ("figshare_2024", "Assassin.csv", "en", "spam_text", "https://ndownloader.figshare.com/files/45117799", "CC BY 4.0", "2024-03-18"),
     "llmgen_cn": ("llmgen_2025", "CN_Phishing_Email_dataset.csv", "zh", "phishing_text_generated", "https://huggingface.co/datasets/Dizzzy0x00/LLMGen-Phishing-Email-Dataset/resolve/main/CN_Phishing_Email_dataset.csv", "Apache-2.0 dataset card", "2025-12-13"),
     "llmgen_gpt": ("llmgen_2025", "GPT_Phishing_Email_dataset.csv", "zh-en", "phishing_text_generated", "https://huggingface.co/datasets/Dizzzy0x00/LLMGen-Phishing-Email-Dataset/resolve/main/GPT_Phishing_Email_dataset.csv", "Apache-2.0 dataset card", "2025-12-13"),
     "epvme_readme": ("epvme_2023", "README.md", "en", "protocol_mime_ui_attack", "https://raw.githubusercontent.com/sunknighteric/EPVME-Dataset/main/README.md", "GPL-3.0 repository; verify dataset terms", "2023-03-23"),

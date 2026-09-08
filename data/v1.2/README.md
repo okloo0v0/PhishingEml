@@ -12,16 +12,14 @@ V1.2 数据不得直接覆盖 `data/processed/` 的默认 V1/V1.1 文件。训�
 
 ## 当前获取批次
 
-第一批允许下载的公开资源由 `scripts/download_v1_2_sources.py` 明确列出，当前包括 2024 年
-发布的 Figshare Seven Phishing Email Datasets、2025 年发布的中英文 LLMGen 辅助集，以及
-2023 年 EPVME 数据集的 README/LICENSE 审计文件。2026 年 9 月 8 日已完成 11 个文件的本地
-审计，明细见 `manifests/source_audit.csv`：Figshare 七个 CSV 共 203,897 条记录（其中 TREC-05
-和 TREC-06 各有缺失标签行，需清洗），LLMGen 中文 3,030 条、英文/混合 3,746 条。Figshare
-是 2024 年重新发布的历史语料，不能把发布日期当作邮件发生时间；必须从 `date` 字段测量实际
-时间覆盖。LLMGen 明确标记为 LLM 生成，只能用于辅助训练或鲁棒性测试，不能作为独立最终测试
-集。EPVME 当前只保留 README/LICENSE，作为构造攻击语料审计依据，不在 Phase 1 下载 49,136
-封 EML 压缩包。下载后必须重新检查字段、隐私、重复和数据来源；`license_status=review_required`
-的资源不得直接进入训练。
+第一批资源曾包含 Figshare Seven Phishing Email Datasets，但本地审计确认其邮件主要来自
+2000--2010 年，不能满足 V1.2 的时效性目标，已从 `raw_refs/` 删除并从来源清单移除。当前
+保留 2025 年发布的中英文 LLMGen 辅助集（共 6,776 条）以及 2023 年 EPVME 数据集的
+README/LICENSE 审计文件。明细见 `manifests/source_audit.csv`。LLMGen 明确标记为 LLM 生成，
+只能用于辅助训练或鲁棒性测试，不能作为独立最终测试集。EPVME 当前只保留 README/LICENSE，
+作为构造协议/MIME/UI 攻击语料的审计依据，不在 Phase 1 下载 49,136 封 EML 压缩包。
+下一步应优先验证能提供 2022--2026 实际邮件时间覆盖的公开来源，再从中清洗、去重并抽取约
+20K--30K 条补充样本；`license_status=review_required` 的资源不得直接进入训练。
 
 ```powershell
 uv run python scripts\download_v1_2_sources.py --list
