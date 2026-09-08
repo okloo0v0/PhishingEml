@@ -31,8 +31,10 @@ def _read_jsonl(path: Path) -> list[dict[str, object]]:
         return [json.loads(line) for line in handle if line.strip()]
 
 
-def train(input_path: Path, model_path: Path, summary_path: Path, *, seed: int = 42) -> dict[str, object]:
+def train(input_path: Path, model_path: Path, summary_path: Path, *, supplement_path: Path | None = None, seed: int = 42) -> dict[str, object]:
     rows = _read_jsonl(input_path)
+    if supplement_path is not None:
+        rows.extend(_read_jsonl(supplement_path))
     if len(rows) < 4:
         raise ValueError("intent dataset is too small")
     train_rows, test_rows = train_test_split(rows, test_size=0.2, random_state=seed)
@@ -52,11 +54,12 @@ def train(input_path: Path, model_path: Path, summary_path: Path, *, seed: int =
     summary = {
         "model_version": "v1.2.0-intent-weak-v1",
         "input_path": _display_path(input_path),
+        "supplement_path": _display_path(supplement_path) if supplement_path is not None else None,
         "model_path": _display_path(model_path),
         "train_count": len(train_rows),
         "test_count": len(test_rows),
         "intent_names": list(INTENT_ONTOLOGY),
-        "label_provenance": "weak_pattern_v1",
+        "label_provenance": "weak_pattern_v1+synthetic_template_v1" if supplement_path is not None else "weak_pattern_v1",
         "split": "random 80/20; provisional only, not final generalization evidence",
         "metrics": metrics,
     }
@@ -72,8 +75,10 @@ def main() -> int:
     parser.add_argument("--input", type=Path, default=ROOT / "data/v1.2/processed/intent_dataset.jsonl")
     parser.add_argument("--model", type=Path, default=ROOT / "models/intent_branch_v1_2.joblib")
     parser.add_argument("--summary", type=Path, default=ROOT / "data/v1.2/manifests/intent_branch_training_summary.json")
+    parser.add_argument("--supplement", type=Path, default=ROOT / "data/v1.2/processed/intent_supplement_synthetic.jsonl")
     args = parser.parse_args()
-    print(json.dumps(train(args.input, args.model, args.summary), ensure_ascii=False, indent=2))
+    supplement = args.supplement if args.supplement.exists() else None
+    print(json.dumps(train(args.input, args.model, args.summary, supplement_path=supplement), ensure_ascii=False, indent=2))
     return 0
 
 
