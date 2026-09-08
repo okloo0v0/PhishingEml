@@ -1,16 +1,16 @@
 {
   "model_path": "D:\\CodeSpace\\PhishingEml\\models\\intent_branch_v1_2.joblib",
   "case_count": 46,
-  "exact_match_count": 43,
-  "exact_match_rate": 0.9347826086956522,
+  "exact_match_count": 42,
+  "exact_match_rate": 0.9130434782608695,
   "thresholds": {
-    "credential_request": 0.3,
-    "oauth_authorization": 0.8,
-    "payment_change": 0.6,
-    "external_document_action": 0.8,
-    "reply_or_data_request": 0.8,
-    "social_pressure": 0.8,
-    "benign_notice": 0.8
+    "credential_request": 0.5,
+    "oauth_authorization": 0.5,
+    "payment_change": 0.5,
+    "external_document_action": 0.5,
+    "reply_or_data_request": 0.5,
+    "social_pressure": 0.5,
+    "benign_notice": 0.5
   },
   "results": [
     {
@@ -247,10 +247,9 @@
         "reply_or_data_request"
       ],
       "predicted_intents": [
-        "credential_request",
         "reply_or_data_request"
       ],
-      "exact_match": true,
+      "exact_match": false,
       "probabilities": {
         "credential_request": 0.3363,
         "oauth_authorization": 0.0877,

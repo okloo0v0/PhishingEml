@@ -35,8 +35,17 @@ API 需要研究者注册和 JWT，公开页面给出的 GitHub dump 也未能�
 
 GPT 数据补充已完成初筛：从 3,746 条中保留 2,000 条平衡样本，字段和文本长度合格、无重复，
 但全部属于 LLM 生成数据，仅作为 intent 分支辅助训练，不能作为独立测试或真实攻击泛化证据。
-阈值校准使用 8 条固定人工边界样本，结果仅为 provisional；在获得更大规模人工标注前，不得
-将校准阈值或 intent 概率直接转换为主模型融合权重。
+阈值校准使用 46 条固定人工双语边界样本，7 个意图标签均有至少 6 个正例；其中
+`reply_or_data_request` 有 8 个正例，`social_pressure` 有 10 个正例。逐标签阈值在推理阶段的
+最终 intent 概率上校准，边界集精确匹配率由默认阈值的 91.3% 提升到 93.5%。结果仍为
+provisional：校准和报告使用同一固定边界集，只能验证实现与受控边界行为，不能代替来源隔离的
+外部测试；在获得更大规模人工标注前，不得将校准阈值或 intent 概率直接转换为主模型融合权重。
+
+当前保留 3 条失败样本作为后续回归靶点：英文正常登录通知漏检 `benign_notice`、中文已付发票
+通知误触发付款变更/回复请求、中文保密施压表达漏检 `social_pressure`。校准参数和默认/校准后
+逐样本结果分别记录在 `manifests/intent_threshold_calibration.json`、默认阈值对照
+`manifests/intent_boundary_eval_default.json` 与校准后的正式边界报告
+`manifests/intent_boundary_eval.json`。
 
 ```powershell
 uv run python scripts\download_v1_2_sources.py --list

@@ -83,7 +83,9 @@ class IntentBranch:
         self.classes_ = tuple(INTENT_ONTOLOGY)
         return self
 
-    def predict_proba(self, rows: Sequence[dict[str, Any]]) -> np.ndarray:
+    def predict_raw_proba(self, rows: Sequence[dict[str, Any]]) -> np.ndarray:
+        """Return model-only intent probabilities before semantic guardrails."""
+
         if not hasattr(self, "vectorizer_"):
             raise RuntimeError("intent branch is not fitted")
         texts = [f"{row.get('subject', '')}\n{row.get('text_body', '')}" for row in rows]
@@ -95,7 +97,13 @@ class IntentBranch:
                 columns.append(np.full(len(texts), self.constants_[name], dtype=np.float64))
             else:
                 columns.append(estimator.predict_proba(matrix)[:, 1])
-        probabilities = np.column_stack(columns) if columns else np.empty((len(texts), 0), dtype=np.float64)
+        return np.column_stack(columns) if columns else np.empty((len(texts), 0), dtype=np.float64)
+
+    def predict_proba(self, rows: Sequence[dict[str, Any]]) -> np.ndarray:
+        """Return model probabilities with conservative semantic guardrails."""
+
+        texts = [f"{row.get('subject', '')}\n{row.get('text_body', '')}" for row in rows]
+        probabilities = self.predict_raw_proba(rows)
         for index, text in enumerate(texts):
             labels, _ = infer_intent_labels("", text)
             if labels == ["benign_notice"]:
@@ -107,3 +115,17 @@ class IntentBranch:
                     intent_index = self.classes_.index(label)
                     probabilities[index, intent_index] = max(probabilities[index, intent_index], 0.8)
         return probabilities
+
+    def predict_labels(
+        self,
+        rows: Sequence[dict[str, Any]],
+        thresholds: dict[str, float] | None = None,
+    ) -> list[list[str]]:
+        """Predict labels using per-intent thresholds without producing fusion weights."""
+
+        thresholds = thresholds or {}
+        probabilities = self.predict_proba(rows)
+        return [
+            [name for name, value in zip(self.classes_, values) if value >= thresholds.get(name, 0.5)]
+            for values in probabilities
+        ]
