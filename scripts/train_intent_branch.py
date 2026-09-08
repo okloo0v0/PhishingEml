@@ -75,10 +75,19 @@ def main() -> int:
     parser.add_argument("--input", type=Path, default=ROOT / "data/v1.2/processed/intent_dataset.jsonl")
     parser.add_argument("--model", type=Path, default=ROOT / "models/intent_branch_v1_2.joblib")
     parser.add_argument("--summary", type=Path, default=ROOT / "data/v1.2/manifests/intent_branch_training_summary.json")
-    parser.add_argument("--supplement", type=Path, default=ROOT / "data/v1.2/processed/intent_supplement_synthetic.jsonl")
+    parser.add_argument("--supplement", action="append", type=Path, default=None)
     args = parser.parse_args()
-    supplement = args.supplement if args.supplement.exists() else None
-    print(json.dumps(train(args.input, args.model, args.summary, supplement_path=supplement), ensure_ascii=False, indent=2))
+    supplements = [path for path in (args.supplement or [ROOT / "data/v1.2/processed/intent_supplement_synthetic.jsonl"]) if path.exists()]
+    if len(supplements) == 1:
+        supplement = supplements[0]
+        print(json.dumps(train(args.input, args.model, args.summary, supplement_path=supplement), ensure_ascii=False, indent=2))
+    else:
+        rows = _read_jsonl(args.input)
+        for path in supplements:
+            rows.extend(_read_jsonl(path))
+        temporary = ROOT / "data/v1.2/processed/.intent_training_merged.jsonl"
+        temporary.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n", encoding="utf-8")
+        print(json.dumps(train(temporary, args.model, args.summary), ensure_ascii=False, indent=2))
     return 0
 
 

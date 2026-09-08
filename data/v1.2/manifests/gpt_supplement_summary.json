@@ -1,0 +1,14 @@
+{
+  "input_path": "D:\\CodeSpace\\PhishingEml\\data\\v1.2\\raw_refs\\llmgen_2025\\GPT_Phishing_Email_dataset.csv",
+  "output_path": "D:\\CodeSpace\\PhishingEml\\data\\v1.2\\processed\\gpt_supplement_filtered.jsonl",
+  "input_candidates": 3746,
+  "selected_records": 2000,
+  "label_counts": {
+    "legitimate": 1000,
+    "phishing": 1000
+  },
+  "rejected_counts": {},
+  "data_origin": "llm_generated",
+  "role": "supplement_only; never independent final test",
+  "seed": 42
+}

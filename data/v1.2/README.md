@@ -33,6 +33,11 @@ API 需要研究者注册和 JWT，公开页面给出的 GitHub dump 也未能�
 许可证可审计、非纯生成和近年时效性的来源。中文能力改由独立人工回归集、成对意图样本和字符级
 多视图特征验证。
 
+GPT 数据补充已完成初筛：从 3,746 条中保留 2,000 条平衡样本，字段和文本长度合格、无重复，
+但全部属于 LLM 生成数据，仅作为 intent 分支辅助训练，不能作为独立测试或真实攻击泛化证据。
+阈值校准使用 8 条固定人工边界样本，结果仅为 provisional；在获得更大规模人工标注前，不得
+将校准阈值或 intent 概率直接转换为主模型融合权重。
+
 ```powershell
 uv run python scripts\download_v1_2_sources.py --list
 uv run python scripts\download_v1_2_sources.py
