@@ -73,6 +73,13 @@ V1.2 Phase 1 数据布局审计：
 uv run python scripts\audit_v1_2_data_layout.py
 ```
 
+V1.2 公开数据获取（仅访问脚本中的 allowlist，邮件内 URL 不会被访问）：
+
+```powershell
+uv run python scripts\download_v1_2_sources.py --list
+uv run python scripts\download_v1_2_sources.py
+```
+
 在已有 `data/processed/emails.csv` 和 hard-negative 数据的环境中执行：
 
 ```powershell
