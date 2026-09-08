@@ -23,7 +23,9 @@ SOURCES = {
     "llmgen_gpt": ("llmgen_2025", "GPT_Phishing_Email_dataset.csv", "zh-en", "phishing_text_generated", "https://huggingface.co/datasets/Dizzzy0x00/LLMGen-Phishing-Email-Dataset/resolve/main/GPT_Phishing_Email_dataset.csv", "Apache-2.0 dataset card", "2025-12-13"),
     "epvme_readme": ("epvme_2023", "README.md", "en", "protocol_mime_ui_attack", "https://raw.githubusercontent.com/sunknighteric/EPVME-Dataset/main/README.md", "GPL-3.0 repository; verify dataset terms", "2023-03-23"),
     "epvme_license": ("epvme_2023", "LICENSE", "en", "protocol_mime_ui_attack", "https://raw.githubusercontent.com/sunknighteric/EPVME-Dataset/main/LICENSE", "GPL-3.0", "2023-03-23"),
+    "twente_validation_2024": ("twente_2024", "Phishing_validation_emails.csv", "en", "validation_mixed_real_artificial", "https://zenodo.org/api/records/13474746/files/Phishing_validation_emails.csv/content", "CC BY 4.0", "2024-08-29"),
 }
+LICENSE_STATUS = {"twente_validation_2024": "verified"}
 
 
 def _sha256(path: Path) -> str:
@@ -72,7 +74,7 @@ def download(keys: list[str]) -> list[dict[str, str]]:
                 status = "existing"
             records.append({
                 "source_id": key, "source_type": "public_dataset", "language": language,
-                "attack_scope": scope, "source_url": url, "license_status": "review_required",
+                "attack_scope": scope, "source_url": url, "license_status": LICENSE_STATUS.get(key, "review_required"),
                 "local_path": destination.relative_to(ROOT).as_posix(), "status": status,
                 "downloaded_at": row.get("downloaded_at") or now, "sha256": _sha256(destination),
                 "notes": f"published_or_released={published}; inspect and sanitize before training",
@@ -88,10 +90,12 @@ def download(keys: list[str]) -> list[dict[str, str]]:
     merged = {**existing, **{row["source_id"]: row for row in records}}
     CATALOG.parent.mkdir(parents=True, exist_ok=True)
     fields = ["source_id", "source_type", "language", "attack_scope", "source_url", "license_status", "local_path", "status", "downloaded_at", "sha256", "notes"]
-    with CATALOG.open("w", encoding="utf-8", newline="") as handle:
+    temporary_catalog = CATALOG.with_suffix(CATALOG.suffix + ".tmp")
+    with temporary_catalog.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
         writer.writerows(merged[key] for key in sorted(merged))
+    temporary_catalog.replace(CATALOG)
     return records
 
 

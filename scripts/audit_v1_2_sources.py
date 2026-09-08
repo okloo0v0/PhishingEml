@@ -32,9 +32,10 @@ def _audit_csv(path: Path) -> dict[str, object]:
     with path.open(encoding="utf-8-sig", newline="", errors="replace") as handle:
         reader = csv.DictReader(handle)
         fields = list(reader.fieldnames or [])
+        label_field = "label" if "label" in fields else ("Email Type" if "Email Type" in fields else None)
         for row in reader:
             rows += 1
-            label = (row.get("label") or "").strip()
+            label = (row.get(label_field) or "").strip() if label_field else ""
             if not label:
                 null_label_rows += 1
             labels[label or "<missing>"] = labels.get(label or "<missing>", 0) + 1
