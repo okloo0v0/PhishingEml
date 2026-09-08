@@ -11,6 +11,7 @@ from typing import Any
 import numpy as np
 
 from src.detection.text_features import MODEL_TEXT_MAX_CHARS, clean_email_text
+from src.detection.intent_branch import infer_intent_labels
 from src.domain.schemas import AttachmentMeta, Mailbox, ParsedEmail, ParsedUrl
 from src.parsers.url_parser import extract_urls_from_text, get_registrable_domain, normalize_url
 
@@ -218,6 +219,8 @@ def build_multiview_record(
         "char_text": char_text,
         "structure": _structure_features(subject, text_body, char_text, parsed_email),
         "intent": _intent_features(char_text),
+        "intent_labels": infer_intent_labels(subject, text_body)[0],
+        "intent_label_provenance": "weak_pattern_v1",
     }
 
 

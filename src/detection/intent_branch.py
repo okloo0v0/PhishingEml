@@ -9,7 +9,6 @@ from typing import Any
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.multiclass import OneVsRestClassifier
 from sklearn.pipeline import Pipeline
 
 
@@ -60,20 +59,35 @@ class IntentBranch:
         labels = multilabel_matrix(records)
         if not records or labels.shape[1] != len(INTENT_ONTOLOGY):
             raise ValueError("intent training rows are empty or malformed")
-        self.pipeline_ = Pipeline(
-            [
-                ("tfidf", TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), min_df=2, max_features=self.max_features, sublinear_tf=True)),
-                ("classifier", OneVsRestClassifier(LogisticRegression(max_iter=500, class_weight="balanced", random_state=self.random_state))),
-            ]
-        )
+        self.vectorizer_ = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), min_df=2, max_features=self.max_features, sublinear_tf=True)
         texts = [f"{row.get('subject', '')}\n{row.get('text_body', '')}" for row in records]
-        self.pipeline_.fit(texts, labels)
+        matrix = self.vectorizer_.fit_transform(texts)
+        self.estimators_: dict[str, Pipeline | None] = {}
+        self.constants_: dict[str, float] = {}
+        for index, name in enumerate(INTENT_ONTOLOGY):
+            target = labels[:, index]
+            positives = int(target.sum())
+            if positives < 2 or positives == len(target):
+                self.estimators_[name] = None
+                self.constants_[name] = float(np.mean(target))
+                continue
+            estimator = LogisticRegression(max_iter=500, class_weight="balanced", random_state=self.random_state)
+            estimator.fit(matrix, target)
+            self.estimators_[name] = estimator
+            self.constants_[name] = 0.0
         self.classes_ = tuple(INTENT_ONTOLOGY)
         return self
 
     def predict_proba(self, rows: Sequence[dict[str, Any]]) -> np.ndarray:
-        if not hasattr(self, "pipeline_"):
+        if not hasattr(self, "vectorizer_"):
             raise RuntimeError("intent branch is not fitted")
         texts = [f"{row.get('subject', '')}\n{row.get('text_body', '')}" for row in rows]
-        result = self.pipeline_.predict_proba(texts)
-        return np.asarray(result, dtype=np.float64)
+        matrix = self.vectorizer_.transform(texts)
+        columns = []
+        for name in self.classes_:
+            estimator = self.estimators_[name]
+            if estimator is None:
+                columns.append(np.full(len(texts), self.constants_[name], dtype=np.float64))
+            else:
+                columns.append(estimator.predict_proba(matrix)[:, 1])
+        return np.column_stack(columns) if columns else np.empty((len(texts), 0), dtype=np.float64)
