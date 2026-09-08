@@ -1,0 +1,55 @@
+{
+  "model_version": "v1.2.0-intent-weak-plus-synthetic",
+  "base_path": "data/v1.2/processed/intent_dataset.jsonl",
+  "supplement_path": "data/v1.2/processed/intent_supplement_synthetic.jsonl",
+  "train_base_count": 11629,
+  "train_supplement_count": 1000,
+  "test_base_count": 2908,
+  "test_contains_synthetic": false,
+  "split": "base corpus 80/20 random holdout; synthetic rows train-only",
+  "seed": 42,
+  "metrics": {
+    "credential_request": {
+      "support": 191,
+      "precision": 0.9384615384615385,
+      "recall": 0.9581151832460733,
+      "f1": 0.9481865284974094
+    },
+    "oauth_authorization": {
+      "support": 118,
+      "precision": 0.8214285714285714,
+      "recall": 0.9745762711864406,
+      "f1": 0.8914728682170543
+    },
+    "payment_change": {
+      "support": 544,
+      "precision": 0.7787878787878788,
+      "recall": 0.9448529411764706,
+      "f1": 0.8538205980066446
+    },
+    "external_document_action": {
+      "support": 180,
+      "precision": 0.8564356435643564,
+      "recall": 0.9611111111111111,
+      "f1": 0.9057591623036649
+    },
+    "reply_or_data_request": {
+      "support": 703,
+      "precision": 0.7537227949599083,
+      "recall": 0.9359886201991465,
+      "f1": 0.8350253807106599
+    },
+    "social_pressure": {
+      "support": 673,
+      "precision": 0.8375838926174497,
+      "recall": 0.9271916790490342,
+      "f1": 0.8801128349788434
+    },
+    "benign_notice": {
+      "support": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  }
+}

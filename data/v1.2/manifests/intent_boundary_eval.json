@@ -1,0 +1,139 @@
+{
+  "model_path": "D:\\CodeSpace\\PhishingEml\\models\\intent_branch_v1_2.joblib",
+  "case_count": 8,
+  "results": [
+    {
+      "case_id": "benign_mfa_notice",
+      "expected_intents": [],
+      "predicted_intents": [
+        "credential_request"
+      ],
+      "probabilities": {
+        "credential_request": 0.6912,
+        "oauth_authorization": 0.0104,
+        "payment_change": 0.0232,
+        "external_document_action": 0.0061,
+        "reply_or_data_request": 0.0639,
+        "social_pressure": 0.0439,
+        "benign_notice": 0.0916
+      }
+    },
+    {
+      "case_id": "credential_request",
+      "expected_intents": [
+        "credential_request"
+      ],
+      "predicted_intents": [
+        "credential_request"
+      ],
+      "probabilities": {
+        "credential_request": 0.9246,
+        "oauth_authorization": 0.016,
+        "payment_change": 0.021,
+        "external_document_action": 0.0121,
+        "reply_or_data_request": 0.3127,
+        "social_pressure": 0.0213,
+        "benign_notice": 0.0078
+      }
+    },
+    {
+      "case_id": "benign_payment_notice",
+      "expected_intents": [],
+      "predicted_intents": [
+        "payment_change"
+      ],
+      "probabilities": {
+        "credential_request": 0.0225,
+        "oauth_authorization": 0.0451,
+        "payment_change": 1.0,
+        "external_document_action": 0.0129,
+        "reply_or_data_request": 0.0162,
+        "social_pressure": 0.0264,
+        "benign_notice": 0.0121
+      }
+    },
+    {
+      "case_id": "payment_change",
+      "expected_intents": [
+        "payment_change"
+      ],
+      "predicted_intents": [
+        "payment_change"
+      ],
+      "probabilities": {
+        "credential_request": 0.0189,
+        "oauth_authorization": 0.0244,
+        "payment_change": 1.0,
+        "external_document_action": 0.0129,
+        "reply_or_data_request": 0.064,
+        "social_pressure": 0.0469,
+        "benign_notice": 0.0069
+      }
+    },
+    {
+      "case_id": "benign_document_notice",
+      "expected_intents": [],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "probabilities": {
+        "credential_request": 0.0131,
+        "oauth_authorization": 0.0088,
+        "payment_change": 0.0284,
+        "external_document_action": 0.7757,
+        "reply_or_data_request": 0.0158,
+        "social_pressure": 0.0154,
+        "benign_notice": 0.0046
+      }
+    },
+    {
+      "case_id": "external_document_action",
+      "expected_intents": [
+        "external_document_action"
+      ],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "probabilities": {
+        "credential_request": 0.0228,
+        "oauth_authorization": 0.004,
+        "payment_change": 0.0236,
+        "external_document_action": 1.0,
+        "reply_or_data_request": 0.013,
+        "social_pressure": 0.0083,
+        "benign_notice": 0.0046
+      }
+    },
+    {
+      "case_id": "benign_login_notice",
+      "expected_intents": [],
+      "predicted_intents": [],
+      "probabilities": {
+        "credential_request": 0.0181,
+        "oauth_authorization": 0.0218,
+        "payment_change": 0.0115,
+        "external_document_action": 0.0065,
+        "reply_or_data_request": 0.0054,
+        "social_pressure": 0.0141,
+        "benign_notice": 0.05
+      }
+    },
+    {
+      "case_id": "oauth_authorization",
+      "expected_intents": [
+        "oauth_authorization"
+      ],
+      "predicted_intents": [],
+      "probabilities": {
+        "credential_request": 0.0266,
+        "oauth_authorization": 0.0314,
+        "payment_change": 0.014,
+        "external_document_action": 0.0145,
+        "reply_or_data_request": 0.0134,
+        "social_pressure": 0.0087,
+        "benign_notice": 0.007
+      }
+    }
+  ],
+  "note": "fixed boundary cases; not a generalization estimate"
+}
