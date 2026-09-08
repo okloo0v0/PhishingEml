@@ -6,6 +6,7 @@ import hashlib
 
 from src.db.models import iso_z, utcnow
 from src.db.repositories import BlacklistRepository, DetectionRepository
+from src.detection.deepseek_client import DeepSeekUnavailable
 from src.domain.enums import RiskLevel
 from src.domain.scoring import fuse_scores, risk_level_for_score
 from src.domain.schemas import DetectionResult, ModelInput, validate_detection_result
@@ -41,12 +42,14 @@ class AnalysisService:
         predictor,
         blacklist_repo: BlacklistRepository,
         detection_repo: DetectionRepository,
+        llm_client=None,
     ) -> None:
         self.parser = parser
         self.rule_engine = rule_engine
         self.predictor = predictor
         self.blacklist_repo = blacklist_repo
         self.detection_repo = detection_repo
+        self.llm_client = llm_client
 
     def analyze(self, content: bytes, filename: str) -> DetectionResult:
         file_hash = _sha256(content)
@@ -64,6 +67,26 @@ class AnalysisService:
         final_score = fuse_scores(prediction.phishing_probability, rule_score)
         risk_level = risk_level_for_score(final_score)
 
+        self._auto_add_suspicious_urls(parsed)
+        url_blacklist, domain_blacklist = self.blacklist_repo.active_sets()
+        blacklist_metadata = self.blacklist_repo.active_metadata()
+        rule_score, explanations = self.rule_engine.evaluate(
+            parsed, url_blacklist, domain_blacklist, blacklist_metadata
+        )
+        final_score = fuse_scores(prediction.phishing_probability, rule_score)
+        risk_level = risk_level_for_score(final_score)
+
+        llm_assessment = None
+        llm_status = "disabled"
+        if self.llm_client is not None and self.llm_client.enabled:
+            try:
+                llm_assessment = self.llm_client.assess(
+                    parsed, rule_score, explanations, prediction.phishing_probability
+                )
+                llm_status = "ready"
+            except DeepSeekUnavailable:
+                llm_status = "unavailable"
+
         result = DetectionResult(
             result_label=prediction.result_label,
             risk_level=risk_level,
@@ -76,6 +99,8 @@ class AnalysisService:
             attachments=parsed.attachments,
             advice=_advice_for(risk_level),
             parse_warnings=parsed.parse_warnings,
+            llm_assessment=llm_assessment,
+            llm_status=llm_status,
         )
         validate_detection_result(result)
 
@@ -85,3 +110,20 @@ class AnalysisService:
         result.detection_id = detection_id
         result.created_at = iso_z(utcnow())
         return result
+
+    def _auto_add_suspicious_urls(self, parsed) -> None:
+        """Persist only high-signal URL indicators; never contact the URL."""
+
+        high_signal = {
+            "lookalike_characters", "punycode", "ip_host", "userinfo",
+            "encoded_chars", "many_subdomains",
+        }
+        for url in parsed.urls:
+            tokens = sorted(high_signal.intersection(url.suspicious_tokens))
+            if not url.normalized_url or not tokens:
+                continue
+            self.blacklist_repo.create_if_missing(
+                url.normalized_url, "url", "auto_rule",
+                min(0.99, 0.72 + 0.05 * len(tokens)),
+                "自动规则命中: " + ", ".join(tokens),
+            )

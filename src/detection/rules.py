@@ -169,10 +169,13 @@ def _add_credential_request(email: ParsedEmail, explanations: list[Explanation])
 def _add_suspicious_url(email: ParsedEmail, explanations: list[Explanation]) -> None:
     for url in email.urls:
         if url.suspicious_tokens:
+            detail = "URL contains suspicious structural features."
+            if "lookalike_characters" in url.suspicious_tokens:
+                detail = "URL contains digit/letter substitutions that may imitate a known brand."
             explanations.append(
                 _explanation(
                     RuleCode.SUSPICIOUS_URL,
-                    "URL contains suspicious structural features.",
+                    detail,
                     f"{url.host or url.raw_url}: {', '.join(url.suspicious_tokens[:5])}",
                 )
             )

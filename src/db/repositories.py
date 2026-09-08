@@ -128,6 +128,8 @@ class DetectionRepository:
             model_version=result.model_version,
             explanations=dumps(result.explanations),
             advice=dumps(result.advice),
+            llm_assessment=dumps(result.llm_assessment) if result.llm_assessment else None,
+            llm_status=result.llm_status,
         )
         self.session.add(detection)
         self.session.commit()
@@ -277,6 +279,15 @@ class BlacklistRepository:
         self.session.add(row)
         self.session.commit()
         return row
+
+    def create_if_missing(
+        self, indicator: str, indicator_type: str, source: str,
+        confidence: float | None, note: str | None,
+    ) -> BlacklistIndicator:
+        existing = self.get_by_indicator(indicator, indicator_type)
+        if existing is not None:
+            return existing
+        return self.create(indicator, indicator_type, source, confidence, note)
 
     def update(
         self, row: BlacklistIndicator, **fields: Any

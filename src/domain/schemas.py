@@ -127,6 +127,16 @@ class ModelPrediction:
 
 
 @dataclass
+class LlmAssessment:
+    verdict: str
+    confidence: float
+    summary: str
+    key_findings: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
+    uncertainty: str = ""
+
+
+@dataclass
 class ModelMetadata:
     model_name: str
     model_version: str
@@ -256,6 +266,8 @@ class DetectionResult:
     parse_warnings: list[str] = field(default_factory=list)
     detection_id: int | None = None
     created_at: str | None = None
+    llm_assessment: LlmAssessment | None = None
+    llm_status: str = "disabled"
 
 
 @dataclass

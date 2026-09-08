@@ -87,6 +87,8 @@ class HistoryService:
                 "model_version": detection.model_version,
                 "explanations": loads(detection.explanations, []),
                 "advice": loads(detection.advice, []),
+                "llm_assessment": loads(detection.llm_assessment, None),
+                "llm_status": detection.llm_status or "disabled",
                 "created_at": iso_z(detection.created_at),
                 "email": {
                     "subject": email.subject or "",

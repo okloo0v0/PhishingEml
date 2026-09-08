@@ -56,6 +56,8 @@ class Detection(Base):
     model_version = Column(String(64), nullable=False)
     explanations = Column(Text, nullable=False)
     advice = Column(Text, nullable=False)
+    llm_assessment = Column(Text, nullable=True)
+    llm_status = Column(String(32), nullable=False, default="disabled")
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     email = relationship("Email", back_populates="detections")

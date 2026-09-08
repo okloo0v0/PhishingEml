@@ -33,6 +33,19 @@ SUSPICIOUS_TOKEN_KEYWORDS = {
     "wallet",
 }
 
+LOOKALIKE_BRANDS = {
+    "alipay",
+    "amazon",
+    "apple",
+    "bank",
+    "google",
+    "microsoft",
+    "office365",
+    "paypal",
+    "tencent",
+    "wechat",
+}
+
 SECOND_LEVEL_SUFFIXES = {
     "ac.cn",
     "ac.uk",
@@ -261,12 +274,25 @@ def _suspicious_tokens(
         subdomain = host[: -len(registrable_domain)].strip(".")
         if subdomain.count(".") >= 2:
             tokens.append("many_subdomains")
-    for keyword in SUSPICIOUS_TOKEN_KEYWORDS:
+    for keyword in sorted(SUSPICIOUS_TOKEN_KEYWORDS):
         if keyword in combined or keyword in lowered:
             tokens.append(keyword)
     if "xn--" in host:
         tokens.append("punycode")
+    if _has_visual_confusion(host):
+        tokens.append("lookalike_characters")
     return tokens
+
+
+def _has_visual_confusion(host: str) -> bool:
+    """Detect digit/letter substitutions that resemble common brands."""
+
+    substitutions = str.maketrans({"0": "o", "1": "l", "3": "e", "5": "s", "7": "t"})
+    for label in host.split(".")[:-1]:
+        normalized = label.translate(substitutions)
+        if normalized != label and any(brand in normalized for brand in LOOKALIKE_BRANDS):
+            return True
+    return False
 
 
 def _dedupe(values: list[str]) -> list[str]:

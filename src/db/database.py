@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from src.config import get_settings
@@ -23,7 +23,17 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, futu
 def init_db(bind=None) -> None:
     import src.db.models  # noqa: F401  register all tables on Base
 
-    Base.metadata.create_all(bind=bind or engine)
+    target = bind or engine
+    Base.metadata.create_all(bind=target)
+    if target.dialect.name == "sqlite":
+        existing = {column["name"] for column in inspect(target).get_columns("detections")}
+        with target.begin() as connection:
+            if "llm_assessment" not in existing:
+                connection.execute(text("ALTER TABLE detections ADD COLUMN llm_assessment TEXT"))
+            if "llm_status" not in existing:
+                connection.execute(
+                    text("ALTER TABLE detections ADD COLUMN llm_status VARCHAR(32) NOT NULL DEFAULT 'disabled'")
+                )
 
 
 def new_session() -> Session:

@@ -8,12 +8,14 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from src.db.database import SessionLocal
+from src.config import get_settings
 from src.db.repositories import (
     BlacklistRepository,
     DetectionRepository,
     StatisticsRepository,
 )
 from src.detection.model_predictor import ModelPredictor
+from src.detection.deepseek_client import DeepSeekClient
 from src.detection.rule_engine import RuleEngine
 from src.parsers.email_parser import EmailParser
 from src.services.analysis_service import AnalysisService
@@ -49,6 +51,7 @@ def get_analysis_service(
         predictor,
         BlacklistRepository(db),
         DetectionRepository(db),
+        DeepSeekClient(get_settings()),
     )
 
 
