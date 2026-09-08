@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import re
 import unicodedata
+import json
 from collections.abc import Iterable, Sequence
 from typing import Any
 
 import numpy as np
 
 from src.detection.text_features import MODEL_TEXT_MAX_CHARS, clean_email_text
-from src.domain.schemas import ParsedEmail, ParsedUrl
+from src.domain.schemas import AttachmentMeta, Mailbox, ParsedEmail, ParsedUrl
 from src.parsers.url_parser import extract_urls_from_text, get_registrable_domain, normalize_url
 
 
@@ -220,13 +221,125 @@ def build_multiview_record(
     }
 
 
+def _context_value(row: dict[str, Any]) -> dict[str, Any] | None:
+    """Return a safe serialized ParsedEmail context stored with a training row."""
+
+    for key in ("parsed_email", "parsed_email_json", "v1_1_parsed_email"):
+        value = row.get(key)
+        if isinstance(value, dict):
+            return value
+        if isinstance(value, str) and value.strip():
+            try:
+                parsed = json.loads(value)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(parsed, dict):
+                return parsed
+    return None
+
+
+def _mailbox_from_context(value: object) -> Mailbox | None:
+    if not isinstance(value, dict):
+        return None
+    address = str(value.get("address", ""))
+    if not address:
+        return None
+    return Mailbox(
+        display_name=str(value.get("display_name", "")),
+        address=address,
+        domain=str(value.get("domain", "")),
+        is_valid=bool(value.get("is_valid", False)),
+    )
+
+
+def parsed_email_from_row(row: dict[str, Any]) -> ParsedEmail | None:
+    """Rebuild static email metadata for offline V1.1 feature extraction.
+
+    The context stores no attachment bytes and is optional so historical text-only
+    rows remain compatible with the V1.1 training pipeline.
+    """
+
+    context = _context_value(row)
+    if context is None:
+        return None
+
+    urls: list[ParsedUrl] = []
+    for item in context.get("urls", []):
+        if not isinstance(item, dict) or not item.get("raw_url"):
+            continue
+        urls.append(
+            ParsedUrl(
+                raw_url=str(item["raw_url"]),
+                normalized_url=str(item.get("normalized_url", item["raw_url"])),
+                display_text=str(item.get("display_text", "")),
+                scheme=str(item.get("scheme", "")),
+                host=str(item.get("host", "")),
+                registrable_domain=str(item.get("registrable_domain", "")),
+                port=item.get("port") if isinstance(item.get("port"), int) else None,
+                path=str(item.get("path", "")),
+                query=str(item.get("query", "")),
+                is_https=bool(item.get("is_https", False)),
+                uses_ip=bool(item.get("uses_ip", False)),
+                is_shortener=bool(item.get("is_shortener", False)),
+                suspicious_tokens=[str(token) for token in item.get("suspicious_tokens", [])],
+            )
+        )
+
+    attachments: list[AttachmentMeta] = []
+    for item in context.get("attachments", []):
+        if not isinstance(item, dict) or not item.get("filename"):
+            continue
+        attachments.append(
+            AttachmentMeta(
+                filename=str(item["filename"]),
+                mime_type=str(item.get("mime_type", "application/octet-stream")),
+                size=int(item.get("size", 0) or 0),
+                sha256=str(item.get("sha256", "")),
+                extension=str(item.get("extension", "")),
+                risk_hints=[str(hint) for hint in item.get("risk_hints", [])],
+            )
+        )
+
+    sender = _mailbox_from_context(context.get("sender")) or Mailbox()
+    recipients = [
+        mailbox
+        for item in context.get("recipients", [])
+        if (mailbox := _mailbox_from_context(item)) is not None
+    ]
+    cc = [
+        mailbox
+        for item in context.get("cc", [])
+        if (mailbox := _mailbox_from_context(item)) is not None
+    ]
+    headers = context.get("headers", {})
+    return ParsedEmail(
+        message_id=str(context.get("message_id", "")),
+        subject=str(context.get("subject", "")),
+        date=str(context.get("date", "")),
+        sender=sender,
+        reply_to=_mailbox_from_context(context.get("reply_to")),
+        return_path=_mailbox_from_context(context.get("return_path")),
+        recipients=recipients,
+        cc=cc,
+        text_body=str(context.get("text_body", "")),
+        html_body=str(context.get("html_body", "")),
+        urls=urls,
+        attachments=attachments,
+        headers={str(key): str(value) for key, value in headers.items()}
+        if isinstance(headers, dict)
+        else {},
+        parse_warnings=[str(warning) for warning in context.get("parse_warnings", [])],
+    )
+
+
 def records_from_rows(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
     """Convert dataset rows into the exact records consumed by V1.1."""
 
     return [
         build_multiview_record(
-            str(row.get("raw_subject", row.get("subject", ""))),
-            str(row.get("raw_text_body", row.get("text_body", ""))),
+            str(row.get("raw_subject") or row.get("subject") or ""),
+            str(row.get("raw_text_body") or row.get("text_body") or ""),
+            parsed_email_from_row(row),
         )
         for row in rows
     ]

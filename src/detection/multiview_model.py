@@ -157,12 +157,22 @@ class MultiViewPhishingClassifier(ClassifierMixin, BaseEstimator):
         min_df: int = 2,
         cv_splits: int = 5,
         random_state: int = 42,
+        enabled_views: tuple[str, ...] = BRANCH_NAMES,
     ) -> None:
         self.word_max_features = word_max_features
         self.char_max_features = char_max_features
         self.min_df = min_df
         self.cv_splits = cv_splits
         self.random_state = random_state
+        self.enabled_views = enabled_views
+
+    def _active_branch_names(self) -> tuple[str, ...]:
+        active = tuple(self.enabled_views)
+        if not active:
+            raise ValueError("at least one model view must be enabled")
+        if len(set(active)) != len(active) or any(name not in BRANCH_NAMES for name in active):
+            raise ValueError(f"enabled_views must be unique members of {BRANCH_NAMES}")
+        return active
 
     def _branch_templates(self) -> dict[str, Pipeline]:
         return {
@@ -205,14 +215,15 @@ class MultiViewPhishingClassifier(ClassifierMixin, BaseEstimator):
             raise ValueError("each class needs at least two records for OOF fusion")
 
         templates = self._branch_templates()
-        oof_probabilities = np.zeros((len(records), len(BRANCH_NAMES)), dtype=np.float64)
+        active_branches = self._active_branch_names()
+        oof_probabilities = np.zeros((len(records), len(active_branches)), dtype=np.float64)
         folds = StratifiedKFold(n_splits=splits, shuffle=True, random_state=self.random_state)
         dummy = np.zeros(len(records), dtype=np.uint8)
         for train_indices, valid_indices in folds.split(dummy, labels):
             train_records = [records[index] for index in train_indices]
             valid_records = [records[index] for index in valid_indices]
             train_labels = labels[train_indices]
-            for column, name in enumerate(BRANCH_NAMES):
+            for column, name in enumerate(active_branches):
                 estimator = clone(templates[name])
                 estimator.fit(train_records, train_labels)
                 oof_probabilities[valid_indices, column] = self._phishing_probability(
@@ -228,13 +239,13 @@ class MultiViewPhishingClassifier(ClassifierMixin, BaseEstimator):
             cv=min(3, splits),
         ).fit(oof_probabilities, labels)
         self.branches_ = {}
-        for name in BRANCH_NAMES:
+        for name in active_branches:
             estimator = clone(templates[name])
             estimator.fit(records, labels)
             self.branches_[name] = estimator
 
         self.classes_ = np.asarray([str(value) for value in self.meta_calibrator_.classes_])
-        self.branch_names_ = BRANCH_NAMES
+        self.branch_names_ = active_branches
         self.oof_splits_ = splits
         return self
 
@@ -243,12 +254,12 @@ class MultiViewPhishingClassifier(ClassifierMixin, BaseEstimator):
         records = list(X)
         return {
             name: self._phishing_probability(self.branches_[name], records)
-            for name in BRANCH_NAMES
+            for name in self.branch_names_
         }
 
     def _view_matrix(self, X: Sequence[dict[str, Any]]) -> np.ndarray:
         probabilities = self.predict_view_proba(X)
-        return np.column_stack([probabilities[name] for name in BRANCH_NAMES])
+        return np.column_stack([probabilities[name] for name in self.branch_names_])
 
     def predict_proba(self, X: Sequence[dict[str, Any]]) -> np.ndarray:
         check_is_fitted(self, ("branches_", "meta_classifier_", "meta_calibrator_", "classes_"))

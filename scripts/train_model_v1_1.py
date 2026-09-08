@@ -79,6 +79,7 @@ def _as_negative(row: dict[str, object], split: str) -> dict[str, object]:
 def prepare_training_collections(
     rows: list[dict[str, object]],
     hard_rows: list[dict[str, object]],
+    supplement_rows: list[dict[str, object]] | None = None,
 ) -> dict[str, list[dict[str, object]]]:
     required = {"id", "source", "label", "subject", "text_body", "split"}
     for row in rows:
@@ -91,6 +92,14 @@ def prepare_training_collections(
         if str(row.get("label", "")) != "spam_other":
             raise ValueError("hard-negative input must contain only spam_other records")
 
+    supplement_rows = supplement_rows or []
+    for row in supplement_rows:
+        if str(row.get("label", "")) not in EXPECTED_CLASSES:
+            raise ValueError("curated supplement must contain only binary labels")
+        partition = str(row.get("dataset_partition", "train"))
+        if partition != "train":
+            raise ValueError("only the curated train partition may enter model training")
+
     collections = {
         split: [dict(row) for row in rows if str(row["split"]) == split]
         for split in ("train", "valid", "test")
@@ -98,6 +107,20 @@ def prepare_training_collections(
     for row in hard_rows:
         split = hard_negative_split(row)
         collections.setdefault(f"hard_{split}", []).append(_as_negative(row, split))
+    collections["supplement_train"] = [dict(row) for row in supplement_rows]
+
+    base_fingerprints = {
+        str(row.get("content_fingerprint", ""))
+        for row in collections["train"]
+        if row.get("content_fingerprint")
+    }
+    supplement_fingerprints = {
+        str(row.get("content_fingerprint", ""))
+        for row in collections["supplement_train"]
+        if row.get("content_fingerprint")
+    }
+    if base_fingerprints.intersection(supplement_fingerprints):
+        raise ValueError("curated supplement overlaps the base train split")
     return collections
 
 
@@ -137,17 +160,24 @@ def train(
     predictions_path: Path = DEFAULT_PREDICTIONS,
     log_path: Path = DEFAULT_LOG,
     *,
+    supplement_path: Path | None = None,
+    model_version: str = MODEL_VERSION,
     word_max_features: int = 50_000,
     char_max_features: int = 60_000,
     min_df: int = 2,
     cv_splits: int = 5,
 ) -> dict[str, object]:
-    """Fit V1.1 on binary training data plus only the hard-negative train partition."""
+    """Fit V1.1 on binary data, stable hard negatives, and an optional train-only supplement."""
 
     rows = [dict(row) for row in _read_csv(input_path)]
     hard_rows = _read_jsonl(hard_negative_path)
-    collections = prepare_training_collections(rows, hard_rows)
-    train_rows = collections["train"] + collections.get("hard_train", [])
+    supplement_rows = _read_jsonl(supplement_path) if supplement_path is not None else []
+    collections = prepare_training_collections(rows, hard_rows, supplement_rows)
+    train_rows = (
+        collections["train"]
+        + collections.get("hard_train", [])
+        + collections["supplement_train"]
+    )
     labels = [str(row["label"]) for row in train_rows]
     if sorted(set(labels)) != EXPECTED_CLASSES:
         raise ValueError(f"train split must contain both classes, got {sorted(set(labels))}")
@@ -171,18 +201,22 @@ def train(
     }
     summary = {
         "model_name": "multiview_late_fusion_logistic_regression",
-        "model_version": MODEL_VERSION,
+        "model_version": model_version,
         "feature_version": FEATURE_VERSION,
         "trained_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "label_order": EXPECTED_CLASSES,
         "input_path": _display_path(input_path),
         "hard_negative_path": _display_path(hard_negative_path),
+        "curated_supplement_path": _display_path(supplement_path)
+        if supplement_path is not None
+        else None,
         "artifact_filename": model_path.name,
         "artifact_sha256": _sha256_file(model_path),
         "predictions_path": _display_path(predictions_path),
         "random_state": RANDOM_STATE,
         "train_count": len(train_rows),
         "base_train_count": len(collections["train"]),
+        "curated_supplement_train_count": len(collections["supplement_train"]),
         "valid_count": len(collections["valid"]) + hard_counts["valid"],
         "test_count": len(collections["test"]) + hard_counts["test"],
         "hard_negative_counts": hard_counts,
@@ -220,7 +254,7 @@ def train(
             {
                 "event": "model_v1_1_trained",
                 "trained_at": summary["trained_at"],
-                "model_version": MODEL_VERSION,
+                "model_version": model_version,
                 "artifact_filename": summary["artifact_filename"],
                 "artifact_sha256": summary["artifact_sha256"],
                 "train_count": summary["train_count"],
@@ -243,6 +277,8 @@ def main() -> int:
     parser.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--predictions", type=Path, default=DEFAULT_PREDICTIONS)
     parser.add_argument("--log", type=Path, default=DEFAULT_LOG)
+    parser.add_argument("--supplement", type=Path)
+    parser.add_argument("--model-version", default=MODEL_VERSION)
     parser.add_argument("--word-max-features", type=int, default=50_000)
     parser.add_argument("--char-max-features", type=int, default=60_000)
     parser.add_argument("--min-df", type=int, default=2)
@@ -255,6 +291,8 @@ def main() -> int:
         args.summary,
         args.predictions,
         args.log,
+        supplement_path=args.supplement,
+        model_version=args.model_version,
         word_max_features=args.word_max_features,
         char_max_features=args.char_max_features,
         min_df=args.min_df,

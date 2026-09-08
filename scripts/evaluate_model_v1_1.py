@@ -224,6 +224,10 @@ def evaluate(
     predictions_path: Path = DEFAULT_PREDICTIONS,
     errors_path: Path = DEFAULT_ERRORS,
     baseline_model_path: Path | None = DEFAULT_BASELINE_MODEL,
+    *,
+    chinese_test_path: Path | None = None,
+    modern_attack_test_path: Path | None = None,
+    boundary_test_path: Path | None = None,
 ) -> dict[str, object]:
     rows = _read_csv(input_path)
     cross_rows = _read_jsonl(cross_source_path)
@@ -246,6 +250,21 @@ def evaluate(
         "cross_source_test": cross_rows,
         "hard_negative_test": hard_rows,
     }
+    targeted_paths = {
+        "chinese_test": chinese_test_path,
+        "modern_attack_test": modern_attack_test_path,
+        "boundary_test": boundary_test_path,
+    }
+    targeted_names: list[str] = []
+    for name, path in targeted_paths.items():
+        if path is None:
+            continue
+        targeted_rows = _read_jsonl(path)
+        labels = {str(row.get("label", "")) for row in targeted_rows}
+        if not targeted_rows or not labels.issubset(set(EXPECTED_CLASSES)):
+            raise ValueError(f"{name} must contain non-empty binary-labelled records")
+        collections[name] = targeted_rows
+        targeted_names.append(name)
 
     model = joblib.load(model_path)
     records = {name: records_from_rows(items) for name, items in collections.items()}
@@ -275,6 +294,8 @@ def evaluate(
         "hard_negative_split_policy": "reserved test partition only; never used by this evaluation for fitting or threshold tuning",
     }
     for name, dataset_rows in collections.items():
+        if name in targeted_names:
+            continue
         labels = [str(row["label"]) for row in dataset_rows]
         result[name] = {
             "contract_metrics": metrics(labels, probabilities[name], CONTRACT_THRESHOLD),
@@ -282,6 +303,19 @@ def evaluate(
             "per_source_contract": _per_source(dataset_rows, probabilities[name], CONTRACT_THRESHOLD),
         }
     result["hard_negative"] = result.pop("hard_negative_test")
+    result["targeted_tests"] = {
+        name: {
+            "contract_metrics": metrics(
+                [str(row["label"]) for row in collections[name]],
+                probabilities[name],
+                CONTRACT_THRESHOLD,
+            ),
+            "per_source_contract": _per_source(
+                collections[name], probabilities[name], CONTRACT_THRESHOLD
+            ),
+        }
+        for name in targeted_names
+    }
 
     result["branch_metrics"] = {
         dataset: {
@@ -292,7 +326,7 @@ def evaluate(
             )
             for branch, branch_probabilities in model.predict_view_proba(records[dataset]).items()
         }
-        for dataset in ("test", "cross_source_test", "hard_negative_test")
+        for dataset in ("test", "cross_source_test", "hard_negative_test", *targeted_names)
     }
     result["latency"] = _latency(model, records["test"])
     result["predictions_path"] = str(predictions_path)
@@ -336,6 +370,7 @@ def evaluate(
                 ),
             }
             for name in collections
+            if name not in targeted_names
         }
         candidate_hard_fpr = result["hard_negative"]["contract_metrics"]["false_positive_rate"]
         baseline_hard_fpr = result["baseline_same_set"]["hard_negative_test"]["false_positive_rate"]
@@ -344,6 +379,19 @@ def evaluate(
             if baseline_hard_fpr
             else 0.0
         )
+        result["targeted_comparison"] = {
+            name: {
+                "f1_difference": float(
+                    result["targeted_tests"][name]["contract_metrics"]["f1"]
+                    - result["baseline_same_set"][name]["f1"]
+                ),
+                "brier_difference": float(
+                    result["targeted_tests"][name]["contract_metrics"]["brier_score"]
+                    - result["baseline_same_set"][name]["brier_score"]
+                ),
+            }
+            for name in targeted_names
+        }
 
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -360,6 +408,9 @@ def main() -> int:
     parser.add_argument("--predictions", type=Path, default=DEFAULT_PREDICTIONS)
     parser.add_argument("--errors", type=Path, default=DEFAULT_ERRORS)
     parser.add_argument("--baseline-model", type=Path, default=DEFAULT_BASELINE_MODEL)
+    parser.add_argument("--chinese-test", type=Path)
+    parser.add_argument("--modern-attack-test", type=Path)
+    parser.add_argument("--boundary-test", type=Path)
     args = parser.parse_args()
     print(
         json.dumps(
@@ -372,6 +423,9 @@ def main() -> int:
                 args.predictions,
                 args.errors,
                 args.baseline_model,
+                chinese_test_path=args.chinese_test,
+                modern_attack_test_path=args.modern_attack_test,
+                boundary_test_path=args.boundary_test,
             ),
             ensure_ascii=False,
             indent=2,

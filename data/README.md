@@ -177,6 +177,17 @@ uv run python scripts\run_extra_evaluation_v1_1.py
 uv run python scripts\generate_model_metadata_v1_1.py
 ```
 
+### V1.1.1 定向补充与多视图验证
+
+`scripts\build_v1_1_1_curated_dataset.py` 创建四个完全按
+`content_fingerprint` 隔离的安全人工构造分区：训练补充集、中文独立测试集、现代攻击技术
+独立测试集和扩充边界回归集。邮件采用 `example.invalid`，只在内存中构造并由生产解析器提取
+静态 MIME/URL/附件元数据；不访问 URL、不保存附件 payload、不模拟真实个人或组织。
+
+该语料用于检验 V1.1 的结构与意图视图能否接收真实解析上下文。它不是公开真实语料，所有
+结果只能作为受控回归和分支消融证据，不能表述为真实环境泛化率。`spam_other` 硬负样本不
+进入其中，仍严格使用既有稳定 SHA-256 分桶。
+
 ## 评估与阈值调参
 
 运行 `uv run python scripts\evaluate_model.py`。脚本只在 valid 集扫描 0.30--0.70

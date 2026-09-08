@@ -12,6 +12,7 @@
 - 平台真实测试报告：docs/test-report.md
 - MVP 阶段差异分析与优化路线：docs/mvp-report.md
 - 模型调研与实验路线：docs/model-capability-improvement-research.md
+- V1.1.1 数据补齐与多视图验证：docs/model-v1.1.1-data-and-ablation-report.md
 
 ## 基础目录
 
@@ -74,6 +75,23 @@ uv run python scripts\generate_model_metadata_v1_1.py
 ```
 
 训练会生成独立的 V1.1 制品，不覆盖 V1.0。只有模型文件和 `models/model_meta_v1_1.json` 同时存在且通过版本、标签顺序和 SHA-256 校验时，默认推理才会启用 V1.1。
+
+V1.1.1 的定向数据补齐、消融和候选评测命令如下。补充语料为安全人工构造数据，只用于验证模型分支和回归流程；它不替代真实、脱敏来源的独立评测。
+
+```powershell
+uv run python scripts\build_v1_1_1_curated_dataset.py
+uv run python scripts\ablate_model_v1_1.py
+uv run python scripts\train_model_v1_1.py `
+  --supplement data\processed\v1_1_1_curated_train.jsonl `
+  --model-version v1.1.1-candidate `
+  --model models\phishing_model_v1_1_1.joblib `
+  --summary data\manifests\model_training_summary_v1_1_1.json
+uv run python scripts\evaluate_model_v1_1.py `
+  --model models\phishing_model_v1_1_1.joblib `
+  --chinese-test data\processed\v1_1_1_chinese_test.jsonl `
+  --modern-attack-test data\processed\v1_1_1_modern_attack_test.jsonl `
+  --boundary-test data\processed\v1_1_1_boundary_test.jsonl
+```
 
 ## 测试集邮件与演示样本
 

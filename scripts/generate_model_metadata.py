@@ -126,6 +126,24 @@ def generate(
         "source_counts": split["source_counts"],
         "hard_negative_count": split["hard_negative_records"],
     }
+    if training.get("curated_supplement_path"):
+        metadata["curated_supplement"] = {
+            "path": training["curated_supplement_path"],
+            "train_count": int(training.get("curated_supplement_train_count", 0)),
+        }
+    targeted_tests = evaluation.get("targeted_tests")
+    if isinstance(targeted_tests, dict):
+        metadata["targeted_tests"] = {
+            name: {
+                "support": int(result["contract_metrics"]["support"]),
+                "precision": float(result["contract_metrics"]["precision"]),
+                "recall": float(result["contract_metrics"]["recall"]),
+                "f1": float(result["contract_metrics"]["f1"]),
+                "accuracy": float(result["contract_metrics"]["accuracy"]),
+            }
+            for name, result in targeted_tests.items()
+            if isinstance(result, dict) and isinstance(result.get("contract_metrics"), dict)
+        }
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

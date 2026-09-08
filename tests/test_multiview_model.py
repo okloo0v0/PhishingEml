@@ -40,3 +40,18 @@ def test_multiview_classifier_fits_oof_branches_and_returns_probabilities():
     assert all(values.shape == (len(records),) for values in views.values())
     assert np.all(model.meta_classifier_.coef_ >= 0.0)
     assert len(model.meta_calibrator_.calibrated_classifiers_) == 2
+
+
+def test_multiview_classifier_supports_controlled_view_subsets():
+    records, labels = _training_records()
+    model = MultiViewPhishingClassifier(
+        word_max_features=100,
+        char_max_features=200,
+        min_df=1,
+        cv_splits=2,
+        enabled_views=("word", "char"),
+    ).fit(records, labels)
+
+    assert model.branch_names_ == ("word", "char")
+    assert tuple(model.predict_view_proba(records)) == ("word", "char")
+    assert model.meta_classifier_.coef_.shape == (1, 2)

@@ -130,3 +130,49 @@ def test_evaluate_v1_1_keeps_reserved_hard_negative_test(tmp_path):
     assert result["hard_negative"]["contract_metrics"]["support"] > 0
     assert set(result["branch_metrics"]["test"]) == {"word", "char", "structure", "intent"}
     assert result["latency"]["p95_ms"] >= 0.0
+
+
+def test_evaluate_v1_1_reports_targeted_binary_test_sets(tmp_path):
+    input_path = tmp_path / "emails.csv"
+    hard_path = tmp_path / "hard.jsonl"
+    cross_path = tmp_path / "cross.jsonl"
+    model_path = tmp_path / "model.joblib"
+    targeted_path = tmp_path / "chinese.jsonl"
+    _write_binary_rows(input_path)
+    _write_jsonl(
+        hard_path,
+        [
+            {
+                "id": f"spam-{index}", "source": "fixture-spam", "label": "spam_other",
+                "subject": "Special offer", "text_body": f"Newsletter {index}",
+                "dedup_group": f"spam-{index}",
+            }
+            for index in range(20)
+        ],
+    )
+    _write_jsonl(
+        cross_path,
+        [
+            {"id": "cross-p", "source": "cross", "label": "phishing", "subject": "Alert", "text_body": "Verify password"},
+            {"id": "cross-l", "source": "cross", "label": "legitimate", "subject": "Agenda", "text_body": "Team meeting"},
+        ],
+    )
+    _write_jsonl(
+        targeted_path,
+        [
+            {"id": "zh-p", "source": "zh", "label": "phishing", "subject": "紧急验证", "text_body": "立即提供验证码"},
+            {"id": "zh-l", "source": "zh", "label": "legitimate", "subject": "课程通知", "text_body": "下周课程调整"},
+        ],
+    )
+    train(
+        input_path, hard_path, model_path, tmp_path / "train.json", tmp_path / "predictions.csv", tmp_path / "log.json",
+        word_max_features=200, char_max_features=300, min_df=1, cv_splits=2,
+    )
+
+    result = evaluate(
+        input_path, model_path, cross_path, hard_path, tmp_path / "evaluation.json", tmp_path / "evaluation.csv", tmp_path / "errors.csv",
+        baseline_model_path=None, chinese_test_path=targeted_path,
+    )
+
+    assert result["targeted_tests"]["chinese_test"]["contract_metrics"]["support"] == 2
+    assert "chinese_test" in result["branch_metrics"]
