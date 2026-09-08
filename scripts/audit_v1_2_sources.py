@@ -71,6 +71,9 @@ def audit(output: Path = DEFAULT_OUTPUT) -> list[dict[str, object]]:
             elif "figshare_2024" in relative:
                 record.update(data_origin="historical_public_email_corpus", recommended_role="candidate_training_after_dedup")
                 record["notes"] = "2024 republication; sample dates are historical and must be measured before temporal split."
+            elif "twente_2024" in relative:
+                record.update(data_origin="mixed_real_and_artificial", recommended_role="validation_only")
+                record["notes"] = "2,000 labeled full-text emails; mixed real and artificial; do not use for training."
         elif "epvme_2023" in relative:
             record.update(file_type="text", sha256=_sha256(path), recommended_role="protocol_attack_audit_only")
             record["data_origin"] = "constructed_adversarial_corpus"
