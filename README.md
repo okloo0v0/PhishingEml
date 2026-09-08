@@ -13,6 +13,8 @@
 - MVP 阶段差异分析与优化路线：docs/mvp-report.md
 - 模型调研与实验路线：docs/model-capability-improvement-research.md
 - V1.1.1 数据补齐与多视图验证：docs/model-v1.1.1-data-and-ablation-report.md
+- V1.2 Intent 重设计与公开数据路线：docs/model-v1.2-intent-redesign-and-data-route.md
+- V1/V1.1/V1.2 数据归档入口：data/README.md
 
 ## 基础目录
 
@@ -64,6 +66,12 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 本地存在完整的 V1.1 模型和元数据时，服务优先加载 `phishing_model_v1_1.joblib`；否则回退到已声明的 V1.0 制品。模型文件被 Git 忽略，不会随代码仓库分发。终止服务按 `Ctrl+C`。
 
 ## V1.1 模型训练与评估
+
+V1.2 Phase 1 数据布局审计：
+
+```powershell
+uv run python scripts\audit_v1_2_data_layout.py
+```
 
 在已有 `data/processed/emails.csv` 和 hard-negative 数据的环境中执行：
 

@@ -1,0 +1,5 @@
+source_id,source_type,language,attack_scope,source_url,license_status,local_path,status,downloaded_at,sha256,notes
+sting9_email,public_dataset,multi,phishing_bec_consent_email,https://sting9.org/dataset,pending,data/v1.2/raw_refs/sting9_email,planned,,,license wording requires verification before use
+meajor_email,public_dataset,multi,phishing_legitimate_multisource,https://arxiv.org/abs/2507.17978,pending,data/v1.2/raw_refs/meajor_email,planned,,,verify original-source licenses and email-content availability
+llmgen_email,public_dataset,zh-en,phishing_text,https://huggingface.co/datasets/Dizzzy0x00/LLMGen-Phishing-Email-Dataset,review_required,data/v1.2/raw_refs/llmgen_email,planned,,,auxiliary training or robustness only; not independent final test
+phishtank_url_feed,threat_intel,multi,phishing_url,https://phishtank.org/developer_info.php,review_required,data/v1.2/raw_refs/phishtank_url_feed,planned,,,URL-only offline snapshot; never substitute for email body labels

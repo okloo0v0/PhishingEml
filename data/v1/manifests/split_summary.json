@@ -1,0 +1,81 @@
+{
+  "input_path": "data/processed/deduplicated_emails_combined.jsonl",
+  "output_path": "data/processed/emails.csv",
+  "cross_source_test_path": "data/processed/cross_source_test.jsonl",
+  "hard_negative_path": "data/processed/hard_negative_emails.jsonl",
+  "random_state": 42,
+  "split_policy": "70/15/15 stratified by label after a 10% source-label-balanced cross-source holdout",
+  "total_input_records": 17844,
+  "binary_records_after_validation": 16148,
+  "hard_negative_records": 1695,
+  "cross_source_test_records": 1611,
+  "split_counts": {
+    "train": {
+      "records": 10175,
+      "labels": {
+        "legitimate": 5190,
+        "phishing": 4985
+      }
+    },
+    "valid": {
+      "records": 2181,
+      "labels": {
+        "legitimate": 1112,
+        "phishing": 1069
+      }
+    },
+    "test": {
+      "records": 2181,
+      "labels": {
+        "legitimate": 1112,
+        "phishing": 1069
+      }
+    }
+  },
+  "source_counts": {
+    "train": {
+      "nazario": 1930,
+      "spamassassin_ham": 2623,
+      "zenodo_nazario_csv": 999,
+      "zenodo_nigerian_5": 3669,
+      "zenodo_spamassassin_csv": 954
+    },
+    "valid": {
+      "nazario": 415,
+      "spamassassin_ham": 551,
+      "zenodo_nazario_csv": 197,
+      "zenodo_nigerian_5": 809,
+      "zenodo_spamassassin_csv": 209
+    },
+    "test": {
+      "nazario": 431,
+      "spamassassin_ham": 549,
+      "zenodo_nazario_csv": 190,
+      "zenodo_nigerian_5": 813,
+      "zenodo_spamassassin_csv": 198
+    }
+  },
+  "cross_source_counts": {
+    "nazario:phishing": 308,
+    "spamassassin_ham:legitimate": 413,
+    "zenodo_nazario_csv:phishing": 153,
+    "zenodo_nigerian_5:legitimate": 258,
+    "zenodo_nigerian_5:phishing": 328,
+    "zenodo_spamassassin_csv:legitimate": 151
+  },
+  "hard_negative_counts": {
+    "spam_other": 1695
+  },
+  "empty_or_non_ascii": {
+    "empty_model_text_after_validation": 0,
+    "non_ascii_records": 2899
+  },
+  "dedup_group_overlap_check": "passed",
+  "drop_counts": {
+    "empty_model_text": 1
+  },
+  "limitations": [
+    "Cross-source test is source-label-balanced sampling, not a strict leave-one-source-out evaluation.",
+    "Thread and sender grouping remain unavailable because the intermediate records do not contain reliable parsed header metadata."
+  ]
+}

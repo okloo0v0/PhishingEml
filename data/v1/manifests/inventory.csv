@@ -1,0 +1,16 @@
+source,local_path,container_type,message_count,size_bytes,status,error
+nazario,data/raw/nazario/20051114.mbox,mbox,438,4071556,ok,
+nazario,data/raw/nazario/phishing-2021,mbox,101,2719946,ok,
+nazario,data/raw/nazario/phishing-2022,mbox,247,4775954,ok,
+nazario,data/raw/nazario/phishing-2023,mbox,419,7763704,ok,
+nazario,data/raw/nazario/phishing-2024,mbox,403,15457816,ok,
+nazario,data/raw/nazario/phishing-2025,mbox,481,18769863,ok,
+nazario,data/raw/nazario/phishing0.mbox,mbox,414,3119972,ok,
+nazario,data/raw/nazario/phishing1.mbox,mbox,456,4191770,ok,
+nazario,data/raw/nazario/phishing2.mbox,mbox,1423,10420294,ok,
+nazario,data/raw/nazario/phishing3.mbox,unknown,0,20067215,failed,[Errno 22] Invalid argument: 'D:\\CodeSpace\\PhishingEml\\data\\raw\\nazario\\phishing3.mbox'
+spamassassin_ham,data/raw/spamassassin_ham/20021010_easy_ham.tar.bz2,tar,2551,1677144,ok,
+spamassassin_ham,data/raw/spamassassin_ham/20021010_hard_ham.tar.bz2,tar,250,1021126,ok,
+spamassassin_ham,data/raw/spamassassin_ham/20030228_easy_ham.tar.bz2,tar,2500,1612216,ok,
+spamassassin_ham,data/raw/spamassassin_ham/20030228_easy_ham_2.tar.bz2,tar,1400,1077892,ok,
+spamassassin_ham,data/raw/spamassassin_ham/20030228_hard_ham.tar.bz2,tar,250,1029898,ok,
