@@ -10,6 +10,7 @@
 - 项目开发规范：AGENTS.md
 - 阶段 A 共享契约：docs/shared-contract.md
 - 平台真实测试报告：docs/test-report.md
+- MVP 阶段差异分析与优化路线：docs/mvp-report.md
 
 ## 基础目录
 
