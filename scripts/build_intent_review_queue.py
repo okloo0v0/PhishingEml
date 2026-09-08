@@ -10,6 +10,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
 def build(input_path: Path, output_path: Path, summary_path: Path, *, limit: int = 300, seed: int = 42) -> dict[str, object]:
     rows = [json.loads(line) for line in input_path.open(encoding="utf-8") if line.strip()]
     rng = random.Random(seed)
@@ -37,8 +44,8 @@ def build(input_path: Path, output_path: Path, summary_path: Path, *, limit: int
         for row in queue:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
     summary = {
-        "input_path": input_path.relative_to(ROOT).as_posix(),
-        "output_path": output_path.relative_to(ROOT).as_posix(),
+        "input_path": _display_path(input_path),
+        "output_path": _display_path(output_path),
         "queue_count": len(queue),
         "selection": {"no_intent_legitimate": min(len(no_intent_legitimate), max(1, limit * 2 // 3)), "ambiguous_legitimate": min(len(ambiguous), max(1, limit // 3))},
         "manual_annotation_required": True,
