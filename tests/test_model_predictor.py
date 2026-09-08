@@ -5,7 +5,10 @@ import joblib
 import pytest
 
 from scripts.train_model import build_pipeline
+import src.detection.model_predictor as model_predictor_module
 from src.detection.model_predictor import ModelPredictor
+from src.detection.multiview_features import build_multiview_record
+from src.detection.multiview_model import MultiViewPhishingClassifier
 from src.domain.enums import ResultLabel
 from src.domain.errors import DomainError, ErrorCode
 from src.domain.schemas import ModelInput
@@ -73,3 +76,67 @@ def test_predictor_rejects_feature_version_mismatch(tmp_path):
 
     with pytest.raises(ValueError, match="feature_version"):
         predictor.predict(ModelInput(model_text="text", feature_version="text-v2"))
+
+
+def test_predictor_supports_v1_1_multiview_artifact(tmp_path):
+    samples = [
+        ("Urgent password", "Verify account now", "phishing"),
+        ("Wire transfer", "Confidential payment request", "phishing"),
+        ("Team meeting", "Weekly project agenda", "legitimate"),
+        ("Course notes", "Lecture schedule", "legitimate"),
+    ]
+    model = MultiViewPhishingClassifier(
+        word_max_features=100,
+        char_max_features=200,
+        min_df=1,
+        cv_splits=2,
+    ).fit(
+        [build_multiview_record(subject, body) for subject, body, _ in samples],
+        [label for _, _, label in samples],
+    )
+    model_path = tmp_path / "phishing_model_v1_1.joblib"
+    metadata_path = tmp_path / "model_meta_v1_1.json"
+    joblib.dump(model, model_path)
+    digest = hashlib.sha256(model_path.read_bytes()).hexdigest()
+    metadata_path.write_text(
+        json.dumps(
+            {
+                "model_name": "multiview_late_fusion_logistic_regression",
+                "model_version": "v1.1.0-test",
+                "feature_version": "text-structure-v2",
+                "trained_at": "2026-09-08T00:00:00Z",
+                "label_order": ["legitimate", "phishing"],
+                "metrics": {"test_f1": 1.0},
+                "artifact_filename": model_path.name,
+                "metadata_filename": metadata_path.name,
+                "artifact_sha256": digest,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    predictor = ModelPredictor(model_path, metadata_path)
+    prediction = predictor.predict(
+        ModelInput(
+            subject="Urgent payment",
+            text_body="Immediately confirm the bank account",
+            feature_version="text-structure-v2",
+        )
+    )
+
+    assert prediction.model_version == "v1.1.0-test"
+    assert prediction.feature_version == "text-structure-v2"
+    assert 0.0 <= prediction.phishing_probability <= 1.0
+
+
+def test_predictor_defaults_to_v1_0_when_v1_1_pair_is_missing(tmp_path, monkeypatch):
+    model_path, metadata_path = _write_fixture(tmp_path)
+    monkeypatch.setattr(model_predictor_module, "V1_1_MODEL_PATH", tmp_path / "missing-v1-1.joblib")
+    monkeypatch.setattr(model_predictor_module, "V1_1_METADATA_PATH", tmp_path / "missing-v1-1.json")
+    monkeypatch.setattr(model_predictor_module, "DEFAULT_MODEL_PATH", model_path)
+    monkeypatch.setattr(model_predictor_module, "DEFAULT_METADATA_PATH", metadata_path)
+
+    predictor = ModelPredictor()
+
+    assert predictor.metadata.model_version == "test-model"
+    assert predictor.metadata.feature_version == "text-v1"

@@ -152,6 +152,10 @@ uv run python scripts\deduplicate_dataset.py `
 样本。统计见 `data/manifests/split_summary.json`，标签剔除见
 `data/manifests/label_drop_report.json`。
 
+联合清洗记录同时保留 `raw_subject` 和 `raw_text_body`。V1.0 只使用清洗后的
+`subject`、`text_body` 和 `model_text`；V1.1 的字符、结构和意图视图必须使用 raw
+字段，避免训练阶段提前丢失 URL、邮箱、标点和编码形态。
+
 ## 步骤7：训练基线模型
 
 运行 `uv run python scripts\train_model.py`，脚本只使用 `emails.csv` 的 `train` 划分
@@ -163,6 +167,15 @@ uv run python scripts\deduplicate_dataset.py `
 本次训练使用 10,175 条 train 样本，valid/test 各 2,181 条。分类器类别顺序已校验为
 `[legitimate, phishing]`，`predict_proba[:, 1]` 明确定义为 phishing 概率，阈值为 0.50。
 步骤8将基于这些固定预测生成 Precision、Recall、F1、混淆矩阵和错误样本分析。
+
+V1.1 训练、评估和元数据命令：
+
+```powershell
+uv run python scripts\train_model_v1_1.py
+uv run python scripts\evaluate_model_v1_1.py
+uv run python scripts\run_extra_evaluation_v1_1.py
+uv run python scripts\generate_model_metadata_v1_1.py
+```
 
 ## 评估与阈值调参
 

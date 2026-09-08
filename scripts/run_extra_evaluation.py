@@ -42,7 +42,7 @@ def _load_ling() -> list[dict[str, object]]:
             if label is None:
                 continue
             cleaned = clean_email_text(row.get("subject", ""), row.get("body", ""))
-            rows.append({"id": f"ling-{index:06d}", "source": "zenodo_ling_csv", "label": label, "model_text": cleaned.model_text, "content_fingerprint": hashlib.sha256(cleaned.model_text.encode("utf-8")).hexdigest()})
+            rows.append({"id": f"ling-{index:06d}", "source": "zenodo_ling_csv", "label": label, "subject": row.get("subject", ""), "text_body": row.get("body", ""), "model_text": cleaned.model_text, "content_fingerprint": hashlib.sha256(cleaned.model_text.encode("utf-8")).hexdigest()})
     return rows
 
 

@@ -100,7 +100,7 @@ def _write_jsonl(path: Path, records: list[dict[str, object]]) -> None:
 
 def _write_csv(path: Path, splits: dict[str, list[dict[str, object]]]) -> None:
     fields = [
-        "id", "source", "label", "subject", "text_body", "model_text",
+        "id", "source", "label", "raw_subject", "raw_text_body", "subject", "text_body", "model_text",
         "source_hash", "content_fingerprint", "dedup_group", "split",
     ]
     path.parent.mkdir(parents=True, exist_ok=True)

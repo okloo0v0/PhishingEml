@@ -11,6 +11,7 @@
 - 阶段 A 共享契约：docs/shared-contract.md
 - 平台真实测试报告：docs/test-report.md
 - MVP 阶段差异分析与优化路线：docs/mvp-report.md
+- 模型调研与实验路线：docs/model-capability-improvement-research.md
 
 ## 基础目录
 
@@ -59,7 +60,20 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 - 健康检查：`http://127.0.0.1:8000/health`
 - API 文档：`http://127.0.0.1:8000/docs`
 
-当前仓库已包含 `models/phishing_model.joblib` 和模型元数据，通常不需要重新训练。若模型文件缺失，再按下方数据处理和训练命令生成模型。终止服务按 `Ctrl+C`。
+本地存在完整的 V1.1 模型和元数据时，服务优先加载 `phishing_model_v1_1.joblib`；否则回退到已声明的 V1.0 制品。模型文件被 Git 忽略，不会随代码仓库分发。终止服务按 `Ctrl+C`。
+
+## V1.1 模型训练与评估
+
+在已有 `data/processed/emails.csv` 和 hard-negative 数据的环境中执行：
+
+```powershell
+uv run python scripts\train_model_v1_1.py
+uv run python scripts\evaluate_model_v1_1.py
+uv run python scripts\run_extra_evaluation_v1_1.py
+uv run python scripts\generate_model_metadata_v1_1.py
+```
+
+训练会生成独立的 V1.1 制品，不覆盖 V1.0。只有模型文件和 `models/model_meta_v1_1.json` 同时存在且通过版本、标签顺序和 SHA-256 校验时，默认推理才会启用 V1.1。
 
 ## 测试集邮件与演示样本
 

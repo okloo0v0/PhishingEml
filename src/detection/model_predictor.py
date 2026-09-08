@@ -13,11 +13,18 @@ from src.domain.enums import ResultLabel
 from src.domain.errors import DomainError, ErrorCode
 from src.domain.schemas import ModelInput, ModelMetadata, ModelPrediction, validate_model_prediction
 from src.domain.scoring import label_for_probability
-from src.detection.text_features import FEATURE_VERSION, clean_email_text
+from src.detection.multiview_features import (
+    FEATURE_VERSION as MULTIVIEW_FEATURE_VERSION,
+    build_multiview_record,
+)
+from src.detection.text_features import FEATURE_VERSION as TEXT_FEATURE_VERSION, clean_email_text
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL_PATH = ROOT / "models" / "phishing_model.joblib"
 DEFAULT_METADATA_PATH = ROOT / "models" / "model_meta.json"
+V1_1_MODEL_PATH = ROOT / "models" / "phishing_model_v1_1.joblib"
+V1_1_METADATA_PATH = ROOT / "models" / "model_meta_v1_1.json"
+SUPPORTED_FEATURE_VERSIONS = {TEXT_FEATURE_VERSION, MULTIVIEW_FEATURE_VERSION}
 EXPECTED_LABEL_ORDER = [ResultLabel.LEGITIMATE, ResultLabel.PHISHING]
 
 
@@ -59,11 +66,24 @@ class ModelPredictor:
 
     def __init__(
         self,
-        model_path: Path = DEFAULT_MODEL_PATH,
-        metadata_path: Path = DEFAULT_METADATA_PATH,
+        model_path: Path | None = None,
+        metadata_path: Path | None = None,
     ) -> None:
-        self.model_path = Path(model_path)
-        self.metadata_path = Path(metadata_path)
+        if (model_path is None) != (metadata_path is None):
+            raise ValueError("model_path and metadata_path must be provided together")
+        if model_path is None:
+            candidates = (
+                (V1_1_MODEL_PATH, V1_1_METADATA_PATH),
+                (DEFAULT_MODEL_PATH, DEFAULT_METADATA_PATH),
+            )
+            selected = next(
+                ((model, metadata) for model, metadata in candidates if model.is_file() and metadata.is_file()),
+                candidates[0],
+            )
+            self.model_path, self.metadata_path = selected
+        else:
+            self.model_path = Path(model_path)
+            self.metadata_path = Path(metadata_path)
         self.metadata, self._pipeline = self._load()
         self._phishing_index = EXPECTED_LABEL_ORDER.index(ResultLabel.PHISHING)
 
@@ -73,8 +93,8 @@ class ModelPredictor:
         try:
             payload = json.loads(self.metadata_path.read_text(encoding="utf-8"))
             metadata = _metadata_from_json(payload)
-            if metadata.feature_version != FEATURE_VERSION:
-                raise ValueError("feature version does not match the runtime")
+            if metadata.feature_version not in SUPPORTED_FEATURE_VERSIONS:
+                raise ValueError("feature version is not supported by the runtime")
             if metadata.label_order != EXPECTED_LABEL_ORDER:
                 raise ValueError("label order does not match the contract")
             expected_hash = str(payload.get("artifact_sha256", ""))
@@ -99,12 +119,19 @@ class ModelPredictor:
         if model_input.feature_version != self.metadata.feature_version:
             raise ValueError("model_input feature_version does not match the loaded model")
 
-        if model_input.subject or model_input.text_body:
-            model_text = clean_email_text(model_input.subject, model_input.text_body).model_text
+        if self.metadata.feature_version == TEXT_FEATURE_VERSION:
+            if model_input.subject or model_input.text_body:
+                model_record = clean_email_text(model_input.subject, model_input.text_body).model_text
+            else:
+                model_record = model_input.model_text or ""
         else:
-            model_text = model_input.model_text or ""
+            model_record = build_multiview_record(
+                model_input.subject,
+                model_input.text_body,
+                model_input.parsed_email,
+            )
         try:
-            probabilities = self._pipeline.predict_proba([model_text])
+            probabilities = self._pipeline.predict_proba([model_record])
             probability = float(probabilities[0][self._phishing_index])
         except Exception as exc:
             raise _model_not_ready("模型推理失败", exc) from exc

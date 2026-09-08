@@ -57,6 +57,8 @@ def prepare(files: list[Path], output: Path, stats: Path) -> dict[str, object]:
                     record = {
                         "id": f"{spec['source']}-{index:06d}",
                         "source": spec["source"], "label": label,
+                        "raw_subject": row.get("subject", ""),
+                        "raw_text_body": row.get("body", ""),
                         "subject": cleaned.subject, "text_body": cleaned.text_body,
                         "source_hash": _source_hash(row), "parse_warnings": [],
                         **cleaned.to_jsonable(), "cleaning_warnings": list(cleaned.warnings),
