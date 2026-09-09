@@ -65,49 +65,6 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 
 本地存在完整的 V1.2 模型和元数据时，服务优先加载 `phishing_model_v1_2.joblib`；否则依次回退到已声明的 V1.1、V1.0 制品。模型文件被 Git 忽略，不会随代码仓库分发。终止服务按 `Ctrl+C`。
 
-## V1.1 模型训练与评估
-
-V1.2 Phase 1 数据布局审计：
-
-```powershell
-uv run python scripts\audit_v1_2_data_layout.py
-```
-
-V1.2 公开数据获取（仅访问脚本中的 allowlist，邮件内 URL 不会被访问）：
-
-```powershell
-uv run python scripts\download_v1_2_sources.py --list
-uv run python scripts\download_v1_2_sources.py
-```
-
-在已有 `data/processed/emails.csv` 和 hard-negative 数据的环境中执行：
-
-```powershell
-uv run python scripts\train_model_v1_1.py
-uv run python scripts\evaluate_model_v1_1.py
-uv run python scripts\run_extra_evaluation_v1_1.py
-uv run python scripts\generate_model_metadata_v1_1.py
-```
-
-训练会生成独立的版本化制品，不覆盖 V1.0/V1.1。V1.2 默认制品为 `models/phishing_model_v1_2.joblib` 与 `models/model_meta_v1_2.json`；两者同时存在且通过版本、标签顺序和 SHA-256 校验时，默认推理才会启用 V1.2。
-
-V1.1.1 的定向数据补齐、消融和候选评测命令如下。补充语料为安全人工构造数据，只用于验证模型分支和回归流程；它不替代真实、脱敏来源的独立评测。
-
-```powershell
-uv run python scripts\build_v1_1_1_curated_dataset.py
-uv run python scripts\ablate_model_v1_1.py
-uv run python scripts\train_model_v1_1.py `
-  --supplement data\processed\v1_1_1_curated_train.jsonl `
-  --model-version v1.1.1-candidate `
-  --model models\phishing_model_v1_1_1.joblib `
-  --summary data\manifests\model_training_summary_v1_1_1.json
-uv run python scripts\evaluate_model_v1_1.py `
-  --model models\phishing_model_v1_1_1.joblib `
-  --chinese-test data\processed\v1_1_1_chinese_test.jsonl `
-  --modern-attack-test data\processed\v1_1_1_modern_attack_test.jsonl `
-  --boundary-test data\processed\v1_1_1_boundary_test.jsonl
-```
-
 ## 测试集邮件与演示样本
 
 演示样本位于 `data/samples/`，其中 `blacklist_hit_demo` 可配合黑名单页面演示 URL 命中。若要从本地公开归档恢复模型 `test` 集中可用的原始 MIME 邮件，执行：
