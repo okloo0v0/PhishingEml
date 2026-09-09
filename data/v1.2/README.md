@@ -76,6 +76,13 @@ intent 分支。结果见 `manifests/intent_previous_model_manual_100_eval.json`
 这些提升主要由 structure 分支贡献，intent 仍需补齐低频类别后再做 OOF 权重决策。
 完整结果见 `manifests/model_evaluation_v1_2_comprehensive.json`。
 
+## V1.2 收尾决策：主融合排除 intent
+
+V1.2 生产主模型固定使用 `word + char + structure` 三视图；`intent` 保留为实验和解释分支，
+不删除现有模型或代码。三视图与四视图在主测试集 F1 均约为 0.990、来源留出均约为 0.989，
+但中文、现代攻击和边界集存在差异，说明 intent 有局部信号却缺少稳定泛化证据。详细决策、
+已完成工作和重新启用条件见 `docs/v1.2-intent-retirement-decision.md`。
+
 本轮另否决 Chataut 2024 候选：实际内容包含 2002 年邮件，所谓 phishing 分片标签为 `spam`，
 且仓库无明确许可证；下载文件已删除。Twente 2024 仍是更理想的独立验证候选，但当前环境访问
 Zenodo 文件端点返回 403，未使用任何无法通过官方 MD5 的代理副本。

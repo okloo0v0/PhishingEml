@@ -166,6 +166,7 @@ def train(
     char_max_features: int = 60_000,
     min_df: int = 2,
     cv_splits: int = 5,
+    enabled_views: tuple[str, ...] = ("word", "char", "structure", "intent"),
 ) -> dict[str, object]:
     """Fit V1.1 on binary data, stable hard negatives, and an optional train-only supplement."""
 
@@ -188,6 +189,7 @@ def train(
         min_df=min_df,
         cv_splits=cv_splits,
         random_state=RANDOM_STATE,
+        enabled_views=enabled_views,
     )
     model.fit(records_from_rows(train_rows), labels)
     model_path.parent.mkdir(parents=True, exist_ok=True)
@@ -222,7 +224,7 @@ def train(
         "hard_negative_counts": hard_counts,
         "hard_negative_split_policy": HARD_NEGATIVE_SPLIT_POLICY,
         "training_label_counts": dict(sorted(Counter(labels).items())),
-        "features": ["word_tfidf", "char_tfidf", "static_structure", "intent"],
+        "features": [f"{name}_tfidf" if name in {"word", "char"} else name for name in enabled_views],
         "model_config": {
             "word_ngram_range": [1, 2],
             "word_max_features": word_max_features,
@@ -283,6 +285,7 @@ def main() -> int:
     parser.add_argument("--char-max-features", type=int, default=60_000)
     parser.add_argument("--min-df", type=int, default=2)
     parser.add_argument("--cv-splits", type=int, default=5)
+    parser.add_argument("--disable-intent", action="store_true", help="Train the stable word/char/structure fusion without the experimental intent view.")
     args = parser.parse_args()
     result = train(
         args.input,
@@ -297,6 +300,7 @@ def main() -> int:
         char_max_features=args.char_max_features,
         min_df=args.min_df,
         cv_splits=args.cv_splits,
+        enabled_views=("word", "char", "structure") if args.disable_intent else ("word", "char", "structure", "intent"),
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
