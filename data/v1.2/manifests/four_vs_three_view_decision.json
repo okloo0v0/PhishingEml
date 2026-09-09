@@ -1,0 +1,83 @@
+{
+  "decision": "retain_validated_four_view_v1_1_1",
+  "model_artifact": "models/phishing_model_v1_2.joblib (copied from validated phishing_model_v1_1_1.joblib)",
+  "datasets": {
+    "test": {
+      "four_view": {
+        "f1": 0.990145471609573,
+        "false_positive_rate": 0.006294964028776978,
+        "false_negative_rate": 0.013096351730589336
+      },
+      "three_view": {
+        "f1": 0.9901269393511989,
+        "false_positive_rate": 0.0044964028776978415,
+        "false_negative_rate": 0.014967259120673527
+      }
+    },
+    "cross_source_test": {
+      "four_view": {
+        "f1": 0.9879211697393515,
+        "false_positive_rate": 0.00851581508515815,
+        "false_negative_rate": 0.015209125475285171
+      },
+      "three_view": {
+        "f1": 0.98856416772554,
+        "false_positive_rate": 0.00851581508515815,
+        "false_negative_rate": 0.01394169835234474
+      }
+    },
+    "hard_negative": {
+      "four_view": {
+        "f1": 0.0,
+        "false_positive_rate": 0.06309148264984227,
+        "false_negative_rate": 0.0
+      },
+      "three_view": {
+        "f1": 0.0,
+        "false_positive_rate": 0.06309148264984227,
+        "false_negative_rate": 0.0
+      }
+    },
+    "chinese_test": {
+      "four_view": {
+        "f1": 1.0,
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 0.0
+      },
+      "three_view": {
+        "f1": 0.0,
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 1.0
+      }
+    },
+    "modern_attack_test": {
+      "four_view": {
+        "f1": 0.8571428571428571,
+        "false_positive_rate": 0.3333333333333333,
+        "false_negative_rate": 0.0
+      },
+      "three_view": {
+        "f1": 0.6792452830188679,
+        "false_positive_rate": 0.6666666666666666,
+        "false_negative_rate": 0.14285714285714285
+      }
+    },
+    "boundary_test": {
+      "four_view": {
+        "f1": 0.9032258064516129,
+        "false_positive_rate": 0.21428571428571427,
+        "false_negative_rate": 0.0
+      },
+      "three_view": {
+        "f1": 0.5333333333333333,
+        "false_positive_rate": 0.375,
+        "false_negative_rate": 0.5
+      }
+    }
+  },
+  "criteria": {
+    "no_material_main_set_regression": true,
+    "hard_negative_fpr_not_worse": true,
+    "targeted_set_gain": true
+  }
+}

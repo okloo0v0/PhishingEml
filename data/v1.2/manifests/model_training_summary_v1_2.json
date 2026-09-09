@@ -1,8 +1,8 @@
 {
   "model_name": "multiview_late_fusion_logistic_regression",
-  "model_version": "v1.2.0-three-view",
+  "model_version": "v1.2.0-four-view-validated",
   "feature_version": "text-structure-v2",
-  "trained_at": "2026-09-09T03:41:23.080178Z",
+  "trained_at": "2026-09-09T03:51:42.524201Z",
   "label_order": [
     "legitimate",
     "phishing"
@@ -11,7 +11,7 @@
   "hard_negative_path": "data/processed/hard_negative_emails.jsonl",
   "curated_supplement_path": null,
   "artifact_filename": "phishing_model_v1_2.joblib",
-  "artifact_sha256": "7425cf9718d550fdd7cae1134d96ca622b5993fbed087a9d5b40345bc374e4da",
+  "artifact_sha256": "e7bf497b7ae57931f28646e6fe9848c92e34f2f338393b920a10c3dd02373355",
   "predictions_path": "data/v1.2/processed/model_predictions_v1_2.csv",
   "random_state": 42,
   "train_count": 11186,
@@ -32,7 +32,8 @@
   "features": [
     "word_tfidf",
     "char_tfidf",
-    "structure"
+    "structure",
+    "intent"
   ],
   "model_config": {
     "word_ngram_range": [
