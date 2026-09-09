@@ -108,8 +108,8 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 成功响应 `data`（`DetectionResult`）：
 
-以下示例使用默认启用的 V1.1 模型；若 V1.1 文件对缺失，响应中的 `model_version`
-会显示已声明的 V1.0 回退版本。
+以下示例使用默认启用的 V1.2 四视图模型；若 V1.2 文件对缺失，响应中的 `model_version`
+会依次显示已声明的 V1.1、V1.0 回退版本。
 
 ```json
 {
@@ -119,7 +119,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
   "model_probability": 0.91,
   "rule_score": 40.0,
   "final_score": 73.2,
-  "model_version": "v1.1.0",
+  "model_version": "v1.2.0-four-view-validated",
   "explanations": [
     {
       "code": "R03",
@@ -193,7 +193,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
       "final_score": 73.2,
       "url_count": 1,
       "attachment_count": 1,
-      "model_version": "v1.1.0",
+      "model_version": "v1.2.0-four-view-validated",
       "created_at": "2026-09-01T10:36:04Z"
     }
   ],
@@ -215,7 +215,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
   "model_probability": 0.91,
   "rule_score": 40.0,
   "final_score": 73.2,
-  "model_version": "v1.1.0",
+  "model_version": "v1.2.0-four-view-validated",
   "explanations": [],
   "advice": [],
   "created_at": "2026-09-01T10:36:04Z",
@@ -342,21 +342,21 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 ```json
 {
   "model_name": "multiview_late_fusion_logistic_regression",
-  "model_version": "v1.1.0",
+  "model_version": "v1.2.0-four-view-validated",
   "feature_version": "text-structure-v2",
-  "trained_at": "2026-09-08T09:53:03Z",
-  "sample_counts": { "train": 11186, "valid": 2548, "test": 2498 },
+  "trained_at": "2026-09-08T11:51:17Z",
+  "sample_counts": { "train": 11354, "valid": 2548, "test": 2498 },
   "metrics": {
-    "test_precision": 0.9953,
-    "test_recall": 0.9850,
+    "test_precision": 0.9934,
+    "test_recall": 0.9869,
     "test_f1": 0.9901,
     "test_accuracy": 0.9904,
     "cross_source_precision": 0.9911,
-    "cross_source_recall": 0.9861,
-    "cross_source_f1": 0.9886,
-    "cross_source_accuracy": 0.9888
+    "cross_source_recall": 0.9848,
+    "cross_source_f1": 0.9879,
+    "cross_source_accuracy": 0.9882
   },
-  "confusion_matrix": [[1107, 5], [16, 1053]]
+  "confusion_matrix": [[1105, 7], [14, 1055]]
 }
 ```
 

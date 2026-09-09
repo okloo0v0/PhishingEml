@@ -257,7 +257,7 @@ final_score 必须限制在 0--100，并保留 1 位小数。模型概率和规�
 
 ### 7.1 模型契约
 
-V1.0 模型固定使用完整的 scikit-learn Pipeline（TF-IDF + Logistic Regression）。V1.1 使用 word、char、static structure、intent 四视图和 OOF 后期融合；推理代码始终只依赖 `ModelPredictor` 接口，不直接操作模型文件。
+V1.0 模型固定使用完整的 scikit-learn Pipeline（TF-IDF + Logistic Regression）。当前默认生产模型 V1.2 使用 word、char、static structure、intent 四视图和 OOF 后期融合；V1.1 仅保留为回退制品。推理代码始终只依赖 `ModelPredictor` 接口，不直接操作模型文件。
 
 #### ModelInput
 
@@ -266,10 +266,10 @@ V1.0 模型固定使用完整的 scikit-learn Pipeline（TF-IDF + Logistic Regre
 | subject | string | 解码后的主题，缺失为空 |
 | text_body | string | 纯文本正文；HTML 只取安全文本，不把标签作为模型语义 |
 | model_text | string | 固定拼接文本，格式为 `subject`、换行、`text_body`；长度按配置截断 |
-| feature_version | string | 特征契约版本，V1.0 为 `text-v1`，V1.1 为 `text-structure-v2` |
-| parsed_email | ParsedEmail/null | 仅供 V1.1 在进程内提取静态结构特征，不序列化到 API 或数据库 |
+| feature_version | string | 特征契约版本，V1.0 为 `text-v1`，V1.1/V1.2 为 `text-structure-v2` |
+| parsed_email | ParsedEmail/null | 仅供 V1.1/V1.2 在进程内提取静态结构特征，不序列化到 API 或数据库 |
 
-V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进制、服务器路径、数据库 ID 和运行时黑名单状态；结构分支只能读取邮件头、URL 字符串、MIME/HTML 统计、附件元数据和解析告警。主题和正文的截断规则必须在训练和推理中一致。
+V1.1/V1.2 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进制、服务器路径、数据库 ID 和运行时黑名单状态；结构分支只能读取邮件头、URL 字符串、MIME/HTML 统计、附件元数据和解析告警。主题和正文的截断规则必须在训练和推理中一致。
 
 #### FeatureVector 与 ModelPrediction
 

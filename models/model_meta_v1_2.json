@@ -2,14 +2,20 @@
   "model_name": "multiview_late_fusion_logistic_regression",
   "model_version": "v1.2.0-four-view-validated",
   "feature_version": "text-structure-v2",
-  "trained_at": "2026-09-08T09:53:03.194052Z",
+  "trained_at": "2026-09-08T11:51:17.370466Z",
   "label_order": ["legitimate", "phishing"],
   "metrics": {
     "test_precision": 0.9934086629001884,
     "test_recall": 0.9869036482694107,
     "test_f1": 0.990145471609573,
     "test_accuracy": 0.9903713892709766,
-    "cross_source_f1": 0.9879211697393515
+    "cross_source_precision": 0.9910714285714286,
+    "cross_source_recall": 0.9847908745247148,
+    "cross_source_f1": 0.9879211697393515,
+    "cross_source_accuracy": 0.9882060831781502,
+    "test_pr_auc": 0.9991655151207015,
+    "test_brier_score": 0.007952669317186592,
+    "cross_source_pr_auc": 0.9985856799088815
   },
   "artifact_filename": "phishing_model_v1_2.joblib",
   "metadata_filename": "model_meta_v1_2.json",
@@ -17,7 +23,7 @@
   "artifact_path": "models/phishing_model_v1_2.joblib",
   "dataset_version": "ds-20260908-baf7f3a6",
   "random_state": 42,
-  "train_count": 11186,
+  "train_count": 11354,
   "valid_count": 2548,
   "test_count": 2498,
   "features": ["word_tfidf", "char_tfidf", "static_structure", "intent"],
@@ -27,5 +33,8 @@
     "meta_constraint": "non-negative branch weights",
     "probability_calibration": "sigmoid CalibratedClassifierCV on OOF fusion scores"
   },
-  "probability_threshold": 0.5
+  "probability_threshold": 0.5,
+  "tuned_threshold_diagnostic": 0.67,
+  "test_confusion_matrix": [[1105, 7], [14, 1055]],
+  "cross_source_confusion_matrix": [[815, 7], [12, 777]]
 }

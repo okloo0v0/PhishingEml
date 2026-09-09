@@ -26,6 +26,7 @@ class StatisticsService:
     def model_metrics(self) -> dict[str, Any]:
         model_dir = get_settings().model_dir
         candidates = (
+            (model_dir / "phishing_model_v1_2.joblib", model_dir / "model_meta_v1_2.json"),
             (model_dir / "phishing_model_v1_1.joblib", model_dir / "model_meta_v1_1.json"),
             (model_dir / "phishing_model.joblib", model_dir / "model_meta.json"),
         )
@@ -33,6 +34,8 @@ class StatisticsService:
             (metadata for model, metadata in candidates if model.is_file() and metadata.is_file()),
             candidates[0][1],
         )
+        # Keep the dashboard's reported metadata aligned with ModelPredictor's
+        # V1.2 -> V1.1 -> V1.0 runtime selection order.
         meta_path = selected
         if not meta_path.is_file():
             raise DomainError(ErrorCode.MODEL_NOT_READY, "模型元数据不存在", 503)

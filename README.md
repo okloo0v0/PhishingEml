@@ -13,7 +13,7 @@
 - MVP 阶段差异分析与优化路线：docs/mvp-report.md
 - 模型调研与实验路线：docs/model-capability-improvement-research.md
 - V1.1.1 数据补齐与多视图验证：docs/model-v1.1.1-data-and-ablation-report.md
-- V1.2 Intent 重设计与公开数据路线：docs/model-v1.2-intent-redesign-and-data-route.md
+- V1.2 Intent 实验与四视图决策：docs/v1.2-intent-retirement-decision.md
 - V1/V1.1/V1.2 数据归档入口：data/README.md
 
 ## 基础目录
@@ -25,7 +25,9 @@
     tests/      自动化测试
     docs/       API、实验、测试和演示文档
 
-当前版本已经完成前端、后端、规则解析和模型推理的基础集成，可直接启动本地演示服务。
+当前默认生产模型为 `v1.2.0-four-view-validated`，使用 word、char、static structure、intent
+四视图 OOF 融合；V1.1 与 V1.0 仅作为完整性校验失败时的回退制品。前端、后端、规则解析和
+模型推理已完成基础集成，可直接启动本地演示服务。
 
 当前已完成阶段 A 的共享契约冻结。跨模块字段以 `src/domain/` 和 `docs/shared-contract.md` 为准。
 
