@@ -1,3 +1,17 @@
+## 当前调用流程（2026-09-09）
+
+本地 `POST /api/emails/analyze` 只执行 MIME 解析、规则检测、本地模型推理和结果持久化，不调用远程大模型。它返回 `llm_status=disabled`（未启用）或 `llm_status=not_requested`（已启用但尚未请求）。
+
+用户在检测结果或历史详情中明确点击“生成智能辅助解读”后，前端调用：
+
+```http
+POST /api/detections/{detection_id}/llm-assessment
+```
+
+成功时，服务将 `llm_assessment` JSON 和 `llm_status=completed` 回写到同一条 `detections` 记录。之后 `GET /api/detections/{detection_id}` 会返回该结果，供历史详情弹窗安全渲染。远程调用需要同时配置 `LLM_REMOTE_ENABLED=true` 和 `DEEPSEEK_API_KEY`；未启用时返回 `503 LLM_NOT_ENABLED`，调用失败时记录 `llm_status=unavailable`，不影响已完成的本地检测。
+
+> 以下“已完成内容”中的同步调用和 `ready` 状态示例已由上述按需调用流程取代；字段结构仍以 `src/domain/schemas.py` 和 `docs/shared-contract.md` 为准。
+
 ## 一、已完成内容
 
 ### 1. 接入 DeepSeek 大模型
@@ -173,8 +187,23 @@ sample_id=suspicious_urgent
     "attachments": [],
     "advice": [],
     "parse_warnings": [],
-    "llm_status": "ready",
+    "llm_status": "not_requested",
+    "llm_assessment": null
+  },
+  "request_id": "..."
+}
+```
+
+用户请求完成后的检测详情示例：
+
+```json
+{
+    "llm_status": "completed",
     "llm_assessment": {
+      "schema_version": "llm-assessment-v1",
+      "provider": "DeepSeek",
+      "model_name": "deepseek-chat",
+      "generated_at": "2026-09-09T12:00:00.000Z",
       "verdict": "phishing",
       "confidence": 0.94,
       "summary": "该邮件存在多个疑似钓鱼特征。",
@@ -187,11 +216,7 @@ sample_id=suspicious_urgent
         "不要提交密码或验证码"
       ],
       "uncertainty": "未访问链接页面，仅基于静态邮件内容判断。"
-    },
-    "detection_id": 12,
-    "created_at": "2026-09-08T12:00:00Z"
-  },
-  "request_id": "..."
+    }
 }
 ```
 
@@ -203,13 +228,25 @@ sample_id=suspicious_urgent
 disabled
 ```
 
-未配置 API Key。
+未同时配置 `LLM_REMOTE_ENABLED=true` 和 API Key。
 
 ```text
-ready
+not_requested
 ```
 
-DeepSeek 调用成功并返回合法 JSON。
+本地检测已保存，等待用户明确请求辅助解读。
+
+```text
+completed
+```
+
+用户明确请求后，DeepSeek 调用成功、结果已写入检测记录并返回合法 JSON。
+
+```text
+unavailable
+```
+
+本次远程调用失败，已保留本地检测结果，可稍后重试。
 
 ```text
 unavailable

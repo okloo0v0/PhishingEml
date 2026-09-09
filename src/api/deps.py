@@ -21,6 +21,7 @@ from src.parsers.email_parser import EmailParser
 from src.services.analysis_service import AnalysisService
 from src.services.blacklist_service import BlacklistService
 from src.services.history_service import HistoryService
+from src.services.llm_assessment_service import LlmAssessmentService
 from src.services.statistics_service import StatisticsService
 
 
@@ -41,9 +42,14 @@ _parser = EmailParser()
 _rule_engine = RuleEngine()
 
 
+def get_llm_client() -> DeepSeekClient:
+    return DeepSeekClient(get_settings())
+
+
 def get_analysis_service(
     db: Session = Depends(get_db),
     predictor: ModelPredictor = Depends(get_predictor),
+    llm_client: DeepSeekClient = Depends(get_llm_client),
 ) -> AnalysisService:
     return AnalysisService(
         _parser,
@@ -51,8 +57,15 @@ def get_analysis_service(
         predictor,
         BlacklistRepository(db),
         DetectionRepository(db),
-        DeepSeekClient(get_settings()),
+        llm_client,
     )
+
+
+def get_llm_assessment_service(
+    db: Session = Depends(get_db),
+    llm_client: DeepSeekClient = Depends(get_llm_client),
+) -> LlmAssessmentService:
+    return LlmAssessmentService(DetectionRepository(db), llm_client)
 
 
 def get_history_service(db: Session = Depends(get_db)) -> HistoryService:

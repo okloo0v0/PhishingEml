@@ -18,6 +18,7 @@ export function analyzeText(rawText) { const data = new FormData(); data.append(
 export function analyzeSample(sampleId) { const data = new FormData(); data.append('sample_id', sampleId); return request('/api/emails/analyze', { method: 'POST', body: data }); }
 export function listDetections({ page = 1, pageSize = 20, riskLevel = '' } = {}) { const query = new URLSearchParams({ page: String(page), page_size: String(pageSize) }); if (riskLevel) query.set('risk_level', riskLevel); return request(`/api/detections?${query}`); }
 export function detectionDetail(id) { return request(`/api/detections/${encodeURIComponent(id)}`); }
+export function generateLlmAssessment(id) { return request(`/api/detections/${encodeURIComponent(id)}/llm-assessment`, { method: 'POST' }); }
 export function deleteDetection(id) { return request(`/api/detections/${encodeURIComponent(id)}`, { method: 'DELETE' }); }
 export function listBlacklist(keyword = '', status = '') { const query = new URLSearchParams({ page: '1', page_size: '100' }); if (keyword) query.set('keyword', keyword); if (status) query.set('status', status); return request(`/api/blacklist?${query}`); }
 export function createBlacklist(payload) { return request('/api/blacklist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); }

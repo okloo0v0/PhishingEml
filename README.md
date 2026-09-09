@@ -49,6 +49,9 @@ uv sync
 
 # 默认配置即可运行；如需自定义配置，先设置 PowerShell 环境变量，例如：
 # $env:DATABASE_URL = "sqlite:///./data/phishing.db"
+# 智能辅助解读默认关闭；启用后仅在用户明确点击时访问配置的模型服务：
+# $env:LLM_REMOTE_ENABLED = "true"
+# $env:DEEPSEEK_API_KEY = "your-api-key"
 
 # 初始化或补齐 SQLite 表结构
 uv run python scripts\init_db.py

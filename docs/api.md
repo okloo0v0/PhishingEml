@@ -71,6 +71,7 @@
 | POST   | `/api/emails/analyze`      | 邮件分析（核心，上传/粘贴/样本三选一） |
 | GET    | `/api/detections`          | 检测历史列表               |
 | GET    | `/api/detections/{id}`     | 检测详情                 |
+| POST   | `/api/detections/{id}/llm-assessment` | 生成并持久化智能辅助解读 |
 | DELETE | `/api/detections/{id}`     | 删除检测记录               |
 | GET    | `/api/blacklist`           | 黑名单列表                |
 | POST   | `/api/blacklist`           | 新增黑名单                |
@@ -236,7 +237,36 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 `DELETE /api/detections/{id}` — 删除检测记录，成功返回 `data: {}`；不存在返回 `404 RECORD_NOT_FOUND`。
 
-### 5.5 黑名单
+### 5.5 智能辅助解读
+
+`POST /api/detections/{id}/llm-assessment`
+
+该接口只接受已经完成本地检测并保存到历史记录的 ID。用户主动请求后，服务基于已保存的静态邮件数据、规则证据和本地模型概率生成辅助解读；它不改变本地风险评分、规则命中或黑名单。
+
+成功响应 `data`：
+
+```json
+{
+  "detection_id": 12,
+  "llm_status": "completed",
+  "llm_assessment": {
+    "schema_version": "llm-assessment-v1",
+    "provider": "DeepSeek",
+    "model_name": "deepseek-chat",
+    "generated_at": "2026-09-09T12:00:00.000Z",
+    "verdict": "suspicious",
+    "confidence": 0.86,
+    "summary": "邮件含有需要人工复核的可疑信号。",
+    "key_findings": ["规则证据提示链接目标异常"],
+    "recommendations": ["不要点击邮件中的链接"],
+    "uncertainty": "仅基于静态邮件内容判断。"
+  }
+}
+```
+
+该数据会写入 `detections.llm_assessment` 和 `detections.llm_status`，随后可由 `GET /api/detections/{id}` 返回。未启用服务时返回 `503 LLM_NOT_ENABLED`；调用失败则返回 `200` 和 `llm_status=unavailable`，本地检测结果仍可正常使用。
+
+### 5.6 黑名单
 
 `GET /api/blacklist?keyword=&status=&page=1&page_size=20`
 
@@ -284,7 +314,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 - 成功返回更新后的单个 `BlacklistItem`；记录不存在返回 `404 RECORD_NOT_FOUND`。
 
-### 5.6 统计总览
+### 5.7 统计总览
 
 `GET /api/statistics/overview`
 
@@ -303,7 +333,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 > 无数据时各计数字段为 `0` 或空对象 `{}`，不会是 `null`。
 
-### 5.7 模型指标
+### 5.8 模型指标
 
 `GET /api/model/metrics`
 
@@ -332,7 +362,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 > `confusion_matrix` 为二维数组，行=实际、列=预测，标签顺序 `[legitimate, phishing]`。
 
-### 5.8 知识库
+### 5.9 知识库
 
 `GET /api/knowledge?keyword=&category=`
 
@@ -364,7 +394,7 @@ curl -F "raw_text=Subject: hi" http://127.0.0.1:8000/api/emails/analyze
 
 当前知识库包含 6 个专题、27 篇文章。`keyword` 会检索标题、摘要、正文、关键要点、操作步骤和案例对比内容；所有示例均为防御性文本，不返回可点击的真实恶意链接。
 
-### 5.9 用户反馈
+### 5.10 用户反馈
 
 `POST /api/feedback`（JSON body）：
 

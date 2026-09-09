@@ -17,6 +17,7 @@ from src.api import (
     routes_blacklist,
     routes_history,
     routes_knowledge,
+    routes_llm,
     routes_statistics,
 )
 from src.api.responses import error_body, ok
@@ -88,6 +89,7 @@ app.include_router(routes_history.router, prefix="/api")
 app.include_router(routes_blacklist.router, prefix="/api")
 app.include_router(routes_statistics.router, prefix="/api")
 app.include_router(routes_knowledge.router, prefix="/api")
+app.include_router(routes_llm.router, prefix="/api")
 
 WEB_DIR = PROJECT_ROOT / "src" / "web"
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")

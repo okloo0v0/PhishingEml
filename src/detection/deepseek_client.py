@@ -17,6 +17,7 @@ class DeepSeekUnavailable(RuntimeError):
 
 class DeepSeekClient:
     def __init__(self, settings: Settings) -> None:
+        self.settings = settings
         self.api_key = settings.deepseek_api_key
         self.endpoint = f"{settings.deepseek_api_base_url}/chat/completions"
         self.model = settings.deepseek_model
@@ -24,7 +25,7 @@ class DeepSeekClient:
 
     @property
     def enabled(self) -> bool:
-        return bool(self.api_key)
+        return bool(self.api_key and self.settings.llm_remote_enabled)
 
     def assess(self, email: ParsedEmail, rule_score: float,
                explanations: list[Explanation], model_probability: float) -> LlmAssessment:

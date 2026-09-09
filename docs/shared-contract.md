@@ -221,7 +221,15 @@ code 一旦发布不能随意改名。前端可以根据 code 展示样式，但
 | attachments | AttachmentMeta[] | 附件元数据 |
 | advice | string[] | 面向用户的处理建议 |
 | parse_warnings | string[] | 解析警告 |
+| llm_assessment | LlmAssessment/null | 用户明确请求后生成的辅助解读，不参与风险评分 |
+| llm_status | string | `disabled`、`not_requested`、`completed` 或 `unavailable` |
 | created_at | string/null | 检测时间 |
+
+### 6.3 LlmAssessment
+
+`LlmAssessment` 仅用于解释和处置建议，不能覆盖 `result_label`、`risk_level`、`final_score`、规则命中或黑名单写入。字段为 `schema_version`、`provider`、`model_name`、`generated_at`、`verdict`、`confidence`、`summary`、`key_findings`、`recommendations` 和 `uncertainty`。所有字符串均为不可信文本，前端必须以文本节点渲染。
+
+本地 `POST /api/emails/analyze` 完成后，若远程辅助服务可用则返回 `llm_status=not_requested`；只有用户调用独立的辅助接口后才可写入 `llm_assessment`。`completed` 表示已持久化可回显，`unavailable` 表示本次调用失败但本地检测结果仍有效，`disabled` 表示服务未配置或未授权启用。
 
 ## 7. 评分契约
 
@@ -308,6 +316,7 @@ V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进�
 | POST | /api/emails/analyze | multipart/form-data：`file`、`raw_text`、`sample_id` 严格三选一 | DetectionResult |
 | GET | /api/detections | page、page_size、risk_level | 分页检测摘要 |
 | GET | /api/detections/{id} | 路径 ID | 完整检测详情 |
+| POST | /api/detections/{id}/llm-assessment | 路径 ID，用户明确触发 | 回写后的 LLM 状态和辅助解读 |
 | DELETE | /api/detections/{id} | 路径 ID | 删除结果 |
 | GET | /api/blacklist | keyword、status、page | 黑名单列表 |
 | POST | /api/blacklist | indicator、indicator_type、source、note | 黑名单条目 |
@@ -332,7 +341,7 @@ V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进�
 | 恰好提供有效 `raw_text` | 将其作为完整 RFC 822/MIME 邮件原文解析 |
 | 恰好提供有效 `sample_id` | 仅从配置的演示样本目录读取，不接受路径或 URL |
 
-补充约束：`file` 只接受 `.eml` 或明确声明的邮件原文，文件大小不超过 5 MiB；`raw_text` 不超过 200000 个 Unicode 字符；未知 `sample_id` 返回 `404 RECORD_NOT_FOUND`；分析过程不允许网络访问、不允许执行、解压或渲染附件。该决议关闭 D-001，后续变更须按第 10 节提交契约修订。
+补充约束：`file` 只接受 `.eml` 或明确声明的邮件原文，文件大小不超过 5 MiB；`raw_text` 不超过 200000 个 Unicode 字符；未知 `sample_id` 返回 `404 RECORD_NOT_FOUND`；核心分析过程不允许网络访问、不允许执行、解压或渲染附件。远程 LLM 仅允许通过用户明确触发的 `POST /api/detections/{id}/llm-assessment` 调用，且必须由 `LLM_REMOTE_ENABLED=true` 与有效服务凭据共同启用；该接口不访问邮件 URL、不执行或解压附件。该决议关闭 D-001，后续变更须按第 10 节提交契约修订。
 
 代码层使用 `src/domain/schemas.py` 中的 `AnalysisInput` 表示请求来源，使用 `validate_analysis_input()` 执行上述互斥校验；Web 框架的 `UploadFile`、表单字段和 HTTP 响应对象只能在 API 适配层转换，不得把框架对象传入解析器、规则引擎或模型模块。
 
@@ -353,6 +362,7 @@ V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进�
 | 404 | RECORD_NOT_FOUND | 检测或黑名单记录不存在 |
 | 409 | DUPLICATE_INDICATOR | 黑名单指标已经存在 |
 | 503 | MODEL_NOT_READY | 模型文件或元数据未准备好 |
+| 503 | LLM_NOT_ENABLED | 用户请求智能辅助解读，但服务未启用 |
 | 500 | INTERNAL_ERROR | 未预期的服务错误 |
 
 `NETWORK_ACCESS_NOT_SUPPORTED` 为内部配置错误或安全策略错误：当 `ALLOW_NETWORK=true` 时应用启动必须拒绝，而不是悄悄忽略配置；如果运行期发现任何网络访问路径，相关操作必须拒绝并记录安全日志。
@@ -360,6 +370,7 @@ V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进�
 ### 8.5 分页、统计和增强接口响应
 
 - `GET /api/detections` 返回 `HistoryResponse`：`items` 为 `DetectionSummary[]`，`pagination` 包含 `page`（从 1 开始）、`page_size`（1--100）、`total` 和 `total_pages`。空结果的 `total_pages` 为 0，但 `page=1` 仍合法。
+- `POST /api/detections/{id}/llm-assessment` 只接受已保存的检测记录；成功后原子更新 `detections.llm_status` 和 `detections.llm_assessment`，`GET /api/detections/{id}` 必须返回相同的持久化结果。
 - `DetectionSummary` 只返回列表所需摘要，不返回正文、原始 HTML、完整请求头或附件内容。
 - `GET /api/blacklist` 返回 `BlacklistItem[]` 和同样的 `Pagination`；`hit_count` 是历史检测中命中该条目的次数，不因停用而清零。
 - `GET /api/statistics/overview` 返回 `StatisticsOverview`：风险等级计数、模型标签计数、规则命中计数、附件类型计数和按 UTC 日期聚合的检测数量。无数据时各计数返回空对象或 0，不返回 null。
@@ -398,6 +409,8 @@ V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进�
 | model_version | varchar(64) | 非空 |
 | explanations | text | JSON 字符串 |
 | advice | text | JSON 字符串 |
+| llm_assessment | text/null | LlmAssessment JSON 字符串 |
+| llm_status | varchar(32) | 当前辅助解读状态 |
 | created_at | datetime | 非空 |
 
 ### email_urls
@@ -464,7 +477,7 @@ V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进�
 - 修改数据库外键或黑名单匹配语义；
 - 修改“不访问 URL、不执行附件”的安全边界。
 
-配置契约同样属于共享契约：`allow_network`/`ALLOW_NETWORK` 字段保留用于未来隔离沙箱扩展，但当前基础版固定为 `false`。代码在读取到 `ALLOW_NETWORK=true` 时必须拒绝启动，并显示“基础版不实现沙箱隔离，网络访问作为后续隔离沙箱扩展保留”；不得通过把该值静默改回 false 来掩盖配置错误。
+配置契约同样属于共享契约：`allow_network`/`ALLOW_NETWORK` 字段保留用于未来隔离沙箱扩展，但当前基础版固定为 `false`。代码在读取到 `ALLOW_NETWORK=true` 时必须拒绝启动，并显示“基础版不实现沙箱隔离，网络访问作为后续隔离沙箱扩展保留”；不得通过把该值静默改回 false 来掩盖配置错误。远程辅助解读使用独立的 `LLM_REMOTE_ENABLED`，默认 `false`；它不能改变本地分析、URL 解析或附件处理的网络禁令。
 
 兼容性修改优先采用新增字段，禁止在同一版本中让一个字段承载两种含义。
 

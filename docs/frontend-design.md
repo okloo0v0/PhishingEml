@@ -11,8 +11,8 @@
 
 | 视图 | 主要任务 | 接口 |
 | --- | --- | --- |
-| 邮件检测 | 上传 `.eml` 或粘贴 MIME 原文，查看融合风险、证据、URL、附件和建议 | `POST /api/emails/analyze`、`POST /api/feedback` |
-| 检测历史 | 按风险等级筛选、查看单条检测详情 | `GET /api/detections`、`GET /api/detections/{id}` |
+| 邮件检测 | 上传 `.eml` 或粘贴 MIME 原文，查看融合风险、证据、URL、附件和建议；按需生成辅助解读 | `POST /api/emails/analyze`、`POST /api/detections/{id}/llm-assessment`、`POST /api/feedback` |
+| 检测历史 | 按风险等级筛选、查看单条检测详情和已保存的辅助解读 | `GET /api/detections`、`GET /api/detections/{id}` |
 | 黑名单 | 新增离线指标、搜索、按状态查看和标记待复核 | `GET/POST/PATCH /api/blacklist` |
 | 统计看板 | 查看风险分布、趋势、规则命中和模型离线指标 | `GET /api/statistics/overview`、`GET /api/model/metrics` |
 | 防范知识 | 浏览 6 个安全专题、快速处置流程、案例对比、核验清单和结构化详情 | `GET /api/knowledge` |
@@ -24,6 +24,7 @@
 3. 加载、空数据、接口失败和模型未就绪均在页面内给出反馈，并保留后端错误码。
 4. 高风险信息按“分数 -> 证据 -> 静态资源 -> 建议 -> 反馈”排列，减少用户在页面间往返。
 5. 界面使用 `example.invalid` 演示语义，不鼓励点击或访问任何邮件链接。
+6. 智能辅助解读固定显示状态；它只在用户明确点击后请求远程服务，不参与风险评分，并在检测历史详情中回显已持久化结果。
 
 ## 目录
 

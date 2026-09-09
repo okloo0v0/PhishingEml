@@ -187,6 +187,13 @@ class DetectionRepository:
         )
         return self.session.scalars(stmt).unique().first()
 
+    def update_llm_assessment(
+        self, detection: Detection, assessment: Any | None, status: str
+    ) -> None:
+        detection.llm_assessment = dumps(assessment) if assessment is not None else None
+        detection.llm_status = status
+        self.session.commit()
+
     def delete_detection(self, detection_id: int) -> bool:
         detection = self.session.get(Detection, detection_id)
         if detection is None:

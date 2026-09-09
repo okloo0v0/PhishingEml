@@ -135,6 +135,10 @@ class LlmAssessment:
     key_findings: list[str] = field(default_factory=list)
     recommendations: list[str] = field(default_factory=list)
     uncertainty: str = ""
+    schema_version: str = "llm-assessment-v1"
+    provider: str = ""
+    model_name: str = ""
+    generated_at: str = ""
 
 
 @dataclass

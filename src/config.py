@@ -16,6 +16,7 @@ class Settings:
     max_body_chars: int = 200_000
     log_level: str = "INFO"
     allow_network: bool = False
+    llm_remote_enabled: bool = False
     deepseek_api_key: str = ""
     deepseek_api_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"
@@ -47,6 +48,7 @@ def get_settings() -> Settings:
         max_body_chars=int(os.getenv("MAX_BODY_CHARS", "200000")),
         log_level=os.getenv("LOG_LEVEL", "INFO"),
         allow_network=False,
+        llm_remote_enabled=os.getenv("LLM_REMOTE_ENABLED", "false").lower() == "true",
         deepseek_api_key=os.getenv("DEEPSEEK_API_KEY", "").strip(),
         deepseek_api_base_url=os.getenv(
             "DEEPSEEK_API_BASE_URL", "https://api.deepseek.com"

@@ -37,6 +37,7 @@ def test_frontend_api_module_covers_contract_endpoints():
         "/health",
         "/api/emails/analyze",
         "/api/detections",
+        "/api/detections/${encodeURIComponent(id)}/llm-assessment",
         "/api/blacklist",
         "/api/statistics/overview",
         "/api/model/metrics",
@@ -44,6 +45,12 @@ def test_frontend_api_module_covers_contract_endpoints():
         "/api/feedback",
     ):
         assert endpoint in source
+
+    assert "智能辅助解读" in Path("src/web/js/app.js").read_text(encoding="utf-8")
+    assert "llm_status" in Path("src/web/js/app.js").read_text(encoding="utf-8")
+    assert "./api.js?v=20260909-llm-2" in Path("src/web/js/app.js").read_text(encoding="utf-8")
+    assert "grid.append(evidence, renderLlmAssessment" in Path("src/web/js/app.js").read_text(encoding="utf-8")
+    assert "处理建议" not in Path("src/web/js/app.js").read_text(encoding="utf-8")
 
 
 def test_sample_input_uses_explicit_not_found_error():

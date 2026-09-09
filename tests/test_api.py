@@ -7,11 +7,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.api.deps import get_db, get_predictor
+from src.api.deps import get_db, get_llm_client, get_predictor
 from src.db.database import init_db
 from src.domain.enums import ResultLabel
 from src.domain.errors import DomainError, ErrorCode
-from src.domain.schemas import ModelPrediction
+from src.domain.schemas import LlmAssessment, ModelPrediction
 from src.main import app
 
 
@@ -22,6 +22,21 @@ class FakePredictor:
             phishing_probability=0.9,
             model_version="test-model",
             feature_version="text-v1",
+        )
+
+
+class FakeLlmClient:
+    enabled = True
+    model = "test-assistant"
+
+    def assess(self, email, rule_score, explanations, model_probability):
+        return LlmAssessment(
+            verdict="phishing",
+            confidence=0.91,
+            summary="邮件包含需要人工复核的高风险信号。",
+            key_findings=["规则证据提示链接和身份信息存在异常"],
+            recommendations=["不要点击邮件中的链接"],
+            uncertainty="仅基于静态邮件内容判断。",
         )
 
 
@@ -195,6 +210,36 @@ def test_analysis_exposes_llm_status_and_auto_blacklists_lookalike_url(client):
     blacklist = client.get("/api/blacklist", params={"keyword": "g00gle.com"})
     assert blacklist.status_code == 200
     assert blacklist.json()["data"]["items"][0]["source"] == "auto_rule"
+
+
+def test_llm_assessment_is_persisted_and_returned_in_history_detail(client):
+    app.dependency_overrides[get_llm_client] = lambda: FakeLlmClient()
+    raw = (
+        b"From: notice@example.invalid\r\n"
+        b"Subject: Verify account\r\n\r\n"
+        b"Urgent: verify your password at https://g00gle.com/login"
+    )
+    analysis = client.post(
+        "/api/emails/analyze",
+        files={"file": ("llm-history.eml", raw, "message/rfc822")},
+    )
+    assert analysis.status_code == 200
+    detection_id = analysis.json()["data"]["detection_id"]
+    assert analysis.json()["data"]["llm_status"] == "not_requested"
+
+    generated = client.post(f"/api/detections/{detection_id}/llm-assessment")
+    assert generated.status_code == 200
+    result = generated.json()["data"]
+    assert result["llm_status"] == "completed"
+    assert result["llm_assessment"]["provider"] == "DeepSeek"
+    assert result["llm_assessment"]["model_name"] == "test-assistant"
+
+    detail = client.get(f"/api/detections/{detection_id}")
+    assert detail.status_code == 200
+    assessment = detail.json()["data"]["llm_assessment"]
+    assert detail.json()["data"]["llm_status"] == "completed"
+    assert assessment["summary"] == "邮件包含需要人工复核的高风险信号。"
+    assert assessment["key_findings"] == ["规则证据提示链接和身份信息存在异常"]
 
 
 def test_knowledge_library_exposes_complete_structured_topics(client):

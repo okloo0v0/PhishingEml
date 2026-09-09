@@ -6,7 +6,6 @@ import hashlib
 
 from src.db.models import iso_z, utcnow
 from src.db.repositories import BlacklistRepository, DetectionRepository
-from src.detection.deepseek_client import DeepSeekUnavailable
 from src.domain.enums import RiskLevel
 from src.domain.scoring import fuse_scores, risk_level_for_score
 from src.domain.schemas import DetectionResult, ModelInput, validate_detection_result
@@ -83,16 +82,14 @@ class AnalysisService:
         final_score = fuse_scores(prediction.phishing_probability, rule_score)
         risk_level = risk_level_for_score(final_score)
 
+        # The mandatory detection path stays local. Remote LLM analysis is requested
+        # separately by the user after a detection record has been saved.
         llm_assessment = None
-        llm_status = "disabled"
-        if self.llm_client is not None and self.llm_client.enabled:
-            try:
-                llm_assessment = self.llm_client.assess(
-                    parsed, rule_score, explanations, prediction.phishing_probability
-                )
-                llm_status = "ready"
-            except DeepSeekUnavailable:
-                llm_status = "unavailable"
+        llm_status = (
+            "not_requested"
+            if self.llm_client is not None and self.llm_client.enabled
+            else "disabled"
+        )
 
         result = DetectionResult(
             result_label=prediction.result_label,
