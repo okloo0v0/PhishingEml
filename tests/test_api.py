@@ -29,7 +29,7 @@ class FakeLlmClient:
     enabled = True
     model = "test-assistant"
 
-    def assess(self, email, rule_score, explanations, model_probability):
+    def assess(self, email, rule_score, explanations, model_probability, **kwargs):
         return LlmAssessment(
             verdict="phishing",
             confidence=0.91,
@@ -37,6 +37,8 @@ class FakeLlmClient:
             key_findings=["规则证据提示链接和身份信息存在异常"],
             recommendations=["不要点击邮件中的链接"],
             uncertainty="仅基于静态邮件内容判断。",
+            local_alignment="partial",
+            local_comparison="独立判断与本地结果部分一致。",
         )
 
 
@@ -240,6 +242,8 @@ def test_llm_assessment_is_persisted_and_returned_in_history_detail(client):
     assert detail.json()["data"]["llm_status"] == "completed"
     assert assessment["summary"] == "邮件包含需要人工复核的高风险信号。"
     assert assessment["key_findings"] == ["规则证据提示链接和身份信息存在异常"]
+    assert assessment["local_alignment"] == "partial"
+    assert assessment["local_comparison"] == "独立判断与本地结果部分一致。"
 
 
 def test_knowledge_library_exposes_complete_structured_topics(client):

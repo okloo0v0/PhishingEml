@@ -10,6 +10,8 @@ POST /api/detections/{detection_id}/llm-assessment
 
 成功时，服务将 `llm_assessment` JSON 和 `llm_status=completed` 回写到同一条 `detections` 记录。之后 `GET /api/detections/{detection_id}` 会返回该结果，供历史详情弹窗安全渲染。远程调用需要同时配置 `LLM_REMOTE_ENABLED=true` 和 `DEEPSEEK_API_KEY`；未启用时返回 `503 LLM_NOT_ENABLED`，调用失败时记录 `llm_status=unavailable`，不影响已完成的本地检测。
 
+为避免大模型只复述本地规则和模型结果，辅助解读采用两次受控调用：第一次只给邮件静态证据，要求形成独立判断；第二次才给独立判断与本地检测结果，要求说明二者一致、部分一致或冲突。第二次不能修改第一次的结论和证据，也不能覆盖系统的风险等级或最终分数。
+
 > 以下“已完成内容”中的同步调用和 `ready` 状态示例已由上述按需调用流程取代；字段结构仍以 `src/domain/schemas.py` 和 `docs/shared-contract.md` 为准。
 
 ## 一、已完成内容

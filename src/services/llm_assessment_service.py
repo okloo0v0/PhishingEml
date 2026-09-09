@@ -76,6 +76,10 @@ class LlmAssessmentService:
                 detection.rule_score,
                 _explanations(detection.explanations),
                 detection.model_probability,
+                final_score=detection.final_score,
+                risk_level=detection.risk_level,
+                result_label=detection.result_label,
+                model_version=detection.model_version,
             )
         except DeepSeekUnavailable:
             self.detection_repo.update_llm_assessment(detection, None, "unavailable")

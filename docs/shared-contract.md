@@ -227,7 +227,9 @@ code 一旦发布不能随意改名。前端可以根据 code 展示样式，但
 
 ### 6.3 LlmAssessment
 
-`LlmAssessment` 仅用于解释和处置建议，不能覆盖 `result_label`、`risk_level`、`final_score`、规则命中或黑名单写入。字段为 `schema_version`、`provider`、`model_name`、`generated_at`、`verdict`、`confidence`、`summary`、`key_findings`、`recommendations` 和 `uncertainty`。所有字符串均为不可信文本，前端必须以文本节点渲染。
+`LlmAssessment` 仅用于解释和处置建议，不能覆盖 `result_label`、`risk_level`、`final_score`、规则命中或黑名单写入。字段为 `schema_version`、`provider`、`model_name`、`generated_at`、`verdict`、`confidence`、`summary`、`key_findings`、`recommendations`、`uncertainty`、`local_alignment` 和 `local_comparison`。所有字符串均为不可信文本，前端必须以文本节点渲染。
+
+LLM 调用采用两阶段语义：第一阶段只接收邮件头、正文、URL 静态特征、附件元数据和解析警告，形成独立判断；第二阶段才接收第一阶段结论与 `local_detection`，后者包含本地标签、风险等级、模型概率、规则总分、融合分数、模型版本及规则解释。第二阶段只能填写 `local_alignment`（`agree`、`partial`、`disagree`）、`local_comparison` 和防御性 `recommendations`，不得改写独立结论。规则总分与规则解释来自同一链路，不得作为两组独立证据重复计权。
 
 本地 `POST /api/emails/analyze` 完成后，若远程辅助服务可用则返回 `llm_status=not_requested`；只有用户调用独立的辅助接口后才可写入 `llm_assessment`。`completed` 表示已持久化可回显，`unavailable` 表示本次调用失败但本地检测结果仍有效，`disabled` 表示服务未配置或未授权启用。
 
