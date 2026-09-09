@@ -1,0 +1,49 @@
+{
+  "source_id": "difraud_phishing_test",
+  "source_split": "upstream test split only",
+  "source_label_provenance": "human-labeled binary deception benchmark",
+  "source_release": "Hugging Face repository 2023; underlying phishing benchmark 2020",
+  "license": "MIT dataset card",
+  "input_sha256": "a74a0eaef001d0d90dd7db6519a00213cd1bf99b18c06bf5ffc23f2044e5a068",
+  "input_git_blob_oid": "89258551a9892a21907c4aae82e3f7be9ce80adb",
+  "sample_size": 100,
+  "sample_seed": 1202,
+  "human_label_counts": {
+    "0": 50,
+    "1": 50
+  },
+  "training_fingerprint_count": 19639,
+  "exact_overlap_dropped": 0,
+  "source_isolated_from_training": true,
+  "isolation_scope": "upstream test split plus exact content/model-text fingerprint exclusion",
+  "intent_exact_validation": false,
+  "evaluation_target": "presence of any risky intent versus human binary deception label",
+  "thresholds_provisional": true,
+  "metrics": {
+    "accuracy": 0.74,
+    "precision": 0.7727272727272727,
+    "recall": 0.68,
+    "f1": 0.723404255319149,
+    "confusion_matrix_tn_fp_fn_tp": [
+      40,
+      10,
+      16,
+      34
+    ]
+  },
+  "predicted_intent_counts": {
+    "benign_notice": 2,
+    "credential_request": 14,
+    "external_document_action": 4,
+    "oauth_authorization": 10,
+    "payment_change": 9,
+    "reply_or_data_request": 24,
+    "social_pressure": 12
+  },
+  "limitations": [
+    "The upstream human labels are binary deception labels, not the seven V1.2 intent labels.",
+    "The underlying benchmark predates the 2022-2026 freshness window and cannot validate modern attacks.",
+    "Source and exact-fingerprint isolation cannot exclude latent campaign or semantic-template overlap.",
+    "This measures risky-intent activation as a proxy and must not recalibrate thresholds or fusion weights."
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "model_version": "v1.2.0-intent-weak-v1",
+  "input_path": "data/v1.2/processed/.intent_training_merged.jsonl",
+  "supplement_path": null,
+  "model_path": "models/intent_branch_v1_2.joblib",
+  "train_count": 14029,
+  "test_count": 3508,
+  "intent_names": [
+    "credential_request",
+    "oauth_authorization",
+    "payment_change",
+    "external_document_action",
+    "reply_or_data_request",
+    "social_pressure",
+    "benign_notice"
+  ],
+  "label_provenance": "weak_pattern_v1",
+  "split": "random 80/20; provisional only, not final generalization evidence",
+  "metrics": {
+    "credential_request": {
+      "support": 273,
+      "precision": 0.8863636363636364,
+      "recall": 1.0,
+      "f1": 0.9397590361445783
+    },
+    "oauth_authorization": {
+      "support": 227,
+      "precision": 0.8345588235294118,
+      "recall": 1.0,
+      "f1": 0.9098196392785571
+    },
+    "payment_change": {
+      "support": 610,
+      "precision": 0.7670025188916877,
+      "recall": 0.9983606557377049,
+      "f1": 0.8675213675213675
+    },
+    "external_document_action": {
+      "support": 231,
+      "precision": 0.8988326848249028,
+      "recall": 1.0,
+      "f1": 0.9467213114754098
+    },
+    "reply_or_data_request": {
+      "support": 769,
+      "precision": 0.739172281039461,
+      "recall": 0.9986996098829649,
+      "f1": 0.8495575221238938
+    },
+    "social_pressure": {
+      "support": 811,
+      "precision": 0.8636847710330139,
+      "recall": 1.0,
+      "f1": 0.9268571428571428
+    },
+    "benign_notice": {
+      "support": 52,
+      "precision": 0.7536231884057971,
+      "recall": 1.0,
+      "f1": 0.859504132231405
+    }
+  }
+}

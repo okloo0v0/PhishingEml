@@ -1,0 +1,10 @@
+{
+  "drop_counts": {
+    "empty_model_text": 1
+  },
+  "allowed_labels": [
+    "legitimate",
+    "phishing",
+    "spam_other"
+  ]
+}

@@ -22,6 +22,14 @@ DEFAULT_INPUT = ROOT / "data" / "processed" / "raw_emails.jsonl"
 DEFAULT_OUTPUT = ROOT / "data" / "processed" / "cleaned_emails.jsonl"
 DEFAULT_STATS = ROOT / "data" / "manifests" / "clean_summary.json"
 
+
+def _display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
 def prepare(input_path: Path, output_path: Path, stats_path: Path) -> dict[str, object]:
     """Clean every record while preserving source, label and provenance fields."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -36,7 +44,13 @@ def prepare(input_path: Path, output_path: Path, stats_path: Path) -> dict[str, 
                 continue
             record = json.loads(line)
             cleaned = clean_email_text(record.get("subject", ""), record.get("text_body", ""))
-            result = {**record, **cleaned.to_jsonable(), "cleaning_warnings": list(cleaned.warnings)}
+            result = {
+                **record,
+                "raw_subject": record.get("subject", ""),
+                "raw_text_body": record.get("text_body", ""),
+                **cleaned.to_jsonable(),
+                "cleaning_warnings": list(cleaned.warnings),
+            }
             output.write(json.dumps(result, ensure_ascii=False) + "\n")
             total += 1
             label_counts[str(record.get("label", ""))] += 1
@@ -46,8 +60,8 @@ def prepare(input_path: Path, output_path: Path, stats_path: Path) -> dict[str, 
             replacement_counts["urls"] += cleaned.url_replacements
             replacement_counts["numbers"] += cleaned.number_replacements
     summary = {
-        "input_path": input_path.relative_to(ROOT).as_posix(),
-        "output_path": output_path.relative_to(ROOT).as_posix(),
+        "input_path": _display_path(input_path),
+        "output_path": _display_path(output_path),
         "feature_version": FEATURE_VERSION,
         "max_text_chars": MODEL_TEXT_MAX_CHARS,
         "total_records": total,

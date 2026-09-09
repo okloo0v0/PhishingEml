@@ -19,9 +19,9 @@
       "suspicious_tokens_contains": [
         "missing_scheme",
         "non_https",
-        "verify",
         "account",
-        "update"
+        "update",
+        "verify"
       ]
     }
   ],

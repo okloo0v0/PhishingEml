@@ -1,0 +1,9 @@
+version,logical_role,canonical_path,archive_path,copy_policy,status
+v1,raw_public_sources,data/raw,data/v1/raw_refs,shared-reference,available
+v1,processed_baseline,"data/processed/{cleaned_emails,deduplicated_emails,emails.csv,raw_emails}.jsonl",data/v1/processed,local-copy-ignored,available
+v1,model_reports,data/manifests/*baseline*,data/v1/manifests,tracked-copy,available
+v1.1,hard_negative,data/processed/hard_negative_emails.jsonl,data/v1.1/processed,local-copy-ignored,available
+v1.1,multiview_reports,data/manifests/*v1_1*,data/v1.1/manifests,tracked-copy,available
+v1.1,controlled_validation,data/processed/v1_1_1_*.jsonl,data/v1.1/processed,local-copy-ignored,available
+v1.2,external_sources,data/v1.2/raw_refs,data/v1.2/raw_refs,reference-only,planned
+v1.2,external_processed,data/v1.2/processed,data/v1.2/processed,local-only,planned

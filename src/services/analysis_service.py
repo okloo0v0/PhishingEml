@@ -61,8 +61,15 @@ class AnalysisService:
             parsed, url_blacklist, domain_blacklist, blacklist_metadata
         )
 
+        metadata = getattr(self.predictor, "metadata", None)
+        feature_version = getattr(metadata, "feature_version", "text-v1")
         prediction = self.predictor.predict(
-            ModelInput(subject=parsed.subject, text_body=parsed.text_body)
+            ModelInput(
+                subject=parsed.subject,
+                text_body=parsed.text_body,
+                feature_version=feature_version,
+                parsed_email=parsed,
+            )
         )
         final_score = fuse_scores(prediction.phishing_probability, rule_score)
         risk_level = risk_level_for_score(final_score)

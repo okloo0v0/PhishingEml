@@ -1,0 +1,13 @@
+{
+  "event": "model_v1_1_trained",
+  "trained_at": "2026-09-09T03:51:42.524201Z",
+  "model_version": "v1.2.0-four-view-validated",
+  "artifact_filename": "phishing_model_v1_2.joblib",
+  "artifact_sha256": "e7bf497b7ae57931f28646e6fe9848c92e34f2f338393b920a10c3dd02373355",
+  "train_count": 11186,
+  "hard_negative_counts": {
+    "train": 1011,
+    "valid": 367,
+    "test": 317
+  }
+}

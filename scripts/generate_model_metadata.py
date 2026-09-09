@@ -80,6 +80,21 @@ def generate(
             "cross_source_recall": float(cross_metrics["recall"]),
             "cross_source_f1": float(cross_metrics["f1"]),
             "cross_source_accuracy": float(cross_metrics["accuracy"]),
+            **(
+                {"test_pr_auc": float(test_metrics["pr_auc"])}
+                if test_metrics.get("pr_auc") is not None
+                else {}
+            ),
+            **(
+                {"test_brier_score": float(test_metrics["brier_score"])}
+                if test_metrics.get("brier_score") is not None
+                else {}
+            ),
+            **(
+                {"cross_source_pr_auc": float(cross_metrics["pr_auc"])}
+                if cross_metrics.get("pr_auc") is not None
+                else {}
+            ),
         },
         "artifact_filename": model_path.name,
         "metadata_filename": metadata_path.name,
@@ -92,9 +107,10 @@ def generate(
         "valid_count": training["valid_count"],
         "test_count": training["test_count"],
         "max_text_chars": 20_000,
-        "features": ["subject", "text_body", "tfidf_word_ngram_1_2"],
-        "tfidf": training["tfidf"],
-        "classifier": training["classifier"],
+        "features": training.get("features", ["subject", "text_body", "tfidf_word_ngram_1_2"]),
+        "tfidf": training.get("tfidf", {}),
+        "classifier": training.get("classifier", {}),
+        "model_config": training.get("model_config", {}),
         "probability_threshold": evaluation["contract_threshold"],
         "tuned_threshold_diagnostic": evaluation["selected_threshold"],
         "test_confusion_matrix": test_metrics["confusion_matrix"],
@@ -102,6 +118,7 @@ def generate(
         "dependencies": {
             "python": "3.11",
             "scikit-learn": _version("scikit-learn"),
+            "scipy": _version("scipy"),
             "joblib": _version("joblib"),
             "numpy": _version("numpy"),
             "pandas": _version("pandas"),
@@ -109,6 +126,24 @@ def generate(
         "source_counts": split["source_counts"],
         "hard_negative_count": split["hard_negative_records"],
     }
+    if training.get("curated_supplement_path"):
+        metadata["curated_supplement"] = {
+            "path": training["curated_supplement_path"],
+            "train_count": int(training.get("curated_supplement_train_count", 0)),
+        }
+    targeted_tests = evaluation.get("targeted_tests")
+    if isinstance(targeted_tests, dict):
+        metadata["targeted_tests"] = {
+            name: {
+                "support": int(result["contract_metrics"]["support"]),
+                "precision": float(result["contract_metrics"]["precision"]),
+                "recall": float(result["contract_metrics"]["recall"]),
+                "f1": float(result["contract_metrics"]["f1"]),
+                "accuracy": float(result["contract_metrics"]["accuracy"]),
+            }
+            for name, result in targeted_tests.items()
+            if isinstance(result, dict) and isinstance(result.get("contract_metrics"), dict)
+        }
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -138,7 +173,7 @@ def generate(
         "cross_source_f1": metadata["metrics"]["cross_source_f1"],
         "test_confusion_matrix": json.dumps(test_metrics["confusion_matrix"], separators=(",", ":")),
         "artifact_sha256": artifact_sha256,
-        "notes": "contract threshold 0.50; valid tuned threshold retained as diagnostic only",
+        "notes": "contract threshold 0.50; valid tuned threshold retained as diagnostic only; test sets excluded from fitting",
     }
     existing: list[dict[str, str]] = []
     if experiments_path.exists():

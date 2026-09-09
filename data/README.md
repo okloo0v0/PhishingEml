@@ -1,8 +1,24 @@
 # 训练数据说明
 
+## 版本归档
+
+数据按版本分为 `data/v1/`、`data/v1.1/` 和 `data/v1.2/`。V1/V1.1 目录保存历史报告和本地归档副本；V1.2 是当前新的获取与审计工作区。大型 `processed/` 文件和原始文件默认只保留在本地，Git 只维护 README、来源登记和非敏感摘要。
+
+- `data/v1/`：V1 基线来源、清洗、去重、划分和评测产物；
+- `data/v1.1/`：hard-negative、多视图训练/评测和 V1.1.1 受控验证产物；
+- `data/v1.2/`：真实中文/现代数据获取、许可证核验、去重、标注和时间隔离的新工作区。
+
+完整分类见 `data/v1.2/manifests/archive_catalog.csv`。V1.2 不覆盖 `data/processed/` 默认路径，避免历史模型和新实验相互污染。
+
+归档与来源登记可用以下命令审计（离线执行，不访问任何来源 URL）：
+
+```powershell
+uv run python scripts\audit_v1_2_data_layout.py
+```
+
 ## 当前阶段
 
-成员1步骤2先收集公开原始邮件归档，并记录来源、许可证说明、下载时间、文件大小和 SHA-256。原始文件放在 `data/raw/`，默认不提交 Git；处理脚本和来源清单可以提交。
+收集公开原始邮件归档，并记录来源、许可证说明、下载时间、文件大小和 SHA-256。原始文件放在 `data/raw/`，默认不提交 Git；处理脚本和来源清单可以提交。
 
 ## 当前收集来源
 
@@ -152,6 +168,10 @@ uv run python scripts\deduplicate_dataset.py `
 样本。统计见 `data/manifests/split_summary.json`，标签剔除见
 `data/manifests/label_drop_report.json`。
 
+联合清洗记录同时保留 `raw_subject` 和 `raw_text_body`。V1.0 只使用清洗后的
+`subject`、`text_body` 和 `model_text`；V1.1 的字符、结构和意图视图必须使用 raw
+字段，避免训练阶段提前丢失 URL、邮箱、标点和编码形态。
+
 ## 步骤7：训练基线模型
 
 运行 `uv run python scripts\train_model.py`，脚本只使用 `emails.csv` 的 `train` 划分
@@ -163,6 +183,26 @@ uv run python scripts\deduplicate_dataset.py `
 本次训练使用 10,175 条 train 样本，valid/test 各 2,181 条。分类器类别顺序已校验为
 `[legitimate, phishing]`，`predict_proba[:, 1]` 明确定义为 phishing 概率，阈值为 0.50。
 步骤8将基于这些固定预测生成 Precision、Recall、F1、混淆矩阵和错误样本分析。
+
+V1.1 训练、评估和元数据命令：
+
+```powershell
+uv run python scripts\train_model_v1_1.py
+uv run python scripts\evaluate_model_v1_1.py
+uv run python scripts\run_extra_evaluation_v1_1.py
+uv run python scripts\generate_model_metadata_v1_1.py
+```
+
+### V1.1.1 定向补充与多视图验证
+
+`scripts\build_v1_1_1_curated_dataset.py` 创建四个完全按
+`content_fingerprint` 隔离的安全人工构造分区：训练补充集、中文独立测试集、现代攻击技术
+独立测试集和扩充边界回归集。邮件采用 `example.invalid`，只在内存中构造并由生产解析器提取
+静态 MIME/URL/附件元数据；不访问 URL、不保存附件 payload、不模拟真实个人或组织。
+
+该语料用于检验 V1.1 的结构与意图视图能否接收真实解析上下文。它不是公开真实语料，所有
+结果只能作为受控回归和分支消融证据，不能表述为真实环境泛化率。`spam_other` 硬负样本不
+进入其中，仍严格使用既有稳定 SHA-256 分桶。
 
 ## 评估与阈值调参
 

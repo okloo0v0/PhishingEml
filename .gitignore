@@ -31,6 +31,12 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/v1/processed/*
+data/v1/raw_refs/*
+data/v1.1/processed/*
+data/v1.1/raw_refs/*
+data/v1.2/processed/*
+data/v1.2/raw_refs/*
 
 # IDE and OS files
 .idea/

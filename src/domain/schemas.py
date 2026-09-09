@@ -109,6 +109,7 @@ class ModelInput:
     text_body: str = ""
     model_text: str = ""
     feature_version: str = "text-v1"
+    parsed_email: ParsedEmail | None = None
 
 
 @dataclass

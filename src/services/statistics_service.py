@@ -24,7 +24,16 @@ class StatisticsService:
         return to_jsonable(data)
 
     def model_metrics(self) -> dict[str, Any]:
-        meta_path = get_settings().model_dir / "model_meta.json"
+        model_dir = get_settings().model_dir
+        candidates = (
+            (model_dir / "phishing_model_v1_1.joblib", model_dir / "model_meta_v1_1.json"),
+            (model_dir / "phishing_model.joblib", model_dir / "model_meta.json"),
+        )
+        selected = next(
+            (metadata for model, metadata in candidates if model.is_file() and metadata.is_file()),
+            candidates[0][1],
+        )
+        meta_path = selected
         if not meta_path.is_file():
             raise DomainError(ErrorCode.MODEL_NOT_READY, "模型元数据不存在", 503)
         try:
