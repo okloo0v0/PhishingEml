@@ -39,6 +39,7 @@ class BlacklistSource(str, Enum):
     MANUAL = "manual"
     IMPORT = "import"
     PHISHTANK = "phishtank"
+    AUTO_RULE = "auto_rule"
 
 
 class BlacklistMatchType(str, Enum):

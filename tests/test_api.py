@@ -174,6 +174,29 @@ def test_analysis_integrates_member2_rules_and_blacklist_metadata(client):
     assert detail.json()["data"]["urls"][0]["blacklist_indicator_id"] == indicator_id
 
 
+def test_analysis_exposes_llm_status_and_auto_blacklists_lookalike_url(client):
+    raw = (
+        b"From: notice@example.invalid\r\n"
+        b"Subject: Verify account\r\n"
+        b"Message-ID: <lookalike@example.invalid>\r\n"
+        b"Date: Tue, 1 Sep 2026 10:00:00 +0000\r\n\r\n"
+        b"Open https://g00gle.com/login"
+    )
+    response = client.post(
+        "/api/emails/analyze",
+        files={"file": ("lookalike.eml", raw, "message/rfc822")},
+    )
+    assert response.status_code == 200
+    result = response.json()["data"]
+    assert result["llm_status"] == "disabled"
+    assert "lookalike_characters" in result["urls"][0]["suspicious_tokens"]
+    assert result["urls"][0]["blacklist_hit"] is True
+
+    blacklist = client.get("/api/blacklist", params={"keyword": "g00gle.com"})
+    assert blacklist.status_code == 200
+    assert blacklist.json()["data"]["items"][0]["source"] == "auto_rule"
+
+
 def test_knowledge_library_exposes_complete_structured_topics(client):
     response = client.get("/api/knowledge")
 

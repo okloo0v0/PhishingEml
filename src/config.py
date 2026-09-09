@@ -16,6 +16,10 @@ class Settings:
     max_body_chars: int = 200_000
     log_level: str = "INFO"
     allow_network: bool = False
+    deepseek_api_key: str = ""
+    deepseek_api_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-chat"
+    deepseek_timeout_seconds: float = 12.0
     # 基础版不实现沙箱隔离，网络访问能力作为后续隔离沙箱扩展保留。
 
 
@@ -43,5 +47,11 @@ def get_settings() -> Settings:
         max_body_chars=int(os.getenv("MAX_BODY_CHARS", "200000")),
         log_level=os.getenv("LOG_LEVEL", "INFO"),
         allow_network=False,
+        deepseek_api_key=os.getenv("DEEPSEEK_API_KEY", "").strip(),
+        deepseek_api_base_url=os.getenv(
+            "DEEPSEEK_API_BASE_URL", "https://api.deepseek.com"
+        ).rstrip("/"),
+        deepseek_model=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
+        deepseek_timeout_seconds=float(os.getenv("DEEPSEEK_TIMEOUT_SECONDS", "12")),
     )
 

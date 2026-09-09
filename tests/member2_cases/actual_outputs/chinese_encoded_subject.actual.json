@@ -30,9 +30,9 @@
         "suspicious_tokens": [
           "missing_scheme",
           "non_https",
-          "verify",
+          "account",
           "update",
-          "account"
+          "verify"
         ]
       }
     ],
@@ -78,9 +78,9 @@
         "suspicious_tokens": [
           "missing_scheme",
           "non_https",
-          "verify",
+          "account",
           "update",
-          "account"
+          "verify"
         ],
         "blacklist_hit": false,
         "blacklist_match_type": null,
@@ -123,7 +123,7 @@
         "code": "R06",
         "title": "URL 存在可疑结构特征",
         "detail": "URL contains suspicious structural features.",
-        "evidence": "www.verify.example.invalid: missing_scheme, non_https, verify, update, account",
+        "evidence": "www.verify.example.invalid: missing_scheme, non_https, account, update, verify",
         "score": 10.0,
         "severity": "warning"
       }
