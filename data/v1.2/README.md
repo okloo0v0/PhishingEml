@@ -62,13 +62,14 @@ provisional：校准和报告使用同一固定边界集，只能验证实现与
 benchmark 来自 2020 年，也不能证明对 2022--2026 现代攻击的时效性。完整审计见
 `manifests/intent_external_holdout_eval.json`。
 
-本轮进一步对 100 条外部样本完成七类行为意图人工复核，并固定为 70 条训练、30 条精确留出。
+本轮进一步对 100 条外部样本完成七类行为意图人工复核；这 100 条全部作为独立测试集，
+不参与模型重训、阈值拟合或融合权重学习。此前生成的 70/30 文件仅用于实验记录，不能作为
+生产训练依据。
 人工标签分布为：credential_request 32、reply_or_data_request 25、social_pressure 32、
 external_document_action 10、payment_change 5、benign_notice 3、oauth_authorization 1。
-专用 intent 模型在 30 条留出集上的 exact-match 为 0.267、micro-F1 为 0.456；由于
-oauth_authorization、benign_notice 等类别仍然稀疏，当前模型不应直接替换生产 intent 分支。
-训练和评估产物分别见 `manifests/intent_branch_manual_training_summary.json` 与
-`manifests/intent_manual_holdout_eval.json`。
+现有 intent 模型（未重训）在 100 条独立测试集上的 exact-match 为 0.410、micro-F1 为
+0.448；由于 oauth_authorization、benign_notice 等类别仍然稀疏，当前模型不应直接替换生产
+intent 分支。结果见 `manifests/intent_previous_model_manual_100_eval.json`。
 
 四分支综合回归（word/char/structure/intent）保持现有 V1.1.1 模型：主测试集 F1=0.990，
 来源留出 F1=0.988；中文测试 F1=1.000，现代攻击测试 F1=0.857，边界集 F1=0.903。

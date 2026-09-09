@@ -1,0 +1,22 @@
+{
+  "model_path": "models\\intent_branch_v1_2.joblib",
+  "test_path": "data\\v1.2\\processed\\difraud_manual_intents.jsonl",
+  "test_count": 100,
+  "training_action": "none; evaluate existing model only",
+  "label_provenance": "manual_adjudication_difraud_v1",
+  "thresholds_provisional": true,
+  "exact_match": 0.41,
+  "micro_precision": 0.5466666666666666,
+  "micro_recall": 0.37962962962962965,
+  "micro_f1": 0.44808743169398907,
+  "per_intent_f1": {
+    "credential_request": 0.5652173913043478,
+    "oauth_authorization": 0.18181818181818182,
+    "payment_change": 0.42857142857142855,
+    "external_document_action": 0.2857142857142857,
+    "reply_or_data_request": 0.6122448979591837,
+    "social_pressure": 0.3181818181818182,
+    "benign_notice": 0.0
+  },
+  "note": "All rows are an independent evaluation set for the existing model; no rows were used for retraining or threshold fitting."
+}

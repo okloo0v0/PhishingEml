@@ -2,6 +2,8 @@
   "model_path": "D:\\CodeSpace\\PhishingEml\\models\\intent_branch_v1_2_manual.joblib",
   "test_path": "D:\\CodeSpace\\PhishingEml\\data\\v1.2\\processed\\difraud_manual_intents_test.jsonl",
   "test_count": 30,
+  "deprecated": true,
+  "deprecation_reason": "This report came from an invalid 70-row retraining experiment and is retained only for audit history; do not use for model selection.",
   "label_provenance": "manual_adjudication_difraud_v1",
   "thresholds_provisional": true,
   "exact_match": 0.26666666666666666,

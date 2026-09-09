@@ -37,6 +37,7 @@ def evaluate(model_path: Path, test_path: Path, thresholds_path: Path, report_pa
         "model_path": str(model_path),
         "test_path": str(test_path),
         "test_count": len(rows),
+        "training_action": "none; evaluate existing model only",
         "label_provenance": "manual_adjudication_difraud_v1",
         "thresholds_provisional": bool(calibration.get("provisional", True)),
         "exact_match": exact,
@@ -44,7 +45,7 @@ def evaluate(model_path: Path, test_path: Path, thresholds_path: Path, report_pa
         "micro_recall": float(recall_score(actual, predicted, average="micro", zero_division=0)),
         "micro_f1": float(f1_score(actual, predicted, average="micro", zero_division=0)),
         "per_intent_f1": {name: float(f1_score(actual[:, i], predicted[:, i], zero_division=0)) for i, name in enumerate(INTENT_NAMES)},
-        "note": "External rows are source-isolated from the original training corpus; 70 rows were used for retraining and 30 remain here for exact intent validation.",
+        "note": "All rows are an independent evaluation set for the existing model; no rows were used for retraining or threshold fitting.",
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
