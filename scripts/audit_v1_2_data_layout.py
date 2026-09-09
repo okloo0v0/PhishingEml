@@ -17,14 +17,17 @@ SOURCE_FIELDS = {
 }
 ARCHIVE_FIELDS = {"version", "logical_role", "canonical_path", "archive_path", "copy_policy", "status"}
 ALLOWED_LICENSE_STATUS = {"pending", "review_required", "verified"}
-ALLOWED_STATUS = {"planned", "downloaded", "existing", "failed", "available"}
+ALLOWED_STATUS = {"planned", "downloaded", "existing", "failed", "available", "rejected"}
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8", newline="") as source:
         reader = csv.DictReader(source)
         fields = set(reader.fieldnames or [])
-        return [dict(row) for row in reader], fields
+        rows = [dict(row) for row in reader]
+        if any(None in row for row in rows):
+            raise ValueError(f"malformed CSV row contains extra fields: {path}")
+        return rows, fields
 
 
 def audit(source_catalog: Path = DEFAULT_SOURCE_CATALOG, archive_catalog: Path = DEFAULT_ARCHIVE_CATALOG) -> dict[str, int]:

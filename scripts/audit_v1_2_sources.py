@@ -49,6 +49,27 @@ def _audit_csv(path: Path) -> dict[str, object]:
     }
 
 
+def _audit_jsonl(path: Path) -> dict[str, object]:
+    rows = 0
+    labels: dict[str, int] = {}
+    with path.open(encoding="utf-8", errors="replace") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            rows += 1
+            label = str(row.get("label", "<missing>"))
+            labels[label] = labels.get(label, 0) + 1
+    return {
+        "file_type": "jsonl",
+        "row_count": rows,
+        "fields": json.dumps(["text", "label"]),
+        "label_counts": json.dumps(labels, sort_keys=True),
+        "missing_label_rows": labels.get("<missing>", 0),
+        "sha256": _sha256(path),
+    }
+
+
 def audit(output: Path = DEFAULT_OUTPUT) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     for path in sorted(RAW_ROOT.rglob("*")):
@@ -74,6 +95,11 @@ def audit(output: Path = DEFAULT_OUTPUT) -> list[dict[str, object]]:
             elif "twente_2024" in relative:
                 record.update(data_origin="mixed_real_and_artificial", recommended_role="validation_only")
                 record["notes"] = "2,000 labeled full-text emails; mixed real and artificial; do not use for training."
+        elif path.suffix.lower() == ".jsonl":
+            record.update(_audit_jsonl(path))
+            if "difraud_2020" in relative:
+                record.update(data_origin="human_labeled_real_user_email", recommended_role="source_isolated_validation_only")
+                record["notes"] = "Upstream test split; 2020 benchmark outside freshness window; never use for training."
         elif "epvme_2023" in relative:
             record.update(file_type="text", sha256=_sha256(path), recommended_role="protocol_attack_audit_only")
             record["data_origin"] = "constructed_adversarial_corpus"

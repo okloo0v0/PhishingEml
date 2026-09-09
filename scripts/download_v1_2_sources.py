@@ -23,13 +23,32 @@ SOURCES = {
     "llmgen_gpt": ("llmgen_2025", "GPT_Phishing_Email_dataset.csv", "zh-en", "phishing_text_generated", "https://huggingface.co/datasets/Dizzzy0x00/LLMGen-Phishing-Email-Dataset/resolve/main/GPT_Phishing_Email_dataset.csv", "Apache-2.0 dataset card", "2025-12-13"),
     "epvme_readme": ("epvme_2023", "README.md", "en", "protocol_mime_ui_attack", "https://raw.githubusercontent.com/sunknighteric/EPVME-Dataset/main/README.md", "GPL-3.0 repository; verify dataset terms", "2023-03-23"),
     "epvme_license": ("epvme_2023", "LICENSE", "en", "protocol_mime_ui_attack", "https://raw.githubusercontent.com/sunknighteric/EPVME-Dataset/main/LICENSE", "GPL-3.0", "2023-03-23"),
-    "twente_validation_2024": ("twente_2024", "Phishing_validation_emails.csv", "en", "validation_mixed_real_artificial", "https://zenodo.org/api/records/13474746/files/Phishing_validation_emails.csv/content", "CC BY 4.0", "2024-08-29"),
+    "twente_validation_2024": ("twente_2024", "Phishing_validation_emails.csv", "en", "validation_mixed_real_artificial", "https://zenodo.org/records/13474746/files/Phishing_validation_emails.csv", "CC BY 4.0", "2024-08-29"),
+    "difraud_phishing_test": ("difraud_2020", "phishing_test.jsonl", "en", "human_labeled_phishing_benchmark_test", "https://hf-mirror.com/datasets/difraud/difraud/resolve/main/phishing/test.jsonl", "MIT dataset card", "2023-10-21"),
 }
-LICENSE_STATUS = {"twente_validation_2024": "verified"}
+LICENSE_STATUS = {"twente_validation_2024": "verified", "difraud_phishing_test": "verified"}
+CANONICAL_URLS = {
+    "difraud_phishing_test": "https://huggingface.co/datasets/difraud/difraud/blob/main/phishing/test.jsonl",
+}
+EXPECTED_GIT_BLOB_OIDS = {
+    "difraud_phishing_test": "89258551a9892a21907c4aae82e3f7be9ce80adb",
+}
+SOURCE_NOTES = {
+    "difraud_phishing_test": "upstream_test_split; underlying_benchmark=2020; mirror content verified by upstream git blob OID; validation only",
+}
 
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _git_blob_oid(path: Path) -> str:
+    digest = hashlib.sha1()
+    digest.update(f"blob {path.stat().st_size}\0".encode("ascii"))
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
@@ -54,7 +73,10 @@ def _load_catalog() -> dict[str, dict[str, str]]:
     if not CATALOG.exists():
         return {}
     with CATALOG.open(encoding="utf-8", newline="") as handle:
-        return {row["source_id"]: row for row in csv.DictReader(handle)}
+        rows = list(csv.DictReader(handle))
+        if any(None in row for row in rows):
+            raise ValueError(f"malformed CSV row contains extra fields: {CATALOG}")
+        return {row["source_id"]: row for row in rows}
 
 
 def download(keys: list[str]) -> list[dict[str, str]]:
@@ -72,17 +94,20 @@ def download(keys: list[str]) -> list[dict[str, str]]:
                 status = "downloaded"
             else:
                 status = "existing"
+            expected_oid = EXPECTED_GIT_BLOB_OIDS.get(key)
+            if expected_oid and _git_blob_oid(destination) != expected_oid:
+                raise ValueError(f"upstream Git blob OID mismatch for {key}")
             records.append({
                 "source_id": key, "source_type": "public_dataset", "language": language,
-                "attack_scope": scope, "source_url": url, "license_status": LICENSE_STATUS.get(key, "review_required"),
+                "attack_scope": scope, "source_url": CANONICAL_URLS.get(key, url), "license_status": LICENSE_STATUS.get(key, "review_required"),
                 "local_path": destination.relative_to(ROOT).as_posix(), "status": status,
                 "downloaded_at": row.get("downloaded_at") or now, "sha256": _sha256(destination),
-                "notes": f"published_or_released={published}; inspect and sanitize before training",
+                "notes": f"published_or_released={published}; {SOURCE_NOTES.get(key, 'inspect and sanitize before training')}",
             })
         except Exception as exc:
             records.append({
                 "source_id": key, "source_type": "public_dataset", "language": language,
-                "attack_scope": scope, "source_url": url, "license_status": "review_required",
+                "attack_scope": scope, "source_url": CANONICAL_URLS.get(key, url), "license_status": LICENSE_STATUS.get(key, "review_required"),
                 "local_path": destination.relative_to(ROOT).as_posix(), "status": "failed",
                 "downloaded_at": row.get("downloaded_at") or now, "sha256": "",
                 "notes": f"published_or_released={published}; {type(exc).__name__}: download failed",

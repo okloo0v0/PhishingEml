@@ -47,9 +47,29 @@ provisional：校准和报告使用同一固定边界集，只能验证实现与
 `manifests/intent_boundary_eval_default.json` 与校准后的正式边界报告
 `manifests/intent_boundary_eval.json`。
 
+## 来源隔离人工标签验证
+
+新增 DiFraud phishing benchmark 的上游 `test` 分片作为外部验证来源。数据卡为 MIT，仓库发布于
+2023 年并在 2024 年更新；本地从 Hugging Face 公共镜像下载，Git blob OID 已与上游 API 公布的
+`89258551a9892a21907c4aae82e3f7be9ce80adb` 一致。该分片不进入训练，只确定性抽取 100 条
+（50 欺骗、50 非欺骗，seed=1202），并对训练数据执行双指纹去重，精确重叠为 0。
+这里的隔离仅表示上游 test 分片未参与训练且精确内容/模型文本指纹不重叠，不能排除潜在的
+活动或语义模板重叠。
+
+人工真值仅是二分类欺骗标签，不是 V1.2 的 7 类 intent 标签。因此独立验证目标限定为“是否激活
+任一危险意图”：Precision 0.773、Recall 0.680、F1 0.723，混淆矩阵 TN/FP/FN/TP 为
+40/10/16/34。结果说明 intent 有跨来源信号，但漏检仍高，不能据此调整阈值或融合权重。底层
+benchmark 来自 2020 年，也不能证明对 2022--2026 现代攻击的时效性。完整审计见
+`manifests/intent_external_holdout_eval.json`。
+
+本轮另否决 Chataut 2024 候选：实际内容包含 2002 年邮件，所谓 phishing 分片标签为 `spam`，
+且仓库无明确许可证；下载文件已删除。Twente 2024 仍是更理想的独立验证候选，但当前环境访问
+Zenodo 文件端点返回 403，未使用任何无法通过官方 MD5 的代理副本。
+
 ```powershell
 uv run python scripts\download_v1_2_sources.py --list
 uv run python scripts\download_v1_2_sources.py
 uv run python scripts\audit_v1_2_sources.py
+uv run python scripts\evaluate_external_intent_holdout.py
 uv run python scripts\audit_v1_2_data_layout.py
 ```
