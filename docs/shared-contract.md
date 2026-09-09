@@ -267,7 +267,7 @@ V1.1 特征版本为 `text-structure-v2`。模型输入禁止包含附件二进�
 - `ModelPrediction.phishing_probability` 是模型对 `phishing` 的概率，范围 0--1；不得把 `decision_function` 原值直接当概率。
 - `result_label` 按 `phishing_probability >= 0.50` 得到；`legitimate` 和 `phishing` 的标签顺序固定为 `[legitimate, phishing]`。
 - `model_version`、`feature_version` 必须非空，且推理返回值必须与加载的 `ModelMetadata` 完全一致。
-- V1.1 文件名为 `models/phishing_model_v1_1.joblib` 和 `models/model_meta_v1_1.json`；V1.0 文件名为 `models/phishing_model.joblib` 和 `models/model_meta.json`。默认优先选择完整且校验通过的 V1.1 文件对；文件对缺失时允许回退到已声明的 V1.0，禁止生成或使用未声明的临时模型。已选文件无法反序列化、版本不一致或指标元数据缺失时返回 `503 MODEL_NOT_READY`。
+- V1.2 文件名为 `models/phishing_model_v1_2.joblib` 和 `models/model_meta_v1_2.json`；V1.1 文件名为 `models/phishing_model_v1_1.joblib` 和 `models/model_meta_v1_1.json`；V1.0 文件名为 `models/phishing_model.joblib` 和 `models/model_meta.json`。默认按 V1.2、V1.1、V1.0 顺序选择完整且校验通过的文件对，禁止生成或使用未声明的临时模型。已选文件无法反序列化、版本不一致或指标元数据缺失时返回 `503 MODEL_NOT_READY`。
 - `predict(input)` 只做本地推理，不访问网络；输入为空仍允许推理，但由服务层按照分析输入契约决定是否拒绝请求。
 
 `ModelMetadata` 至少记录 `model_name`、`model_version`、`feature_version`、`trained_at`、`label_order`、训练指标和 artifact 文件名。指标文件必须能追溯数据版本、随机种子、训练/测试样本数量和特征配置。

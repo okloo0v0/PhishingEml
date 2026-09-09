@@ -1,0 +1,31 @@
+{
+  "model_name": "multiview_late_fusion_logistic_regression",
+  "model_version": "v1.2.0-four-view-validated",
+  "feature_version": "text-structure-v2",
+  "trained_at": "2026-09-08T09:53:03.194052Z",
+  "label_order": ["legitimate", "phishing"],
+  "metrics": {
+    "test_precision": 0.9934086629001884,
+    "test_recall": 0.9869036482694107,
+    "test_f1": 0.990145471609573,
+    "test_accuracy": 0.9903713892709766,
+    "cross_source_f1": 0.9879211697393515
+  },
+  "artifact_filename": "phishing_model_v1_2.joblib",
+  "metadata_filename": "model_meta_v1_2.json",
+  "artifact_sha256": "e7bf497b7ae57931f28646e6fe9848c92e34f2f338393b920a10c3dd02373355",
+  "artifact_path": "models/phishing_model_v1_2.joblib",
+  "dataset_version": "ds-20260908-baf7f3a6",
+  "random_state": 42,
+  "train_count": 11186,
+  "valid_count": 2548,
+  "test_count": 2498,
+  "features": ["word_tfidf", "char_tfidf", "static_structure", "intent"],
+  "classifier": {
+    "type": "OOF late-fusion LogisticRegression",
+    "branch_class_weight": "balanced",
+    "meta_constraint": "non-negative branch weights",
+    "probability_calibration": "sigmoid CalibratedClassifierCV on OOF fusion scores"
+  },
+  "probability_threshold": 0.5
+}

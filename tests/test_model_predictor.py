@@ -133,6 +133,8 @@ def test_predictor_defaults_to_v1_0_when_v1_1_pair_is_missing(tmp_path, monkeypa
     model_path, metadata_path = _write_fixture(tmp_path)
     monkeypatch.setattr(model_predictor_module, "V1_1_MODEL_PATH", tmp_path / "missing-v1-1.joblib")
     monkeypatch.setattr(model_predictor_module, "V1_1_METADATA_PATH", tmp_path / "missing-v1-1.json")
+    monkeypatch.setattr(model_predictor_module, "V1_2_MODEL_PATH", tmp_path / "missing-v1-2.joblib")
+    monkeypatch.setattr(model_predictor_module, "V1_2_METADATA_PATH", tmp_path / "missing-v1-2.json")
     monkeypatch.setattr(model_predictor_module, "DEFAULT_MODEL_PATH", model_path)
     monkeypatch.setattr(model_predictor_module, "DEFAULT_METADATA_PATH", metadata_path)
 
@@ -140,3 +142,19 @@ def test_predictor_defaults_to_v1_0_when_v1_1_pair_is_missing(tmp_path, monkeypa
 
     assert predictor.metadata.model_version == "test-model"
     assert predictor.metadata.feature_version == "text-v1"
+
+
+def test_predictor_defaults_to_v1_2_when_valid_pair_exists(tmp_path, monkeypatch):
+    model_path, _ = _write_fixture(tmp_path)
+    metadata_path = tmp_path / "model_meta_v1_2.json"
+    payload = json.loads((tmp_path / "model_meta.json").read_text(encoding="utf-8"))
+    payload["model_version"] = "v1.2.0-test"
+    payload["artifact_filename"] = model_path.name
+    payload["metadata_filename"] = metadata_path.name
+    metadata_path.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(model_predictor_module, "V1_2_MODEL_PATH", model_path)
+    monkeypatch.setattr(model_predictor_module, "V1_2_METADATA_PATH", metadata_path)
+    monkeypatch.setattr(model_predictor_module, "V1_1_MODEL_PATH", tmp_path / "missing-v1-1.joblib")
+    monkeypatch.setattr(model_predictor_module, "V1_1_METADATA_PATH", tmp_path / "missing-v1-1.json")
+    predictor = ModelPredictor()
+    assert predictor.metadata.model_version == "v1.2.0-test"

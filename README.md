@@ -63,7 +63,7 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 - 健康检查：`http://127.0.0.1:8000/health`
 - API 文档：`http://127.0.0.1:8000/docs`
 
-本地存在完整的 V1.1 模型和元数据时，服务优先加载 `phishing_model_v1_1.joblib`；否则回退到已声明的 V1.0 制品。模型文件被 Git 忽略，不会随代码仓库分发。终止服务按 `Ctrl+C`。
+本地存在完整的 V1.2 模型和元数据时，服务优先加载 `phishing_model_v1_2.joblib`；否则依次回退到已声明的 V1.1、V1.0 制品。模型文件被 Git 忽略，不会随代码仓库分发。终止服务按 `Ctrl+C`。
 
 ## V1.1 模型训练与评估
 
@@ -89,7 +89,7 @@ uv run python scripts\run_extra_evaluation_v1_1.py
 uv run python scripts\generate_model_metadata_v1_1.py
 ```
 
-训练会生成独立的 V1.1 制品，不覆盖 V1.0。只有模型文件和 `models/model_meta_v1_1.json` 同时存在且通过版本、标签顺序和 SHA-256 校验时，默认推理才会启用 V1.1。
+训练会生成独立的版本化制品，不覆盖 V1.0/V1.1。V1.2 默认制品为 `models/phishing_model_v1_2.joblib` 与 `models/model_meta_v1_2.json`；两者同时存在且通过版本、标签顺序和 SHA-256 校验时，默认推理才会启用 V1.2。
 
 V1.1.1 的定向数据补齐、消融和候选评测命令如下。补充语料为安全人工构造数据，只用于验证模型分支和回归流程；它不替代真实、脱敏来源的独立评测。
 

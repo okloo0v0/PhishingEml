@@ -24,6 +24,8 @@ DEFAULT_MODEL_PATH = ROOT / "models" / "phishing_model.joblib"
 DEFAULT_METADATA_PATH = ROOT / "models" / "model_meta.json"
 V1_1_MODEL_PATH = ROOT / "models" / "phishing_model_v1_1.joblib"
 V1_1_METADATA_PATH = ROOT / "models" / "model_meta_v1_1.json"
+V1_2_MODEL_PATH = ROOT / "models" / "phishing_model_v1_2.joblib"
+V1_2_METADATA_PATH = ROOT / "models" / "model_meta_v1_2.json"
 SUPPORTED_FEATURE_VERSIONS = {TEXT_FEATURE_VERSION, MULTIVIEW_FEATURE_VERSION}
 EXPECTED_LABEL_ORDER = [ResultLabel.LEGITIMATE, ResultLabel.PHISHING]
 
@@ -73,6 +75,7 @@ class ModelPredictor:
             raise ValueError("model_path and metadata_path must be provided together")
         if model_path is None:
             candidates = (
+                (V1_2_MODEL_PATH, V1_2_METADATA_PATH),
                 (V1_1_MODEL_PATH, V1_1_METADATA_PATH),
                 (DEFAULT_MODEL_PATH, DEFAULT_METADATA_PATH),
             )
