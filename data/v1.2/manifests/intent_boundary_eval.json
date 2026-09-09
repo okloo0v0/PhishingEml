@@ -1,0 +1,901 @@
+{
+  "model_path": "D:\\CodeSpace\\PhishingEml\\models\\intent_branch_v1_2.joblib",
+  "case_count": 46,
+  "exact_match_count": 43,
+  "exact_match_rate": 0.9347826086956522,
+  "thresholds": {
+    "credential_request": 0.3,
+    "oauth_authorization": 0.8,
+    "payment_change": 0.6,
+    "external_document_action": 0.8,
+    "reply_or_data_request": 0.8,
+    "social_pressure": 0.8,
+    "benign_notice": 0.8
+  },
+  "results": [
+    {
+      "case_id": "benign_mfa_en",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.2,
+        "oauth_authorization": 0.0054,
+        "payment_change": 0.0194,
+        "external_document_action": 0.0094,
+        "reply_or_data_request": 0.0089,
+        "social_pressure": 0.0378,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_mfa_zh",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_payment_en",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0327,
+        "oauth_authorization": 0.0225,
+        "payment_change": 0.2,
+        "external_document_action": 0.0135,
+        "reply_or_data_request": 0.0388,
+        "social_pressure": 0.0207,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_payment_zh",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_doc_en",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0182,
+        "oauth_authorization": 0.0135,
+        "payment_change": 0.0349,
+        "external_document_action": 0.0666,
+        "reply_or_data_request": 0.0391,
+        "social_pressure": 0.0196,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_doc_zh",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_login_en",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [],
+      "exact_match": false,
+      "probabilities": {
+        "credential_request": 0.0234,
+        "oauth_authorization": 0.028,
+        "payment_change": 0.0111,
+        "external_document_action": 0.0094,
+        "reply_or_data_request": 0.006,
+        "social_pressure": 0.0124,
+        "benign_notice": 0.0116
+      }
+    },
+    {
+      "case_id": "benign_login_zh",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_invoice_en",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "benign_notice"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0134,
+        "oauth_authorization": 0.0254,
+        "payment_change": 0.2,
+        "external_document_action": 0.0225,
+        "reply_or_data_request": 0.0056,
+        "social_pressure": 0.0213,
+        "benign_notice": 0.8
+      }
+    },
+    {
+      "case_id": "benign_invoice_zh",
+      "expected_intents": [
+        "benign_notice"
+      ],
+      "predicted_intents": [
+        "payment_change",
+        "reply_or_data_request"
+      ],
+      "exact_match": false,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.8,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.8,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "credential_en_1",
+      "expected_intents": [
+        "credential_request"
+      ],
+      "predicted_intents": [
+        "credential_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 1.0,
+        "oauth_authorization": 0.0117,
+        "payment_change": 0.0112,
+        "external_document_action": 0.0094,
+        "reply_or_data_request": 0.001,
+        "social_pressure": 0.0253,
+        "benign_notice": 0.0537
+      }
+    },
+    {
+      "case_id": "credential_en_2",
+      "expected_intents": [
+        "credential_request"
+      ],
+      "predicted_intents": [
+        "credential_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.9248,
+        "oauth_authorization": 0.0032,
+        "payment_change": 0.0082,
+        "external_document_action": 0.0156,
+        "reply_or_data_request": 0.0107,
+        "social_pressure": 0.0094,
+        "benign_notice": 0.0125
+      }
+    },
+    {
+      "case_id": "credential_en_3",
+      "expected_intents": [
+        "credential_request",
+        "reply_or_data_request"
+      ],
+      "predicted_intents": [
+        "credential_request",
+        "reply_or_data_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.3363,
+        "oauth_authorization": 0.0877,
+        "payment_change": 0.0437,
+        "external_document_action": 0.0329,
+        "reply_or_data_request": 0.9454,
+        "social_pressure": 0.2664,
+        "benign_notice": 0.0291
+      }
+    },
+    {
+      "case_id": "credential_zh_1",
+      "expected_intents": [
+        "credential_request"
+      ],
+      "predicted_intents": [
+        "credential_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.8,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "credential_zh_2",
+      "expected_intents": [
+        "credential_request"
+      ],
+      "predicted_intents": [
+        "credential_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.8,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "credential_zh_3",
+      "expected_intents": [
+        "credential_request",
+        "reply_or_data_request"
+      ],
+      "predicted_intents": [
+        "credential_request",
+        "reply_or_data_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.8,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.8,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "oauth_en_1",
+      "expected_intents": [
+        "oauth_authorization"
+      ],
+      "predicted_intents": [
+        "oauth_authorization"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.1704,
+        "oauth_authorization": 0.8,
+        "payment_change": 0.0175,
+        "external_document_action": 0.0363,
+        "reply_or_data_request": 0.0135,
+        "social_pressure": 0.0119,
+        "benign_notice": 0.0121
+      }
+    },
+    {
+      "case_id": "oauth_en_2",
+      "expected_intents": [
+        "oauth_authorization"
+      ],
+      "predicted_intents": [
+        "oauth_authorization"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.1702,
+        "oauth_authorization": 0.9993,
+        "payment_change": 0.041,
+        "external_document_action": 0.0202,
+        "reply_or_data_request": 0.0338,
+        "social_pressure": 0.0242,
+        "benign_notice": 0.0157
+      }
+    },
+    {
+      "case_id": "oauth_en_3",
+      "expected_intents": [
+        "oauth_authorization"
+      ],
+      "predicted_intents": [
+        "oauth_authorization"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0102,
+        "oauth_authorization": 0.8,
+        "payment_change": 0.0216,
+        "external_document_action": 0.0936,
+        "reply_or_data_request": 0.0198,
+        "social_pressure": 0.0134,
+        "benign_notice": 0.0085
+      }
+    },
+    {
+      "case_id": "oauth_zh_1",
+      "expected_intents": [
+        "oauth_authorization"
+      ],
+      "predicted_intents": [
+        "oauth_authorization"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.021,
+        "oauth_authorization": 0.8,
+        "payment_change": 0.0283,
+        "external_document_action": 0.0199,
+        "reply_or_data_request": 0.0209,
+        "social_pressure": 0.0143,
+        "benign_notice": 0.0101
+      }
+    },
+    {
+      "case_id": "oauth_zh_2",
+      "expected_intents": [
+        "oauth_authorization"
+      ],
+      "predicted_intents": [
+        "oauth_authorization"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.8,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "oauth_zh_3",
+      "expected_intents": [
+        "oauth_authorization"
+      ],
+      "predicted_intents": [
+        "oauth_authorization"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.8,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "payment_en_1",
+      "expected_intents": [
+        "payment_change"
+      ],
+      "predicted_intents": [
+        "payment_change"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0116,
+        "oauth_authorization": 0.0144,
+        "payment_change": 0.9994,
+        "external_document_action": 0.022,
+        "reply_or_data_request": 0.0492,
+        "social_pressure": 0.0968,
+        "benign_notice": 0.0172
+      }
+    },
+    {
+      "case_id": "payment_en_2",
+      "expected_intents": [
+        "payment_change"
+      ],
+      "predicted_intents": [
+        "payment_change"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0406,
+        "oauth_authorization": 0.0142,
+        "payment_change": 1.0,
+        "external_document_action": 0.0195,
+        "reply_or_data_request": 0.1919,
+        "social_pressure": 0.0115,
+        "benign_notice": 0.013
+      }
+    },
+    {
+      "case_id": "payment_en_3",
+      "expected_intents": [
+        "payment_change",
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "payment_change",
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0299,
+        "oauth_authorization": 0.0339,
+        "payment_change": 0.6305,
+        "external_document_action": 0.0322,
+        "reply_or_data_request": 0.0909,
+        "social_pressure": 1.0,
+        "benign_notice": 0.0012
+      }
+    },
+    {
+      "case_id": "payment_zh_1",
+      "expected_intents": [
+        "payment_change"
+      ],
+      "predicted_intents": [
+        "payment_change"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.8,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "payment_zh_2",
+      "expected_intents": [
+        "payment_change"
+      ],
+      "predicted_intents": [
+        "payment_change"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.8,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "payment_zh_3",
+      "expected_intents": [
+        "payment_change",
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "payment_change",
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.8,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.8,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "document_en_1",
+      "expected_intents": [
+        "external_document_action"
+      ],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0093,
+        "oauth_authorization": 0.0039,
+        "payment_change": 0.0099,
+        "external_document_action": 1.0,
+        "reply_or_data_request": 0.008,
+        "social_pressure": 0.0105,
+        "benign_notice": 0.0075
+      }
+    },
+    {
+      "case_id": "document_en_2",
+      "expected_intents": [
+        "external_document_action"
+      ],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0192,
+        "oauth_authorization": 0.0051,
+        "payment_change": 0.0204,
+        "external_document_action": 0.9138,
+        "reply_or_data_request": 0.0097,
+        "social_pressure": 0.0259,
+        "benign_notice": 0.0142
+      }
+    },
+    {
+      "case_id": "document_en_3",
+      "expected_intents": [
+        "external_document_action"
+      ],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0616,
+        "oauth_authorization": 0.0134,
+        "payment_change": 0.0347,
+        "external_document_action": 0.8,
+        "reply_or_data_request": 0.0105,
+        "social_pressure": 0.0435,
+        "benign_notice": 0.0054
+      }
+    },
+    {
+      "case_id": "document_zh_1",
+      "expected_intents": [
+        "external_document_action"
+      ],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0091,
+        "oauth_authorization": 0.0044,
+        "payment_change": 0.0126,
+        "external_document_action": 0.8,
+        "reply_or_data_request": 0.014,
+        "social_pressure": 0.0094,
+        "benign_notice": 0.0117
+      }
+    },
+    {
+      "case_id": "document_zh_2",
+      "expected_intents": [
+        "external_document_action"
+      ],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.8,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "document_zh_3",
+      "expected_intents": [
+        "external_document_action"
+      ],
+      "predicted_intents": [
+        "external_document_action"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.8,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "reply_en_1",
+      "expected_intents": [
+        "reply_or_data_request"
+      ],
+      "predicted_intents": [
+        "reply_or_data_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0244,
+        "oauth_authorization": 0.0098,
+        "payment_change": 0.0374,
+        "external_document_action": 0.0179,
+        "reply_or_data_request": 0.9458,
+        "social_pressure": 0.0685,
+        "benign_notice": 0.0257
+      }
+    },
+    {
+      "case_id": "reply_en_2",
+      "expected_intents": [
+        "reply_or_data_request"
+      ],
+      "predicted_intents": [
+        "reply_or_data_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0165,
+        "oauth_authorization": 0.034,
+        "payment_change": 0.04,
+        "external_document_action": 0.0083,
+        "reply_or_data_request": 0.9855,
+        "social_pressure": 0.1973,
+        "benign_notice": 0.0344
+      }
+    },
+    {
+      "case_id": "reply_en_3",
+      "expected_intents": [
+        "reply_or_data_request",
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "reply_or_data_request",
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0567,
+        "oauth_authorization": 0.0134,
+        "payment_change": 0.0297,
+        "external_document_action": 0.0134,
+        "reply_or_data_request": 0.8,
+        "social_pressure": 0.8,
+        "benign_notice": 0.0351
+      }
+    },
+    {
+      "case_id": "reply_zh_1",
+      "expected_intents": [
+        "reply_or_data_request"
+      ],
+      "predicted_intents": [
+        "reply_or_data_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.8,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "reply_zh_2",
+      "expected_intents": [
+        "reply_or_data_request"
+      ],
+      "predicted_intents": [
+        "reply_or_data_request"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.8,
+        "social_pressure": 0.0146,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "reply_zh_3",
+      "expected_intents": [
+        "reply_or_data_request",
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "reply_or_data_request",
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.8,
+        "social_pressure": 0.8,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "pressure_en_1",
+      "expected_intents": [
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0098,
+        "oauth_authorization": 0.0236,
+        "payment_change": 0.0187,
+        "external_document_action": 0.0299,
+        "reply_or_data_request": 0.0466,
+        "social_pressure": 0.9942,
+        "benign_notice": 0.0122
+      }
+    },
+    {
+      "case_id": "pressure_en_2",
+      "expected_intents": [
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0282,
+        "oauth_authorization": 0.0105,
+        "payment_change": 0.0372,
+        "external_document_action": 0.0094,
+        "reply_or_data_request": 0.0998,
+        "social_pressure": 0.9927,
+        "benign_notice": 0.009
+      }
+    },
+    {
+      "case_id": "pressure_en_3",
+      "expected_intents": [
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0109,
+        "oauth_authorization": 0.014,
+        "payment_change": 0.0432,
+        "external_document_action": 0.0233,
+        "reply_or_data_request": 0.0963,
+        "social_pressure": 0.8,
+        "benign_notice": 0.0157
+      }
+    },
+    {
+      "case_id": "pressure_zh_1",
+      "expected_intents": [
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.8,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "pressure_zh_2",
+      "expected_intents": [
+        "social_pressure"
+      ],
+      "predicted_intents": [
+        "social_pressure"
+      ],
+      "exact_match": true,
+      "probabilities": {
+        "credential_request": 0.0145,
+        "oauth_authorization": 0.0053,
+        "payment_change": 0.0151,
+        "external_document_action": 0.02,
+        "reply_or_data_request": 0.0131,
+        "social_pressure": 0.8,
+        "benign_notice": 0.0148
+      }
+    },
+    {
+      "case_id": "pressure_zh_3",
+      "expected_intents": [
+        "social_pressure"
+      ],
+      "predicted_intents": [],
+      "exact_match": false,
+      "probabilities": {
+        "credential_request": 0.018,
+        "oauth_authorization": 0.0078,
+        "payment_change": 0.0102,
+        "external_document_action": 0.0433,
+        "reply_or_data_request": 0.0213,
+        "social_pressure": 0.1458,
+        "benign_notice": 0.0136
+      }
+    }
+  ],
+  "note": "manually labeled fixed boundary cases; excluded from training"
+}

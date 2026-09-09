@@ -1,0 +1,11 @@
+{
+  "input_path": "data/v1.2/processed/intent_dataset.jsonl",
+  "output_path": "data/v1.2/processed/intent_review_queue.jsonl",
+  "queue_count": 300,
+  "selection": {
+    "no_intent_legitimate": 200,
+    "ambiguous_legitimate": 100
+  },
+  "manual_annotation_required": true,
+  "seed": 42
+}

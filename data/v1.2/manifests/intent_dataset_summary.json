@@ -1,0 +1,22 @@
+{
+  "input_path": "data/processed/emails.csv",
+  "output_path": "data/v1.2/processed/intent_dataset.jsonl",
+  "record_count": 14537,
+  "label_counts": {
+    "legitimate": 7414,
+    "phishing": 7123
+  },
+  "intent_counts": {
+    "benign_notice": 106,
+    "credential_request": 801,
+    "external_document_action": 854,
+    "oauth_authorization": 563,
+    "payment_change": 2491,
+    "reply_or_data_request": 3467,
+    "social_pressure": 3208
+  },
+  "intent_label_provenance": "weak_pattern_v1",
+  "sampling": "deterministic balanced label cap with content-fingerprint deduplication",
+  "seed": 42,
+  "limit": 24000
+}

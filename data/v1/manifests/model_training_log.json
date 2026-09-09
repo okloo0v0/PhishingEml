@@ -1,0 +1,16 @@
+{
+  "event": "model_trained",
+  "trained_at": "2026-09-01T10:36:04.467587Z",
+  "model_version": "v1.0.0",
+  "input_path": "data/processed/emails.csv",
+  "train_count": 10175,
+  "valid_count": 2181,
+  "test_count": 2181,
+  "label_order": [
+    "legitimate",
+    "phishing"
+  ],
+  "artifact_filename": "models/phishing_model.joblib",
+  "artifact_sha256": "4c975f113d388548f9516ab0ea207f4a3488d0e3b2a9115c0171f8913f8a8a79",
+  "predictions_path": "data/processed/model_predictions.csv"
+}

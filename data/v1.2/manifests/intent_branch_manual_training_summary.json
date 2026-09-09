@@ -1,0 +1,9 @@
+{
+  "model_version": "v1.2.1-intent-manual-difraud",
+  "train_count": 70,
+  "test_path": "data/v1.2/processed/difraud_manual_intents_test.jsonl",
+  "label_provenance": "manual_adjudication_difraud_v1",
+  "split": "fixed external source: 70 train / 30 exact holdout",
+  "deprecated": true,
+  "note": "Invalid exploratory retraining artifact; production model was not replaced. Do not use for model selection or fusion."
+}

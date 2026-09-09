@@ -34,8 +34,8 @@
           "non_https",
           "ip_host",
           "encoded_chars",
-          "secure",
-          "login"
+          "login",
+          "secure"
         ]
       }
     ],
@@ -87,8 +87,8 @@
           "non_https",
           "ip_host",
           "encoded_chars",
-          "secure",
-          "login"
+          "login",
+          "secure"
         ],
         "blacklist_hit": false,
         "blacklist_match_type": null,
@@ -149,7 +149,7 @@
         "code": "R06",
         "title": "URL 存在可疑结构特征",
         "detail": "URL contains suspicious structural features.",
-        "evidence": "192.0.2.50: non_https, ip_host, encoded_chars, secure, login",
+        "evidence": "192.0.2.50: non_https, ip_host, encoded_chars, login, secure",
         "score": 10.0,
         "severity": "warning"
       },

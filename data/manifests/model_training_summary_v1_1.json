@@ -1,0 +1,71 @@
+{
+  "model_name": "multiview_late_fusion_logistic_regression",
+  "model_version": "v1.1.0",
+  "feature_version": "text-structure-v2",
+  "trained_at": "2026-09-08T09:53:03.194052Z",
+  "label_order": [
+    "legitimate",
+    "phishing"
+  ],
+  "input_path": "data/processed/emails.csv",
+  "hard_negative_path": "data/processed/hard_negative_emails.jsonl",
+  "artifact_filename": "phishing_model_v1_1.joblib",
+  "artifact_sha256": "e87428eafcb0e2a3f49823209c66aa02ea85f1dc0c0963a69333e10e63d202a9",
+  "predictions_path": "data/processed/model_predictions_v1_1.csv",
+  "random_state": 42,
+  "train_count": 11186,
+  "base_train_count": 10175,
+  "valid_count": 2548,
+  "test_count": 2498,
+  "hard_negative_counts": {
+    "train": 1011,
+    "valid": 367,
+    "test": 317
+  },
+  "hard_negative_split_policy": "stable SHA-256 bucket: train=0..5, valid=6..7, test=8..9",
+  "training_label_counts": {
+    "legitimate": 6201,
+    "phishing": 4985
+  },
+  "features": [
+    "word_tfidf",
+    "char_tfidf",
+    "static_structure",
+    "intent"
+  ],
+  "model_config": {
+    "word_ngram_range": [
+      1,
+      2
+    ],
+    "word_max_features": 50000,
+    "char_analyzer": "char_wb",
+    "char_ngram_range": [
+      3,
+      5
+    ],
+    "char_max_features": 60000,
+    "min_df": 2,
+    "oof_splits": 5,
+    "branch_classifier": "class_weight=balanced LogisticRegression",
+    "meta_classifier": "non-negative constrained LogisticRegression + sigmoid calibration"
+  },
+  "tfidf": {
+    "word_ngram_range": [
+      1,
+      2
+    ],
+    "char_ngram_range": [
+      3,
+      5
+    ],
+    "min_df": 2
+  },
+  "classifier": {
+    "type": "OOF late-fusion LogisticRegression",
+    "branch_class_weight": "balanced",
+    "meta_constraint": "non-negative branch weights",
+    "probability_calibration": "sigmoid CalibratedClassifierCV on OOF fusion scores"
+  },
+  "probability_semantics": "predict_proba[:, 1] is calibrated-fusion phishing_probability; threshold=0.50"
+}

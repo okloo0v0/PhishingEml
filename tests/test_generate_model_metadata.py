@@ -13,12 +13,17 @@ def test_generate_metadata_is_contract_compatible(tmp_path):
         "label_order": ["legitimate", "phishing"], "random_state": 42,
         "train_count": 4, "valid_count": 1, "test_count": 1,
         "tfidf": {}, "classifier": {}, "artifact_sha256": "",
+        "curated_supplement_path": "data/processed/curated.jsonl",
+        "curated_supplement_train_count": 2,
     }), encoding="utf-8")
     evaluation = tmp_path / "evaluation.json"
     evaluation.write_text(json.dumps({
         "contract_threshold": 0.5, "selected_threshold": 0.44,
         "test": {"contract_metrics": {"precision": 1, "recall": 1, "f1": 1, "accuracy": 1, "confusion_matrix": [[1, 0], [0, 1]]}},
         "cross_source_test": {"contract_metrics": {"precision": 1, "recall": 1, "f1": 1, "accuracy": 1, "confusion_matrix": [[1, 0], [0, 1]]}},
+        "targeted_tests": {
+            "chinese_test": {"contract_metrics": {"support": 2, "precision": 1, "recall": 1, "f1": 1, "accuracy": 1}},
+        },
     }), encoding="utf-8")
     split = tmp_path / "split.json"
     split.write_text(json.dumps({"source_counts": {}, "hard_negative_records": 0}), encoding="utf-8")
@@ -29,4 +34,7 @@ def test_generate_metadata_is_contract_compatible(tmp_path):
     result = generate(model, training, evaluation, split, report, metadata, experiments)
     assert result["label_order"] == ["legitimate", "phishing"]
     assert result["artifact_sha256"]
-    assert json.loads(metadata.read_text(encoding="utf-8"))["metadata_filename"] == "model_meta.json"
+    saved = json.loads(metadata.read_text(encoding="utf-8"))
+    assert saved["metadata_filename"] == "model_meta.json"
+    assert saved["curated_supplement"]["train_count"] == 2
+    assert saved["targeted_tests"]["chinese_test"]["support"] == 2

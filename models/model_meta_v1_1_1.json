@@ -1,0 +1,155 @@
+{
+  "model_name": "multiview_late_fusion_logistic_regression",
+  "model_version": "v1.1.1-candidate",
+  "feature_version": "text-structure-v2",
+  "trained_at": "2026-09-08T11:51:17.370466Z",
+  "label_order": [
+    "legitimate",
+    "phishing"
+  ],
+  "metrics": {
+    "test_precision": 0.9934086629001884,
+    "test_recall": 0.9869036482694107,
+    "test_f1": 0.990145471609573,
+    "test_accuracy": 0.9903713892709766,
+    "cross_source_precision": 0.9910714285714286,
+    "cross_source_recall": 0.9847908745247148,
+    "cross_source_f1": 0.9879211697393515,
+    "cross_source_accuracy": 0.9882060831781502,
+    "test_pr_auc": 0.9991655151207015,
+    "test_brier_score": 0.007952669317186592,
+    "cross_source_pr_auc": 0.9985856799088815
+  },
+  "artifact_filename": "phishing_model_v1_1_1.joblib",
+  "metadata_filename": "model_meta_v1_1_1.json",
+  "artifact_sha256": "e7bf497b7ae57931f28646e6fe9848c92e34f2f338393b920a10c3dd02373355",
+  "artifact_path": "models/phishing_model_v1_1_1.joblib",
+  "dataset_version": "ds-20260908-baf7f3a6",
+  "dataset_manifest_sha256": "baf7f3a60e8d895a5f14dd5b2b2549f494da7f430d103f7045750fa699b7d01b",
+  "random_state": 42,
+  "train_count": 11354,
+  "valid_count": 2548,
+  "test_count": 2498,
+  "max_text_chars": 20000,
+  "features": [
+    "word_tfidf",
+    "char_tfidf",
+    "static_structure",
+    "intent"
+  ],
+  "tfidf": {
+    "word_ngram_range": [
+      1,
+      2
+    ],
+    "char_ngram_range": [
+      3,
+      5
+    ],
+    "min_df": 2
+  },
+  "classifier": {
+    "type": "OOF late-fusion LogisticRegression",
+    "branch_class_weight": "balanced",
+    "meta_constraint": "non-negative branch weights",
+    "probability_calibration": "sigmoid CalibratedClassifierCV on OOF fusion scores"
+  },
+  "model_config": {
+    "word_ngram_range": [
+      1,
+      2
+    ],
+    "word_max_features": 50000,
+    "char_analyzer": "char_wb",
+    "char_ngram_range": [
+      3,
+      5
+    ],
+    "char_max_features": 60000,
+    "min_df": 2,
+    "oof_splits": 5,
+    "branch_classifier": "class_weight=balanced LogisticRegression",
+    "meta_classifier": "non-negative constrained LogisticRegression + sigmoid calibration"
+  },
+  "probability_threshold": 0.5,
+  "tuned_threshold_diagnostic": 0.67,
+  "test_confusion_matrix": [
+    [
+      1105,
+      7
+    ],
+    [
+      14,
+      1055
+    ]
+  ],
+  "cross_source_confusion_matrix": [
+    [
+      815,
+      7
+    ],
+    [
+      12,
+      777
+    ]
+  ],
+  "dependencies": {
+    "python": "3.11",
+    "scikit-learn": "1.9.0",
+    "scipy": "1.17.1",
+    "joblib": "1.6.0",
+    "numpy": "2.4.6",
+    "pandas": "3.0.5"
+  },
+  "source_counts": {
+    "train": {
+      "nazario": 1930,
+      "spamassassin_ham": 2623,
+      "zenodo_nazario_csv": 999,
+      "zenodo_nigerian_5": 3669,
+      "zenodo_spamassassin_csv": 954
+    },
+    "valid": {
+      "nazario": 415,
+      "spamassassin_ham": 551,
+      "zenodo_nazario_csv": 197,
+      "zenodo_nigerian_5": 809,
+      "zenodo_spamassassin_csv": 209
+    },
+    "test": {
+      "nazario": 431,
+      "spamassassin_ham": 549,
+      "zenodo_nazario_csv": 190,
+      "zenodo_nigerian_5": 813,
+      "zenodo_spamassassin_csv": 198
+    }
+  },
+  "hard_negative_count": 1695,
+  "curated_supplement": {
+    "path": "data/processed/v1_1_1_curated_train.jsonl",
+    "train_count": 168
+  },
+  "targeted_tests": {
+    "chinese_test": {
+      "support": 80,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    },
+    "modern_attack_test": {
+      "support": 84,
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "accuracy": 0.8333333333333334
+    },
+    "boundary_test": {
+      "support": 112,
+      "precision": 0.8235294117647058,
+      "recall": 1.0,
+      "f1": 0.9032258064516129,
+      "accuracy": 0.8928571428571429
+    }
+  }
+}

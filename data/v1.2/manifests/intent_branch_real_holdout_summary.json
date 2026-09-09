@@ -1,0 +1,55 @@
+{
+  "model_version": "v1.2.0-intent-weak-plus-synthetic",
+  "base_path": "data/v1.2/processed/intent_dataset.jsonl",
+  "supplement_path": "data/v1.2/processed/intent_supplement_synthetic.jsonl",
+  "train_base_count": 11629,
+  "train_supplement_count": 1000,
+  "test_base_count": 2908,
+  "test_contains_synthetic": false,
+  "split": "base corpus 80/20 random holdout; synthetic rows train-only",
+  "seed": 42,
+  "metrics": {
+    "credential_request": {
+      "support": 168,
+      "precision": 0.875,
+      "recall": 1.0,
+      "f1": 0.9333333333333333
+    },
+    "oauth_authorization": {
+      "support": 113,
+      "precision": 0.7902097902097902,
+      "recall": 1.0,
+      "f1": 0.8828125
+    },
+    "payment_change": {
+      "support": 532,
+      "precision": 0.7755102040816326,
+      "recall": 1.0,
+      "f1": 0.8735632183908046
+    },
+    "external_document_action": {
+      "support": 179,
+      "precision": 0.8689320388349514,
+      "recall": 1.0,
+      "f1": 0.9298701298701298
+    },
+    "reply_or_data_request": {
+      "support": 683,
+      "precision": 0.7572062084257206,
+      "recall": 1.0,
+      "f1": 0.8618296529968454
+    },
+    "social_pressure": {
+      "support": 673,
+      "precision": 0.8486759142496847,
+      "recall": 1.0,
+      "f1": 0.9181446111869032
+    },
+    "benign_notice": {
+      "support": 16,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666
+    }
+  }
+}

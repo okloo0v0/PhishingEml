@@ -1,0 +1,42 @@
+{
+  "model_version": "v1.0.0",
+  "threshold": 0.5,
+  "source_overlap": {
+    "ling_total": 2859,
+    "ling_exact_overlap": 0,
+    "synthetic_total": 12,
+    "synthetic_exact_overlap": 0
+  },
+  "ling_hard_negative": {
+    "support": 2859,
+    "spam_other_count": 458,
+    "phishing_rate": 0.04197271773347324,
+    "mean_phishing_probability": 0.18623857181649836,
+    "max_phishing_probability": 0.8321493295592328,
+    "predicted_counts": {
+      "legitimate": 2739,
+      "phishing": 120
+    }
+  },
+  "synthetic_binary": {
+    "metrics": {
+      "support": 12,
+      "precision": 0.8333333333333334,
+      "recall": 0.8333333333333334,
+      "f1": 0.8333333333333334,
+      "accuracy": 0.8333333333333334,
+      "confusion_matrix": [
+        [
+          5,
+          1
+        ],
+        [
+          1,
+          5
+        ]
+      ]
+    }
+  },
+  "predictions_path": "data/processed/extra_evaluation_predictions.csv",
+  "safety_note": "Ling label 1 is retained as spam_other, never converted to phishing; exact overlaps with training fingerprints are excluded."
+}

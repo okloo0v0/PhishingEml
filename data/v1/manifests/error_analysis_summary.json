@@ -1,0 +1,83 @@
+{
+  "prediction_input": "data/processed/evaluation_predictions.csv",
+  "data_inputs": [
+    "data/processed/emails.csv",
+    "data/processed/cross_source_test.jsonl"
+  ],
+  "error_output": "data/processed/error_analysis.csv",
+  "error_count": 58,
+  "error_counts": {
+    "false_negative": 41,
+    "false_positive": 17
+  },
+  "by_dataset": {
+    "cross_source_test": 25,
+    "test": 33
+  },
+  "by_source": {
+    "nazario": 32,
+    "spamassassin_ham": 3,
+    "zenodo_nazario_csv": 4,
+    "zenodo_nigerian_5": 19
+  },
+  "by_label": {
+    "legitimate": 17,
+    "phishing": 41
+  },
+  "length_buckets": {
+    "long": 3,
+    "medium": 27,
+    "short": 28
+  },
+  "placeholder_presence": {
+    "email": 15,
+    "url": 27,
+    "number": 9,
+    "non_ascii": 18
+  },
+  "top_global_phishing_features": [
+    "your",
+    "account",
+    "bank",
+    "monkey",
+    "your account",
+    "dear",
+    "security",
+    "monkey org",
+    "you",
+    "payment",
+    "money",
+    "utf",
+    "our",
+    "click",
+    "de",
+    "transaction",
+    "please",
+    "ebay",
+    "your email",
+    "we"
+  ],
+  "top_global_legitimate_features": [
+    "2002",
+    "the",
+    "list",
+    "re",
+    "wrote",
+    "it",
+    "url date",
+    "but",
+    "there",
+    "mailing",
+    "email url",
+    "at",
+    "mailing list",
+    "they",
+    "that",
+    "2001",
+    "url",
+    "on",
+    "just",
+    "2007"
+  ],
+  "privacy_note": "No subject, body, URL, address, or attachment payload is written to the analysis output."
+}

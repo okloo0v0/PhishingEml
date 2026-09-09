@@ -1,0 +1,73 @@
+{
+  "model_path": "D:\\CodeSpace\\PhishingEml\\models\\intent_branch_v1_2.joblib",
+  "calibration_set": "fixed manually labeled boundary cases",
+  "case_count": 46,
+  "thresholds": {
+    "credential_request": 0.3,
+    "oauth_authorization": 0.8,
+    "payment_change": 0.6,
+    "external_document_action": 0.8,
+    "reply_or_data_request": 0.8,
+    "social_pressure": 0.8,
+    "benign_notice": 0.8
+  },
+  "probability_source": "final predict_proba output, including semantic guardrails",
+  "selection_policy": "maximize F1 subject to precision >= 0.80; prefer higher threshold on ties",
+  "metrics": {
+    "credential_request": {
+      "positive_support": 6,
+      "negative_support": 40,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "oauth_authorization": {
+      "positive_support": 6,
+      "negative_support": 40,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "payment_change": {
+      "positive_support": 6,
+      "negative_support": 40,
+      "precision": 0.8571428571428571,
+      "recall": 1.0,
+      "f1": 0.9230769230769231
+    },
+    "external_document_action": {
+      "positive_support": 6,
+      "negative_support": 40,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "reply_or_data_request": {
+      "positive_support": 8,
+      "negative_support": 38,
+      "precision": 0.8888888888888888,
+      "recall": 1.0,
+      "f1": 0.9411764705882353
+    },
+    "social_pressure": {
+      "positive_support": 10,
+      "negative_support": 36,
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526315
+    },
+    "benign_notice": {
+      "positive_support": 10,
+      "negative_support": 36,
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888
+    }
+  },
+  "default_exact_match_rate": 0.9130434782608695,
+  "calibrated_exact_match_rate": 0.9347826086956522,
+  "accepted_for_intent_decision": true,
+  "provisional": true,
+  "use_as_final_fusion_weight": false,
+  "note": "Do not promote thresholds or fusion weights until a larger human-labeled, source-separated set is available."
+}

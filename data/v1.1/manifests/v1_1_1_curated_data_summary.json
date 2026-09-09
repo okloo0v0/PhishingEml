@@ -1,0 +1,115 @@
+{
+  "data_version": "curated-v1.1.1",
+  "origin": "synthetic_safe_curated; no external URLs visited and no attachment payloads retained",
+  "partitions": {
+    "train": {
+      "path": "data\\processed\\v1_1_1_curated_train.jsonl",
+      "records": 168,
+      "labels": {
+        "legitimate": 84,
+        "phishing": 84
+      },
+      "languages": {
+        "en": 84,
+        "zh": 84
+      },
+      "attack_types": {
+        "attachment": 14,
+        "cloud_impersonation": 7,
+        "cloud_notice": 7,
+        "credential": 7,
+        "data_request": 7,
+        "device_notice": 7,
+        "event": 7,
+        "finance_notice": 14,
+        "it_notice": 7,
+        "maintenance": 7,
+        "normal_notice": 7,
+        "oauth_device_code": 14,
+        "payment_bec": 21,
+        "project_update": 7,
+        "qr": 7,
+        "receipt": 7,
+        "reply_request": 7,
+        "security_training": 7,
+        "vendor_notice": 7
+      }
+    },
+    "chinese_test": {
+      "path": "data\\processed\\v1_1_1_chinese_test.jsonl",
+      "records": 80,
+      "labels": {
+        "legitimate": 40,
+        "phishing": 40
+      },
+      "languages": {
+        "zh": 80
+      },
+      "attack_types": {
+        "attachment": 8,
+        "community": 8,
+        "credential": 8,
+        "data_request": 8,
+        "housing": 8,
+        "internship": 8,
+        "lab": 8,
+        "library": 8,
+        "oauth_device_code": 8,
+        "payment_bec": 8
+      }
+    },
+    "modern_attack_test": {
+      "path": "data\\processed\\v1_1_1_modern_attack_test.jsonl",
+      "records": 84,
+      "labels": {
+        "legitimate": 42,
+        "phishing": 42
+      },
+      "languages": {
+        "en": 84
+      },
+      "attack_types": {
+        "attachment": 7,
+        "backup": 7,
+        "cloud_impersonation": 7,
+        "cloud_notice": 7,
+        "collaboration": 7,
+        "credential": 7,
+        "finance_notice": 7,
+        "mfa_guidance": 7,
+        "oauth_device_code": 7,
+        "payment_bec": 7,
+        "qr": 7,
+        "update": 7
+      }
+    },
+    "boundary_test": {
+      "path": "data\\processed\\v1_1_1_boundary_test.jsonl",
+      "records": 112,
+      "labels": {
+        "legitimate": 56,
+        "phishing": 56
+      },
+      "languages": {
+        "en": 56,
+        "zh": 56
+      },
+      "attack_types": {
+        "attachment": 7,
+        "credential": 7,
+        "data_request": 7,
+        "maintenance": 14,
+        "meeting": 7,
+        "oauth_device_code": 7,
+        "payment_bec": 14,
+        "project_update": 7,
+        "qr": 7,
+        "receipt": 14,
+        "reply_request": 7,
+        "security_training": 14
+      }
+    }
+  },
+  "overlap_policy": "content_fingerprint sets are required to be disjoint across all partitions",
+  "hard_negative_policy": "unchanged; this curated corpus contains only phishing and legitimate labels"
+}
