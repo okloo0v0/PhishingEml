@@ -1,0 +1,21 @@
+{
+  "model_path": "D:\\CodeSpace\\PhishingEml\\models\\intent_branch_v1_2_manual.joblib",
+  "test_path": "D:\\CodeSpace\\PhishingEml\\data\\v1.2\\processed\\difraud_manual_intents_test.jsonl",
+  "test_count": 30,
+  "label_provenance": "manual_adjudication_difraud_v1",
+  "thresholds_provisional": true,
+  "exact_match": 0.26666666666666666,
+  "micro_precision": 0.46153846153846156,
+  "micro_recall": 0.45,
+  "micro_f1": 0.45569620253164556,
+  "per_intent_f1": {
+    "credential_request": 0.6060606060606061,
+    "oauth_authorization": 0.0,
+    "payment_change": 0.3333333333333333,
+    "external_document_action": 0.0,
+    "reply_or_data_request": 0.42857142857142855,
+    "social_pressure": 0.42105263157894735,
+    "benign_notice": 0.0
+  },
+  "note": "External rows are source-isolated from the original training corpus; 70 rows were used for retraining and 30 remain here for exact intent validation."
+}

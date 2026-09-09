@@ -62,6 +62,19 @@ provisional：校准和报告使用同一固定边界集，只能验证实现与
 benchmark 来自 2020 年，也不能证明对 2022--2026 现代攻击的时效性。完整审计见
 `manifests/intent_external_holdout_eval.json`。
 
+本轮进一步对 100 条外部样本完成七类行为意图人工复核，并固定为 70 条训练、30 条精确留出。
+人工标签分布为：credential_request 32、reply_or_data_request 25、social_pressure 32、
+external_document_action 10、payment_change 5、benign_notice 3、oauth_authorization 1。
+专用 intent 模型在 30 条留出集上的 exact-match 为 0.267、micro-F1 为 0.456；由于
+oauth_authorization、benign_notice 等类别仍然稀疏，当前模型不应直接替换生产 intent 分支。
+训练和评估产物分别见 `manifests/intent_branch_manual_training_summary.json` 与
+`manifests/intent_manual_holdout_eval.json`。
+
+四分支综合回归（word/char/structure/intent）保持现有 V1.1.1 模型：主测试集 F1=0.990，
+来源留出 F1=0.988；中文测试 F1=1.000，现代攻击测试 F1=0.857，边界集 F1=0.903。
+这些提升主要由 structure 分支贡献，intent 仍需补齐低频类别后再做 OOF 权重决策。
+完整结果见 `manifests/model_evaluation_v1_2_comprehensive.json`。
+
 本轮另否决 Chataut 2024 候选：实际内容包含 2002 年邮件，所谓 phishing 分片标签为 `spam`，
 且仓库无明确许可证；下载文件已删除。Twente 2024 仍是更理想的独立验证候选，但当前环境访问
 Zenodo 文件端点返回 403，未使用任何无法通过官方 MD5 的代理副本。
