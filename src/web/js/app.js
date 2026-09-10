@@ -11,7 +11,7 @@ const knowledgeCategoryOptions = [
   { value: '上报协作', label: '上报协作', code: 'REPORT', title: '让证据进入正确的处置流程', count: 3 },
   { value: '典型案例', label: '典型案例', code: 'CASES', title: '通过对比建立判断经验', count: 3 },
 ];
-const state = { source: 'file', result: null, historyRisk: '', historyPage: 1, historyPageSize: 20, blacklistKeyword: '', blacklistStatus: '', knowledgeCategory: '', knowledgeKeyword: '', knowledgeCategories: knowledgeCategoryOptions };
+const state = { source: 'file', result: null, historyRisk: '', historyPage: 1, historyPageSize: 20, blacklistKeyword: '', blacklistStatus: '', knowledgeCategory: '', knowledgeKeyword: '', knowledgeCategories: knowledgeCategoryOptions, batch: { files: [], results: [], running: false } };
 const labels = { low: '低风险', medium: '中风险', high: '高风险', legitimate: '模型倾向正常', phishing: '模型倾向钓鱼', active: '启用', review: '待复核', false_positive: '误报' };
 const ruleDescriptions = { R01: '发件人与 Reply-To 域名不一致', R02: '链接显示信息与真实目标不一致', R03: 'URL 或注册域名命中黑名单', R04: '正文包含紧迫性诱导语言', R05: '要求提交账号或敏感信息', R06: 'URL 存在可疑结构特征', R07: '附件类型或文件名存在风险提示', R08: '发件人字段缺失或格式异常', R09: '邮件头存在异常或不完整信息', R10: '邮件内容包含其他可疑信号' };
 const analysisStages = ['正在接收邮件内容', '正在解析 MIME 结构', '正在提取 URL 与附件', '正在执行规则检测', '正在运行模型推理', '正在融合风险结果', '正在整理证据'];
@@ -50,7 +50,7 @@ function setLoading(isLoading) {
 function switchView(name) {
   $$('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.view === name));
   $$('.view').forEach(view => view.classList.toggle('active', view.id === `view-${name}`));
-  const copy = { welcome: ['Signal Observatory', '把可疑，变成看得懂的证据。', 'ORIENTATION / OBSERVATORY'], analyze: ['静态邮件检测', '识别风险，从一封邮件开始。', 'ANALYZE / STATIC SIGNALS'], history: ['检测历史', '回看每一次风险判断。', 'ARCHIVE / DECISIONS'], blacklist: ['离线黑名单', '管理用于静态匹配的指标。', 'CONTROL / INDICATORS'], dashboard: ['统计看板', '把检测记录变成可读的趋势。', 'OBSERVE / METRICS'], knowledge: ['防范知识', '把一次检测变成长期判断力。', 'FIELD GUIDE / AWARENESS'] }[name];
+  const copy = { welcome: ['Signal Observatory', '把可疑，变成看得懂的证据。', 'ORIENTATION / OBSERVATORY'], analyze: ['静态邮件检测', '识别风险，从一封邮件开始。', 'ANALYZE / STATIC SIGNALS'], batch: ['批量检测', '一次看清一组邮件的风险信号。', 'BATCH / LOCAL SCAN'], history: ['检测历史', '回看每一次风险判断。', 'ARCHIVE / DECISIONS'], blacklist: ['离线黑名单', '管理用于静态匹配的指标。', 'CONTROL / INDICATORS'], dashboard: ['统计看板', '把检测记录变成可读的趋势。', 'OBSERVE / METRICS'], knowledge: ['防范知识', '把一次检测变成长期判断力。', 'FIELD GUIDE / AWARENESS'] }[name];
   if (copy) { $('#page-eyebrow').textContent = copy[0]; $('#page-title').textContent = copy[1]; $('#page-context').textContent = copy[2]; }
   if (name === 'history') loadHistory(); if (name === 'blacklist') loadBlacklist(); if (name === 'dashboard') loadDashboard(); if (name === 'knowledge') loadKnowledge();
 }
@@ -63,6 +63,109 @@ function setupInput() {
   drop.addEventListener('drop', event => { const file = event.dataTransfer.files[0]; if (file) { fileInput.files = event.dataTransfer.files; $('#file-label').textContent = file.name; } });
   $('#raw-email').addEventListener('input', event => { $('#text-count').textContent = event.target.value.length.toLocaleString('en-US'); });
   $('#analysis-form').addEventListener('submit', async event => { event.preventDefault(); const file = fileInput.files[0]; const raw = $('#raw-email').value; const sampleId = $('#sample-id').value.trim(); if (state.source === 'file' && !file) return showToast('请先选择一个 .eml 文件', true); if (state.source === 'text' && !raw.trim()) return showToast('请粘贴完整邮件原文', true); if (state.source === 'sample' && !sampleId) return showToast('请输入演示样本 ID', true); setLoading(true); try { const request = state.source === 'file' ? api.analyzeFile(file) : state.source === 'text' ? api.analyzeText(raw) : api.analyzeSample(sampleId); const [result] = await Promise.all([request, analysisAnimationPromise]); state.result = result; renderResult(state.result); showToast('静态分析完成'); } catch (error) { state.result = null; setLoading(false); handleError(error); } });
+}
+
+function setupBatch() {
+  const input = $('#batch-files');
+  const drop = $('#batch-drop-zone');
+  if (!input || !drop) return;
+  const addFiles = (files) => {
+    const incoming = [...files];
+    let added = 0;
+    incoming.forEach(file => {
+      const isEml = file.name.toLowerCase().endsWith('.eml');
+      const duplicate = state.batch.files.some(item => item.file.name === file.name && item.file.size === file.size && item.file.lastModified === file.lastModified);
+      if (!isEml || file.size > 5 * 1024 * 1024 || duplicate || state.batch.files.length >= 20) return;
+      state.batch.files.push({ file, status: 'queued', result: null, error: '' });
+      added += 1;
+    });
+    if (incoming.length && !added) showToast('没有可加入的 .eml 文件（最多 20 份，单份不超过 5 MB）', true);
+    renderBatchQueue();
+  };
+  input.addEventListener('change', event => { addFiles(event.target.files); input.value = ''; });
+  ['dragenter', 'dragover'].forEach(type => drop.addEventListener(type, event => { event.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(type => drop.addEventListener(type, event => { event.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', event => addFiles(event.dataTransfer.files));
+  $('#batch-clear').addEventListener('click', () => { if (state.batch.running) return; state.batch.files = []; state.batch.results = []; renderBatchQueue(); renderBatchResults(); });
+  $('#batch-start').addEventListener('click', runBatch);
+}
+
+function renderBatchQueue() {
+  const host = $('#batch-queue');
+  const count = $('#batch-queue-count');
+  if (!host || !count) return;
+  count.textContent = `${state.batch.files.length} / 20`;
+  host.replaceChildren();
+  if (!state.batch.files.length) {
+    const empty = el('div', 'batch-empty'); empty.append(el('span', '', '＋'), el('p', '', '选择文件后会出现在这里')); host.append(empty);
+    return;
+  }
+  state.batch.files.forEach((item, index) => {
+    const row = el('div', `batch-queue-item ${item.status}`);
+    const icon = el('span', 'batch-file-icon', 'EML');
+    const info = el('div', 'batch-file-info');
+    info.append(el('b', '', item.file.name), el('small', '', `${(item.file.size / 1024).toFixed(1)} KB`));
+    const status = el('span', 'batch-file-status', { queued: '待检测', processing: '检测中', done: '已完成', error: '失败' }[item.status] || item.status);
+    row.append(icon, info, status);
+    if (!state.batch.running) {
+      const remove = el('button', 'batch-remove', '×');
+      remove.type = 'button'; remove.title = '移除文件';
+      remove.addEventListener('click', () => { const [removed] = state.batch.files.splice(index, 1); state.batch.results = state.batch.results.filter(result => result !== removed); renderBatchQueue(); renderBatchResults(); });
+      row.append(remove);
+    }
+    host.append(row);
+  });
+}
+
+async function runBatch() {
+  if (state.batch.running) return;
+  if (!state.batch.files.length) return showToast('请先选择至少一份 .eml 文件', true);
+  state.batch.running = true; state.batch.results = [];
+  const progressPanel = $('#batch-progress-panel'); progressPanel.hidden = false;
+  const total = state.batch.files.length; const start = $('#batch-start'); start.disabled = true;
+  $('#batch-progress-title').textContent = '正在进行本地静态检测';
+  for (let index = 0; index < total; index += 1) {
+    const item = state.batch.files[index]; item.status = 'processing'; renderBatchQueue();
+    $('#batch-progress-label').textContent = `${index} / ${total}`;
+    $('#batch-progress-copy').textContent = `正在分析 ${item.file.name}`;
+    $('#batch-progress-bar').style.width = `${Math.round((index / total) * 100)}%`;
+    try { item.result = await api.analyzeFile(item.file); item.status = 'done'; state.batch.results.push(item); }
+    catch (error) { item.status = 'error'; item.error = error.message || '检测失败'; state.batch.results.push(item); }
+    renderBatchQueue(); renderBatchResults();
+  }
+  state.batch.running = false; start.disabled = false;
+  $('#batch-progress-label').textContent = `${total} / ${total}`; $('#batch-progress-bar').style.width = '100%';
+  $('#batch-progress-title').textContent = '批量检测完成'; $('#batch-progress-copy').textContent = `已完成 ${state.batch.results.filter(item => item.status === 'done').length} 份，失败 ${state.batch.results.filter(item => item.status === 'error').length} 份。`;
+  renderBatchQueue(); showToast('批量静态检测完成');
+}
+
+function renderBatchResults() {
+  const host = $('#batch-results'); if (!host) return; host.replaceChildren();
+  const items = state.batch.results;
+  if (!items.length) { const empty = el('div', 'batch-results-empty'); empty.append(el('span', 'empty-symbol', '▦'), el('h2', '', '等待批量检测结果'), el('p', '', '完成检测后，这里会展示风险分布、逐封结果和可打开的详情。')); host.append(empty); return; }
+  const done = items.filter(item => item.status === 'done' && item.result);
+  const counts = { high: 0, medium: 0, low: 0 };
+  done.forEach(item => { counts[item.result.risk_level] = (counts[item.result.risk_level] || 0) + 1; });
+  const summary = el('div', 'batch-summary-grid');
+  [['邮件总数', items.length, 'total'], ['高风险', counts.high, 'high'], ['中风险', counts.medium, 'medium'], ['低风险', counts.low, 'low']].forEach(([label, value, tone]) => { const card = el('div', `panel batch-stat ${tone}`); card.append(el('span', '', label), el('b', '', value), el('small', '', tone === 'total' ? '本次队列' : '静态风险等级')); summary.append(card); });
+  host.append(summary);
+  const panel = el('section', 'panel batch-table-panel');
+  const heading = el('div', 'batch-table-heading'); heading.append(el('div', '', '逐封检测结果'), el('span', '', `${done.length} 份已完成`)); panel.append(heading);
+  const table = el('table', 'data-table batch-table'); const head = el('thead'); const tr = el('tr'); ['邮件文件', '风险等级', '分数', '规则信号', '状态', ''].forEach(name => tr.append(el('th', '', name))); head.append(tr); const body = el('tbody');
+  items.forEach(item => { const row = el('tr'); row.append(el('td', 'subject-cell', item.file.name)); if (item.status === 'done' && item.result) { const result = item.result; const risk = el('td'); risk.append(el('span', `risk-pill ${result.risk_level}`, labels[result.risk_level] || result.risk_level)); row.append(risk, el('td', '', Math.round(result.final_score)), el('td', '', `${(result.explanations || []).length} 条`), el('td', '', '已完成')); const action = el('td'); const view = el('button', 'table-action', '查看详情'); view.type = 'button'; view.addEventListener('click', () => openBatchDetail(item)); action.append(view); row.append(action); } else { row.append(el('td', '', '-'), el('td', '', '-'), el('td', '', item.error || '检测失败'), el('td', '', '失败'), el('td', '', '')); } body.append(row); }); table.append(head, body); panel.append(table); host.append(panel);
+}
+
+async function openBatchDetail(item) {
+  const result = item.result; if (!result) return;
+  $('#dialog-title').textContent = item.file.name; $('#delete-detail').hidden = true;
+  const content = $('#dialog-content'); content.replaceChildren(el('div', 'loading-state', '正在读取这封邮件的完整详情…')); $('#detail-dialog').showModal();
+  let detail = result;
+  try { if (result.detection_id) detail = { ...result, ...(await api.detectionDetail(result.detection_id)) }; } catch (error) { /* summary result remains available if the detail endpoint is unavailable */ }
+  if (!$('#detail-dialog').open) return;
+  const wrapper = el('div');
+  const risk = el('div', `batch-modal-risk ${detail.risk_level}`); risk.append(el('span', 'risk-kicker', 'FUSED RISK SCORE'), el('strong', '', `${Math.round(detail.final_score)} / 100`), el('b', '', labels[detail.risk_level] || detail.risk_level));
+  const meta = el('div', 'panel batch-modal-meta'); [['模型概率', `${Math.round(detail.model_probability * 100)}%`], ['规则得分', `${Math.round(detail.rule_score)} / 100`], ['模型版本', text(detail.model_version)]].forEach(([label, value]) => { const block = el('div'); block.append(el('span', '', label), el('b', '', value)); meta.append(block); });
+  wrapper.append(risk, meta, renderResultFragment({ ...detail, filename: item.file.name }, () => {}, false)); content.replaceChildren(wrapper);
 }
 
 function renderResult(result) {
@@ -107,8 +210,8 @@ function renderHistoryPagination(pagination) {
   controls.append(prev, next); host.append(summary, controls);
 }
 function formatDate(value) { if (!value) return '-'; const date = new Date(value); return Number.isNaN(date.getTime()) ? value : date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
-async function openDetail(id, subject) { try { const detail = await api.detectionDetail(id); $('#dialog-title').textContent = subject || '检测详情'; $('#delete-detail').dataset.detectionId = id; const content = $('#dialog-content'); content.replaceChildren(); const result = { ...detail, ...(detail.email ? { urls: detail.urls || [], attachments: detail.attachments || [] } : {}) }; const wrapper = el('div'); const refresh = () => wrapper.replaceChildren(renderResultFragment(result, refresh)); refresh(); content.append(wrapper); $('#detail-dialog').showModal(); } catch (error) { handleError(error); } }
-function renderResultFragment(result, refresh) { const fragment = document.createDocumentFragment(); const grid = el('div', 'detail-grid'); const e = el('section', 'detail-section'); e.append(el('h2', '', '风险证据')); (result.explanations || []).forEach(item => { const card = el('article', `explanation ${item.severity || 'warning'}`); card.append(el('b', '', `${item.code} · ${text(item.title)}`), el('p', '', text(item.detail))); if (item.evidence) card.append(el('span', 'evidence-text', item.evidence)); e.append(card); }); const a = el('section', 'detail-section'); a.append(el('h2', '', '邮件信息')); const email = result.email || {}; [['主题', email.subject], ['发件人', email.sender?.address], ['回复至', email.reply_to?.address], ['文件名', email.filename]].forEach(([k,v]) => { const row=el('div','data-row'); row.append(el('small','',k),el('b','',text(v))); a.append(row); }); if (email.text_body) { const body = el('div', 'mail-body-safe'); body.append(el('small', '', '纯文本正文')); body.append(el('p', '', email.text_body)); a.append(body); } if ((email.parse_warnings || []).length) a.append(el('div', 'warning-box', `解析提醒：${email.parse_warnings.join('；')}`)); grid.append(e,a); fragment.append(grid, renderLlmAssessment(result, refresh), renderUrls(result.urls || []), renderAttachments(result.attachments || [])); return fragment; }
+async function openDetail(id, subject) { try { const detail = await api.detectionDetail(id); $('#dialog-title').textContent = subject || '检测详情'; $('#delete-detail').hidden = false; $('#delete-detail').dataset.detectionId = id; const content = $('#dialog-content'); content.replaceChildren(); const result = { ...detail, ...(detail.email ? { urls: detail.urls || [], attachments: detail.attachments || [] } : {}) }; const wrapper = el('div'); const refresh = () => wrapper.replaceChildren(renderResultFragment(result, refresh)); refresh(); content.append(wrapper); $('#detail-dialog').showModal(); } catch (error) { handleError(error); } }
+function renderResultFragment(result, refresh, includeLlm = true) { const fragment = document.createDocumentFragment(); const grid = el('div', 'detail-grid'); const e = el('section', 'detail-section'); e.append(el('h2', '', '风险证据')); (result.explanations || []).forEach(item => { const card = el('article', `explanation ${item.severity || 'warning'}`); card.append(el('b', '', `${item.code} · ${text(item.title)}`), el('p', '', text(item.detail))); if (item.evidence) card.append(el('span', 'evidence-text', item.evidence)); e.append(card); }); if (!(result.explanations || []).length) e.append(el('p', 'muted-copy', '暂未发现规则命中，仍请结合模型概率和上下文判断。')); const a = el('section', 'detail-section'); a.append(el('h2', '', '邮件信息')); const email = result.email || {}; [['主题', email.subject], ['发件人', email.sender?.address], ['回复至', email.reply_to?.address], ['文件名', email.filename || result.filename]].forEach(([k,v]) => { const row=el('div','data-row'); row.append(el('small','',k),el('b','',text(v))); a.append(row); }); if (email.text_body) { const body = el('div', 'mail-body-safe'); body.append(el('small', '', '纯文本正文')); body.append(el('p', '', email.text_body)); a.append(body); } if ((email.parse_warnings || result.parse_warnings || []).length) a.append(el('div', 'warning-box', `解析提醒：${(email.parse_warnings || result.parse_warnings || []).join('；')}`)); grid.append(e,a); fragment.append(grid); if (includeLlm) fragment.append(renderLlmAssessment(result, refresh)); fragment.append(renderUrls(result.urls || []), renderAttachments(result.attachments || [])); return fragment; }
 
 async function loadBlacklist() { const host = $('#blacklist-content'); host.replaceChildren(el('div', 'loading-state', '正在读取黑名单…')); try { const data = await api.listBlacklist(state.blacklistKeyword, state.blacklistStatus); host.replaceChildren(); if (!data.items?.length) return host.append(el('div', 'empty-table', '暂无黑名单指标')); const table=el('table','data-table'), head=el('thead'), tr=el('tr'); ['指标','类型','来源','状态','命中',''].forEach(name=>tr.append(el('th','',name))); head.append(tr); const body=el('tbody'); data.items.forEach(item=>{ const row=el('tr'); row.append(el('td','subject-cell',text(item.indicator)),el('td','',item.indicator_type),el('td','',item.source)); const status=el('td'); status.append(el('span',`status-pill ${item.status}`,labels[item.status]||item.status)); row.append(status,el('td','',item.hit_count||0)); const action=el('td'); if(item.status==='active'){ const btn=el('button','table-action','停用'); btn.addEventListener('click',async()=>{try{await api.updateBlacklist(item.id,{status:'review'});showToast('已标记为待复核');loadBlacklist();}catch(error){handleError(error);}});action.append(btn);} row.append(action);body.append(row);});table.append(head,body);host.append(table);}catch(error){host.replaceChildren(el('div','empty-table',error.message));handleError(error);} }
 
@@ -247,8 +350,8 @@ function openKnowledgeDialog(item) {
   $('#knowledge-dialog').showModal();
 }
 
-function setupNavigation() { $$('.nav-item').forEach(button=>button.addEventListener('click',()=>switchView(button.dataset.view))); $('#brand-home').addEventListener('click',event=>{event.preventDefault();switchView('welcome');}); $('#start-analysis').addEventListener('click',()=>switchView('analyze')); $('#refresh-history').addEventListener('click',loadHistory); $('#history-page-size').addEventListener('change',event=>{state.historyPageSize=Number(event.target.value)||20;state.historyPage=1;loadHistory();}); $$('.filter-button[data-history-risk]').forEach(button=>button.addEventListener('click',()=>{state.historyRisk=button.dataset.historyRisk;state.historyPage=1;$$('.filter-button[data-history-risk]').forEach(item=>item.classList.toggle('active',item===button));loadHistory();})); $('#blacklist-search').addEventListener('input',debounce(event=>{state.blacklistKeyword=event.target.value;loadBlacklist();},350)); $('#blacklist-status').addEventListener('change',event=>{state.blacklistStatus=event.target.value;loadBlacklist();}); $('#knowledge-search').addEventListener('input',debounce(event=>{state.knowledgeKeyword=event.target.value;loadKnowledge();},350)); $('#blacklist-form').addEventListener('submit',async event=>{event.preventDefault();try{await api.createBlacklist({indicator:$('#indicator').value.trim(),indicator_type:$('#indicator-type').value,source:$('#indicator-source').value,note:$('#indicator-note').value.trim()||'',confidence:null});event.target.reset();showToast('黑名单条目已新增');loadBlacklist();}catch(error){handleError(error);}}); $('#close-dialog').addEventListener('click',()=>$('#detail-dialog').close()); $('#close-knowledge-dialog').addEventListener('click',()=>$('#knowledge-dialog').close()); $('#delete-detail').addEventListener('click',async event=>{const id=event.currentTarget.dataset.detectionId;if(!id)return;if(!window.confirm('确定删除这条检测记录吗？'))return;try{await api.deleteDetection(id);$('#detail-dialog').close();showToast('检测记录已删除');loadHistory();}catch(error){handleError(error);}}); renderKnowledgeCategories(); }
+function setupNavigation() { $$('.nav-item').forEach(button=>button.addEventListener('click',()=>switchView(button.dataset.view))); $('#brand-home').addEventListener('click',event=>{event.preventDefault();switchView('welcome');}); $('#start-analysis').addEventListener('click',()=>switchView('analyze')); $('#refresh-history').addEventListener('click',loadHistory); $('#history-page-size').addEventListener('change',event=>{state.historyPageSize=Number(event.target.value)||20;state.historyPage=1;loadHistory();}); $$('.filter-button[data-history-risk]').forEach(button=>button.addEventListener('click',()=>{state.historyRisk=button.dataset.historyRisk;state.historyPage=1;$$('.filter-button[data-history-risk]').forEach(item=>item.classList.toggle('active',item===button));loadHistory();})); $('#blacklist-search').addEventListener('input',debounce(event=>{state.blacklistKeyword=event.target.value;loadBlacklist();},350)); $('#blacklist-status').addEventListener('change',()=>loadBlacklist()); $('#knowledge-search').addEventListener('input',debounce(event=>{state.knowledgeKeyword=event.target.value;loadKnowledge();},350)); $('#blacklist-form').addEventListener('submit',async event=>{event.preventDefault();try{await api.createBlacklist({indicator:$('#indicator').value.trim(),indicator_type:$('#indicator-type').value,source:$('#indicator-source').value,note:$('#indicator-note').value.trim()||'',confidence:null});event.target.reset();showToast('黑名单条目已新增');loadBlacklist();}catch(error){handleError(error);}}); $('#close-dialog').addEventListener('click',()=>{ $('#detail-dialog').close(); $('#delete-detail').hidden = false; }); $('#close-knowledge-dialog').addEventListener('click',()=>$('#knowledge-dialog').close()); $('#delete-detail').addEventListener('click',async event=>{const id=event.currentTarget.dataset.detectionId;if(!id)return;if(!window.confirm('确定删除这条检测记录吗？'))return;try{await api.deleteDetection(id);$('#detail-dialog').close();showToast('检测记录已删除');loadHistory();}catch(error){handleError(error);}}); renderKnowledgeCategories(); }
 function debounce(fn, wait){let timer;return(...args)=>{clearTimeout(timer);timer=setTimeout(()=>fn(...args),wait);};}
 
-setupInput(); setupNavigation();
+setupInput(); setupBatch(); setupNavigation();
 api.health().then(() => { $('#service-status').textContent = '本地服务已连接'; }).catch(() => { $('#service-status').textContent = '本地服务未连接'; $('.sidebar-foot').classList.add('offline'); });

@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#121c1a">
   <link rel="icon" href="data:,">
   <title>PhishingEml - 邮件风险分析</title>
-  <link rel="stylesheet" href="/static/css/app.css?v=20260910-assets-1">
+  <link rel="stylesheet" href="/static/css/app.css?v=20260910-scrollbars-2">
   <script defer src="/static/vendor/echarts.min.js"></script>
-  <script type="module" src="/static/js/app.js?v=20260910-assets-1"></script>
+  <script type="module" src="/static/js/app.js?v=20260910-batch-1"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -16,6 +16,7 @@
       <a class="brand" href="#welcome" aria-label="PhishingEml 首页" id="brand-home"><span class="brand-mark" aria-hidden="true">P</span><span><strong>PhishingEml</strong><small>SIGNAL OBSERVATORY</small></span></a>
       <nav class="nav-list" aria-label="主导航">
         <button class="nav-item" data-view="analyze"><span aria-hidden="true">⌁</span>邮件检测</button>
+        <button class="nav-item" data-view="batch"><span aria-hidden="true">▦</span>批量检测</button>
         <button class="nav-item" data-view="history"><span aria-hidden="true">◷</span>检测历史</button>
         <button class="nav-item" data-view="blacklist"><span aria-hidden="true">⊘</span>黑名单</button>
         <button class="nav-item" data-view="dashboard"><span aria-hidden="true">▥</span>统计看板</button>
@@ -49,6 +50,35 @@
           <aside class="panel workflow-panel"><div class="panel-heading"><div><p class="panel-kicker">WORKFLOW</p><h2>分析过程</h2></div><span class="step-badge">02</span></div><ol class="workflow-list"><li><span>01</span><div><b>接收邮件</b><small>读取上传文件、粘贴内容或样本 ID</small></div></li><li><span>02</span><div><b>解析 MIME 结构</b><small>提取主题、发件人、正文和附件元数据</small></div></li><li><span>03</span><div><b>提取静态资产</b><small>规范化 URL，识别链接与附件信号</small></div></li><li><span>04</span><div><b>融合风险结果</b><small>结合规则分数和模型概率，生成解释</small></div></li></ol><div class="model-note"><span aria-hidden="true">◇</span><div><b>结果是风险提示</b><small>请结合业务上下文进行人工判断。</small></div></div></aside>
         </div>
         <section class="result-area" id="result-area" aria-live="polite"><div class="empty-state" id="result-empty"><span class="empty-symbol" aria-hidden="true">⌁</span><h2>等待一封邮件</h2><p>提交邮件后，这里会展示风险等级、规则证据、URL 与附件的静态信息。</p></div><div class="loading-state hidden" id="analysis-loading"><div class="analysis-pulse"><span class="scanner" aria-hidden="true"></span><span class="pulse-ring"></span></div><h2>正在进行静态分析</h2><p id="analysis-stage-copy">准备读取邮件结构</p><div class="analysis-progress"><span id="analysis-progress-bar"></span></div><ol class="analysis-steps" id="analysis-steps"><li data-step="0"><i>01</i><span>接收邮件</span><b>等待</b></li><li data-step="1"><i>02</i><span>解析 MIME 结构</span><b>等待</b></li><li data-step="2"><i>03</i><span>提取 URL 与附件</span><b>等待</b></li><li data-step="3"><i>04</i><span>执行规则检测</span><b>等待</b></li><li data-step="4"><i>05</i><span>运行模型推理</span><b>等待</b></li><li data-step="5"><i>06</i><span>融合风险结果</span><b>等待</b></li><li data-step="6"><i>07</i><span>整理证据</span><b>等待</b></li></ol></div><div class="result-content hidden" id="result-content"></div></section>
+      </section>
+
+      <section class="view" id="view-batch">
+        <div class="batch-layout">
+          <section class="panel batch-input-panel">
+            <div class="panel-heading"><div><p class="panel-kicker">BATCH INPUT</p><h2>一次检查多封邮件</h2></div><span class="step-badge">01</span></div>
+            <p class="batch-lede">把需要复核的 .eml 文件放进队列，系统会在本地逐封完成静态解析、规则检测和模型推理。</p>
+            <label class="batch-drop-zone" id="batch-drop-zone" for="batch-files">
+              <input id="batch-files" type="file" accept=".eml,message/rfc822" multiple hidden>
+              <span class="batch-drop-icon" aria-hidden="true">⇧</span>
+              <strong>拖入多份 .eml 文件</strong>
+              <span>或点击选择文件 · 单文件最大 5 MB</span>
+            </label>
+            <div class="batch-actions"><button class="primary-button" id="batch-start" type="button"><span aria-hidden="true">⌁</span>开始批量检测</button><button class="secondary-button" id="batch-clear" type="button">清空队列</button></div>
+            <div class="batch-privacy"><span class="live-dot" aria-hidden="true"></span><span>仅本地静态检测 · 不访问链接 · 不执行附件</span></div>
+          </section>
+          <aside class="panel batch-queue-panel">
+            <div class="panel-heading"><div><p class="panel-kicker">QUEUE</p><h2>待检测队列</h2></div><span class="batch-count" id="batch-queue-count">0 / 20</span></div>
+            <div class="batch-queue" id="batch-queue"><div class="batch-empty"><span aria-hidden="true">＋</span><p>选择文件后会出现在这里</p></div></div>
+          </aside>
+        </div>
+        <section class="batch-progress panel" id="batch-progress-panel" hidden>
+          <div class="batch-progress-head"><div><p class="panel-kicker">RUN STATUS</p><h2 id="batch-progress-title">准备开始</h2></div><span id="batch-progress-label">0 / 0</span></div>
+          <div class="batch-progress-track"><span id="batch-progress-bar"></span></div>
+          <p id="batch-progress-copy">检测将在本地按队列顺序执行。</p>
+        </section>
+        <section class="batch-results" id="batch-results" aria-live="polite">
+          <div class="batch-results-empty"><span class="empty-symbol" aria-hidden="true">▦</span><h2>等待批量检测结果</h2><p>完成检测后，这里会展示风险分布、逐封结果和可打开的详情。</p></div>
+        </section>
       </section>
 
       <section class="view" id="view-history"><div class="history-toolbar"><div class="filter-group" role="group" aria-label="按风险等级筛选"><button class="filter-button active" data-history-risk="">全部</button><button class="filter-button" data-history-risk="high">高风险</button><button class="filter-button" data-history-risk="medium">中风险</button><button class="filter-button" data-history-risk="low">低风险</button></div><div class="history-controls"><label>每页 <select id="history-page-size" aria-label="每页显示数量"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select> 条</label><button class="icon-button" id="refresh-history" title="刷新历史" aria-label="刷新历史">↻</button></div></div><div class="panel table-panel"><div id="history-content" class="data-area"></div><div class="history-pagination" id="history-pagination"></div></div></section>
